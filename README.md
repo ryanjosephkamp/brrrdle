@@ -1,2 +1,12 @@
 # brrrdle
-brrrdle - The ultimate Wordle + Hurdle experience. Play classic og mode or chained go mode with variable word lengths, progression system, and more.
+
+The ultimate Wordle + Hurdle web game.
+
+Built with React, TypeScript, Tailwind, and love.
+
+## Getting Started
+
+```bash
+npm install
+npm run dev
+```
