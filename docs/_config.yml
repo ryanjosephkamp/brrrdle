@@ -1,0 +1,4 @@
+title: brrrdle docs
+description: Project documentation for the brrrdle Wordle + Hurdle hybrid game.
+markdown: kramdown
+theme: minima
