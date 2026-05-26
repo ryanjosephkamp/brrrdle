@@ -5,7 +5,7 @@
 - **Implementation-plan reference**: `AGENT-IMPLEMENTATION-PLAN.md`, Phase 11
 - **Report file**: `progress/PROGRESS-STEP-11.md`
 - **Date updated**: 2026-05-26
-- **Status**: Complete — awaiting production release review
+- **Status**: Complete — production release preparation in progress
 
 ## Summary of Changes
 - Ran full automated release verification for the implemented v1 launch scope.
@@ -14,6 +14,7 @@
 - Added `continueGoAfterLoss` to continue the failed current `go` puzzle and covered it with a unit test.
 - Updated release/deployment docs to document update checks, protected `/api/admin-refresh`, Hard Mode, and Pay-to-Continue verification.
 - Updated `README.md` and `CHANGELOG.md` for final release readiness.
+- Finalized production release preparation docs covering Vercel env handling, `/api/admin-refresh`, PWA assets, and the approval gate before merge/deploy.
 - Completed production-preview smoke checks for daily fixed length, practice launch lengths, Pay-to-Continue, settings/export/reset, admin locked state, manifest, service worker, and preview shell assets.
 
 ## Files Changed
@@ -67,13 +68,14 @@
 - Live Supabase/admin and deployment checks remain production-environment responsibilities because credentials and deployment targets are not available in this sandbox.
 
 ## User Action Required Before Next Step
-- Review Phase 11 final integration, release readiness docs, changelog, and progress artifacts.
-- Confirm whether to proceed with production release review/deployment activities outside this sandbox.
+- Review the release PR once created.
+- Confirm whether the release PR may be merged and whether production deployment to Vercel may be triggered.
+- Provide Vercel project/environment details only if live deployment verification is requested after PR review.
 
 ## Authorization to Proceed
-- **Safe/authorized to proceed to next major step?**: Yes, pending explicit production release review confirmation.
-- **Next major step**: Production release review.
-- **Exact approval needed, if any**: Please reply with explicit production release approval or deployment instructions.
+- **Safe/authorized to proceed to next major step?**: Yes for PR creation and review.
+- **Next major step**: Create release PR into `main`, then halt for review.
+- **Exact approval needed, if any**: Explicit approval is still required before merging the PR or triggering production deployment.
 
 ## Additional Notes / Annotations
-- Phase 11 is complete and awaiting production release review.
+- Phase 11 is complete. Production release preparation has started after explicit approval; deployment remains blocked until PR review and explicit production deployment approval.
