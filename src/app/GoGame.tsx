@@ -20,9 +20,10 @@ import {
   type KeyboardInput,
   type PuzzleSessionState,
   type TileState,
+  formatGoShare,
 } from '../game'
 import { clearDailyGoStoredSession, loadDailyGoStoredSession, saveDailyGoStoredSession } from '../lib/storage/dailyGoStorage'
-import { Button, Keyboard, Panel } from '../ui'
+import { Button, Keyboard, Panel, ShareButton } from '../ui'
 import { classNames } from '../ui/classNames'
 
 interface GoGameProps {
@@ -52,35 +53,39 @@ function createInitialDailySession(setup: ReturnType<typeof createDailyGoSetup>)
 }
 
 function GuessGrid({ session }: { readonly session: PuzzleSessionState }) {
-  type GridTile = { readonly letter: string; readonly state: GridTileState }
+  type GridTile = { readonly isSubmitted: boolean; readonly letter: string; readonly state: GridTileState }
   const rows = Array.from({ length: session.maxAttempts }, (_, rowIndex) => {
     const submittedGuess = session.guesses[rowIndex]
     if (submittedGuess) {
-      return submittedGuess.tiles.map((tile): GridTile => ({ letter: tile.letter, state: tile.state }))
+      return submittedGuess.tiles.map((tile): GridTile => ({ isSubmitted: true, letter: tile.letter, state: tile.state }))
     }
 
     if (rowIndex === session.guesses.length && session.status === 'playing') {
       return Array.from({ length: session.wordLength }, (_, tileIndex): GridTile => ({
+        isSubmitted: false,
         letter: session.currentGuess[tileIndex] ?? '',
         state: session.currentGuess[tileIndex] ? 'current' : 'empty',
       }))
     }
 
-    return Array.from({ length: session.wordLength }, (): GridTile => ({ letter: '', state: 'empty' }))
+    return Array.from({ length: session.wordLength }, (): GridTile => ({ isSubmitted: false, letter: '', state: 'empty' }))
   })
 
   return (
-    <div aria-label="Go guess grid" className="space-y-2">
+    <div aria-label="Go guess grid" className="space-y-2" role="grid">
       {rows.map((row, rowIndex) => (
-        <div className="grid gap-1.5" key={rowIndex} style={{ gridTemplateColumns: `repeat(${session.wordLength}, minmax(0, 1fr))` }}>
+        <div className={classNames('grid gap-1.5', session.lastValidation && rowIndex === session.guesses.length ? 'motion-safe:animate-[brrrdle-row-shake_180ms_ease-in-out]' : undefined)} key={rowIndex} role="row" style={{ gridTemplateColumns: `repeat(${session.wordLength}, minmax(0, 1fr))` }}>
           {row.map((tile, tileIndex) => (
             <div
               aria-label={`Row ${rowIndex + 1}, tile ${tileIndex + 1}${tile.letter ? `, ${tile.letter}` : ''}`}
               className={classNames(
                 'flex aspect-square min-h-8 items-center justify-center rounded-xl border text-sm font-black uppercase shadow-inner shadow-slate-950/20 sm:min-h-10 sm:text-base',
                 tileStateClasses[tile.state],
+                tile.state === 'current' ? 'motion-safe:animate-[brrrdle-tile-pop_180ms_ease-out]' : undefined,
+                tile.isSubmitted ? 'motion-safe:animate-[brrrdle-tile-reveal_360ms_ease-out]' : undefined,
               )}
               key={`${rowIndex}-${tileIndex}`}
+              role="gridcell"
             >
               {tile.letter}
             </div>
@@ -247,12 +252,27 @@ function GoGameSession({
 
         <GuessGrid session={currentPuzzle} />
 
-        <div aria-live="polite" className="rounded-2xl border border-slate-700 bg-slate-950/70 p-3 text-sm leading-6 text-slate-200">
+        <div aria-live="polite" className="rounded-2xl border border-slate-700 bg-slate-950/70 p-3 text-sm leading-6 text-slate-200" role="status">
           <p>{statusMessage}</p>
           {currentPuzzle.lastValidation ? <p className="mt-1 font-semibold text-amber-100">{currentPuzzle.lastValidation.message}</p> : null}
         </div>
 
         <Keyboard disabled={session.status !== 'playing'} letterStates={letterStates} onInput={handleInput} />
+
+
+        {session.status !== 'playing' ? (
+          <ShareButton
+            label="Share go result"
+            text={formatGoShare({
+              currentPuzzleIndex: session.currentPuzzleIndex,
+              dateKey: setup.dateKey,
+              mode: 'go',
+              puzzles: session.puzzles,
+              scope,
+              status: session.status,
+            })}
+          />
+        ) : null}
 
         <DefinitionPanel
           enabled={session.status !== 'playing'}
