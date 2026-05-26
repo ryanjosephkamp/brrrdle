@@ -96,6 +96,7 @@ function OgGameSession({
   onPracticeSeedChange,
   practiceLength,
   practiceLengths,
+  practiceSeed,
   scope,
   setup,
 }: {
@@ -105,6 +106,7 @@ function OgGameSession({
   readonly onPracticeSeedChange: () => void
   readonly practiceLength: number
   readonly practiceLengths: readonly number[]
+  readonly practiceSeed: number
   readonly scope: OgGameProps['scope']
   readonly setup: OgPuzzleSetup
 }) {
@@ -128,7 +130,7 @@ function OgGameSession({
 
     onGameComplete?.({
       attemptsUsed: session.guesses.length,
-      gameId: scope === 'daily' ? `og:daily:${setup.dateKey}` : `og:practice:${practiceLength}:${setup.answer}`,
+      gameId: scope === 'daily' ? `og:daily:${setup.dateKey}` : `og:practice:${practiceLength}:${practiceSeed}:${setup.answer}`,
       maxAttempts: session.maxAttempts,
       mode: 'og',
       scope,
@@ -136,7 +138,7 @@ function OgGameSession({
       word: session.answer,
       wordLength: session.wordLength,
     })
-  }, [onGameComplete, practiceLength, scope, session.answer, session.guesses.length, session.maxAttempts, session.status, session.wordLength, setup.answer, setup.dateKey])
+  }, [onGameComplete, practiceLength, practiceSeed, scope, session.answer, session.guesses.length, session.maxAttempts, session.status, session.wordLength, setup.answer, setup.dateKey])
 
   const handleInput = useCallback((input: KeyboardInput) => {
     setSession((currentSession) => {
@@ -258,6 +260,7 @@ export function OgGame({ keyboardDisabled = false, onGameComplete, scope }: OgGa
       onPracticeSeedChange={() => setPracticeSeed((seed) => seed + 1)}
       practiceLength={practiceLength}
       practiceLengths={practiceLengths}
+      practiceSeed={practiceSeed}
       scope={scope}
       setup={setup}
     />
