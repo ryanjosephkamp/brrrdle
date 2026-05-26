@@ -15,7 +15,38 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function stripMarkup(value: string): string {
-  return value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+  let text = ''
+  let insideTag = false
+  let previousWasWhitespace = false
+
+  for (const character of value) {
+    if (character === '<') {
+      insideTag = true
+      continue
+    }
+
+    if (character === '>') {
+      insideTag = false
+      continue
+    }
+
+    if (insideTag) {
+      continue
+    }
+
+    if (/\s/.test(character)) {
+      if (!previousWasWhitespace) {
+        text += ' '
+        previousWasWhitespace = true
+      }
+      continue
+    }
+
+    text += character
+    previousWasWhitespace = false
+  }
+
+  return text.trim()
 }
 
 function parseWiktionaryDefinitions(payload: unknown): readonly DefinitionEntry[] {
