@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { BUNDLED_WORD_LIST_LENGTHS } from '../data'
 import { DAILY_WORD_LENGTH, MAX_PRACTICE_WORD_LENGTH, MIN_PRACTICE_WORD_LENGTH } from '../game/constants'
-import { Button, Dialog, ErrorState, Layout, LoadingState, Navigation, Panel, ToastRegion, type ToastMessage } from '../ui'
+import { deriveKeyboardLetterStates, getGuessResult, useKeyboardInput, type KeyboardInput } from '../game'
+import { Button, Dialog, ErrorState, Keyboard, Layout, LoadingState, Navigation, Panel, ToastRegion, type ToastMessage } from '../ui'
 import { APP_ROUTES, DEFAULT_ROUTE_ID, getRouteById, getRoutesByGroup, type AppRoute } from './routes'
 
 function ModeCard({ route, onSelect }: { readonly route: AppRoute; readonly onSelect: (route: AppRoute) => void }) {
@@ -47,18 +48,22 @@ function RoutePanel({
       <p className="max-w-3xl text-base leading-7 text-slate-300">{route.description}</p>
       <Panel className="text-sm leading-6 text-slate-300" tone="muted">
         <p>
-          This route is ready for later gameplay, definitions, persistence, account, and admin phases. No unfinished game behavior is exposed in Phase 3.2.
+          This route is ready for later gameplay, definitions, persistence, account, and admin phases. No unfinished game behavior is exposed in Phase 3.3.
         </p>
       </Panel>
     </section>
   )
 }
 
+const keyboardPreviewAnswer = 'cacao'
+const keyboardPreviewGuess = 'cigar'
+const previewLetterStates = deriveKeyboardLetterStates([getGuessResult(keyboardPreviewGuess, keyboardPreviewAnswer)])
+
 const shellMessages: readonly ToastMessage[] = [
   {
     id: 'shell-ready',
-    message: 'Design tokens, focus states, and shell primitives are active for Phase 3.2 review.',
-    title: 'Shell foundation ready',
+    message: 'Design tokens, focus states, shell primitives, and keyboard input plumbing are active for Phase 3.3 review.',
+    title: 'Shell and keyboard foundation ready',
     tone: 'info',
   },
 ]
@@ -66,8 +71,33 @@ const shellMessages: readonly ToastMessage[] = [
 function App() {
   const [activeRouteId, setActiveRouteId] = useState(DEFAULT_ROUTE_ID)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [keyboardPreview, setKeyboardPreview] = useState('')
+  const [keyboardStatus, setKeyboardStatus] = useState('Physical and on-screen keys are ready for future gameplay surfaces.')
   const activeRoute = getRouteById(activeRouteId)
   const navigationRoutes = useMemo(() => APP_ROUTES, [])
+  const handleKeyboardInput = useCallback((input: KeyboardInput) => {
+    if (input.type === 'letter') {
+      setKeyboardPreview((currentValue) => {
+        if (currentValue.length >= DAILY_WORD_LENGTH) {
+          return currentValue
+        }
+
+        return `${currentValue}${input.value}`
+      })
+      setKeyboardStatus(`Accepted letter ${input.value.toLocaleUpperCase('en-US')} for the keyboard preview.`)
+      return
+    }
+
+    if (input.type === 'delete') {
+      setKeyboardPreview((currentValue) => currentValue.slice(0, -1))
+      setKeyboardStatus('Deleted one preview letter.')
+      return
+    }
+
+    setKeyboardStatus('Submit key received; gameplay submission remains disabled until Phase 4.')
+  }, [])
+
+  useKeyboardInput({ disabled: isDialogOpen, onInput: handleKeyboardInput })
 
   return (
     <>
@@ -101,6 +131,19 @@ function App() {
                 <LoadingState label="Preparing future game surfaces" />
                 <Button onClick={() => setIsDialogOpen(true)} variant="primary">Review shell notes</Button>
               </Panel>
+              <Panel className="space-y-4" tone="muted">
+                <div className="space-y-2">
+                  <h2 className="text-xl font-bold text-white">Keyboard foundation</h2>
+                  <p className="text-sm leading-6 text-slate-300">
+                    Physical and on-screen keyboard input is normalized for future gameplay. Letter colors below are derived from canonical tile-state results.
+                  </p>
+                </div>
+                <div aria-live="polite" className="rounded-2xl border border-slate-700 bg-slate-950/70 p-3 text-sm text-slate-200">
+                  <p className="font-semibold text-cyan-100">Preview input: {keyboardPreview || 'empty'}</p>
+                  <p className="mt-1 text-slate-300">{keyboardStatus}</p>
+                </div>
+                <Keyboard letterStates={previewLetterStates} onInput={handleKeyboardInput} />
+              </Panel>
               {activeRoute.id === 'admin' ? (
                 <ErrorState
                   message="Protected refresh controls are intentionally unavailable until the Supabase admin phase."
@@ -116,10 +159,10 @@ function App() {
         description="A non-gameplay modal used to verify the reusable dialog pattern, Escape handling, labels, and focusable close control."
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        title="Phase 3.2 shell notes"
+        title="Phase 3.3 shell notes"
       >
         <p>
-          The shell now has reusable icy visual tokens, accessible button styles, panel surfaces, toast notifications, loading states, error states, and this dialog primitive for future phases.
+          The shell now has reusable icy visual tokens, accessible button styles, panel surfaces, toast notifications, loading states, error states, dialog behavior, and keyboard input plumbing for future gameplay phases.
         </p>
       </Dialog>
       <ToastRegion messages={shellMessages} />
