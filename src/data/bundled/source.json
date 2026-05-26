@@ -1,0 +1,9 @@
+{
+  "datasetUrl": "https://huggingface.co/datasets/ryanjosephkamp/english-openlist",
+  "datasetId": "ryanjosephkamp/english-openlist",
+  "folder": "latest/brrrdle",
+  "revision": "seed-2026-05-25",
+  "generatedAt": "2026-05-25T00:00:00Z",
+  "lengths": [2, 5, 35],
+  "note": "Bundled development seed. The first successful scheduled or admin refresh against the Hugging Face dataset will replace this snapshot with a real upstream revision and the full lengths 2 through 35."
+}

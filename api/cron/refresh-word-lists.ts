@@ -5,11 +5,10 @@ import {
   fetchHuggingFaceRemoteMetadata,
   refreshWordListsFromHuggingFace,
   type RefreshSourceInfo,
-} from '../src/data'
-import { resolveWordListStore } from './_lib/wordListStore'
+} from '../../src/data'
+import { resolveWordListStore } from '../_lib/wordListStore'
 
-const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY
+const CRON_SECRET = process.env.CRON_SECRET
 
 interface JsonResponseInit {
   readonly status: number
@@ -30,31 +29,28 @@ async function fetchJson(url: string, init?: { readonly signal?: AbortSignal }):
   return response.json()
 }
 
+/**
+ * Scheduled Hugging Face word-list refresh.
+ *
+ * Triggered daily by the Vercel Cron schedule declared in `vercel.json`.
+ * Vercel attaches `Authorization: Bearer <CRON_SECRET>` to scheduled
+ * requests, which this handler verifies before doing any work, so the route
+ * is not invokable by anonymous clients.
+ *
+ * The handler fetches the current upstream revision of the
+ * `ryanjosephkamp/english-openlist` dataset, then runs the shared atomic
+ * `refreshWordListsFromHuggingFace` pipeline against `latest/brrrdle/`. If
+ * every length file validates, the validated payload is reported in the
+ * response so the deployment environment can atomically swap the served
+ * dictionaries via its persisted storage of choice (Vercel Blob/KV, Supabase
+ * Storage, etc.). If any single length fails, the previous served
+ * dictionaries remain in place and the failure detail is logged and
+ * returned.
+ */
 export default async function handler(request: Request): Promise<Response> {
-  if (request.method !== 'POST') {
-    return jsonResponse({ error: 'Method not allowed' }, { status: 405 })
-  }
-
   const authorization = request.headers.get('authorization')
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !authorization?.startsWith('Bearer ')) {
+  if (!CRON_SECRET || authorization !== `Bearer ${CRON_SECRET}`) {
     return jsonResponse({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const userResponse = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      authorization,
-    },
-  })
-
-  if (!userResponse.ok) {
-    return jsonResponse({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const user = await userResponse.json() as { readonly app_metadata?: { readonly role?: string; readonly roles?: readonly string[] } }
-  const roles = Array.isArray(user.app_metadata?.roles) ? user.app_metadata.roles : user.app_metadata?.role ? [user.app_metadata.role] : []
-  if (!roles.includes('admin')) {
-    return jsonResponse({ error: 'Forbidden' }, { status: 403 })
   }
 
   let remote
@@ -62,7 +58,7 @@ export default async function handler(request: Request): Promise<Response> {
     remote = await fetchHuggingFaceRemoteMetadata(fetchJson, { apiBase: HUGGING_FACE_API_BASE })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error fetching dataset info.'
-    console.error('admin-refresh: dataset info fetch failed', { message })
+    console.error('cron/refresh-word-lists: dataset info fetch failed', { message })
     return jsonResponse(
       { ok: false, stage: 'dataset-info', message },
       { status: 502 },
@@ -87,7 +83,7 @@ export default async function handler(request: Request): Promise<Response> {
       reason: failure.reason,
       message: failure.message,
     }))
-    console.error('admin-refresh: refresh aborted', {
+    console.error('cron/refresh-word-lists: refresh aborted', {
       revision: result.source.revision,
       failures: failureSummary,
     })
@@ -111,11 +107,15 @@ export default async function handler(request: Request): Promise<Response> {
     validGuesses: file.file.validGuesses.length,
   }))
 
+  // After a successful validate, persist the new set via the configured
+  // production storage layer and atomically swap the served manifest. If no
+  // store is configured, the response still surfaces the validated payload
+  // so a caller can persist it externally if desired.
   const resolvedStore = resolveWordListStore()
   let persistence: Record<string, unknown>
   if (!resolvedStore.store) {
     persistence = { status: 'skipped', reason: resolvedStore.reason }
-    console.warn('admin-refresh: persistence skipped', { reason: resolvedStore.reason })
+    console.warn('cron/refresh-word-lists: persistence skipped', { reason: resolvedStore.reason })
   } else {
     const swap = await resolvedStore.store.atomicSwap({ refresh: result })
     if (swap.status === 'swapped') {
@@ -125,7 +125,7 @@ export default async function handler(request: Request): Promise<Response> {
         previousRevision: swap.previousRevision,
         manifestRevision: swap.manifest.revision,
       }
-      console.log('admin-refresh: persistence swapped', {
+      console.log('cron/refresh-word-lists: persistence swapped', {
         store: resolvedStore.store.name,
         revision: swap.manifest.revision,
         previousRevision: swap.previousRevision,
@@ -139,7 +139,8 @@ export default async function handler(request: Request): Promise<Response> {
         message: swap.message,
         previousServedSetIntact: swap.previousServedSetIntact,
       }
-      console.error('admin-refresh: persistence failed', persistence)
+      console.error('cron/refresh-word-lists: persistence failed', persistence)
+      // Return 502 because the run did not reach a fully consistent state.
       return jsonResponse(
         {
           ok: false,
@@ -153,12 +154,15 @@ export default async function handler(request: Request): Promise<Response> {
         { status: 502 },
       )
     } else {
+      // A driver returned 'skipped'. Drivers in this repo don't do that —
+      // the factory returns null instead — but the union allows it for
+      // forward compatibility, so log and surface it cleanly.
       persistence = { status: 'skipped', store: resolvedStore.store.name, reason: swap.reason }
-      console.warn('admin-refresh: persistence skipped by driver', persistence)
+      console.warn('cron/refresh-word-lists: persistence skipped by driver', persistence)
     }
   }
 
-  console.log('admin-refresh: refresh succeeded', {
+  console.log('cron/refresh-word-lists: refresh succeeded', {
     revision: result.source.revision,
     fetchedAt: result.fetchedAt,
     lengthCount: result.files.length,
@@ -173,6 +177,6 @@ export default async function handler(request: Request): Promise<Response> {
       lengths: successSummary,
       persistence,
     },
-    { status: 202 },
+    { status: 200 },
   )
 }
