@@ -1,8 +1,9 @@
-import { useCallback, useMemo, useState } from 'react'
-import { exportGuestProgress, loadGuestProgress, recordCompletedGame, resetGuestProgress, saveGuestProgress, type CompletedGameInput } from '../account'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { createBrrrdleSupabaseClient, createSyncStatus, getCurrentAuthState, loadGuestProgress, recordCompletedGame, resetGuestProgress, saveGuestProgress, sendMagicLink, Settings, signOut, type AuthState, type CompletedGameInput } from '../account'
 import { BUNDLED_WORD_LIST_LENGTHS } from '../data'
 import { DAILY_WORD_LENGTH, MAX_PRACTICE_WORD_LENGTH, MIN_PRACTICE_WORD_LENGTH } from '../game/constants'
-import { Button, Dialog, ErrorState, Layout, LoadingState, Navigation, Panel, ToastRegion, type ToastMessage } from '../ui'
+import { Button, Dialog, Layout, LoadingState, Navigation, Panel, ToastRegion, type ToastMessage } from '../ui'
+import { AdminPanel } from '../admin'
 import { StatsDashboard } from '../stats'
 import { GoGame } from './GoGame'
 import { OgGame } from './OgGame'
@@ -45,15 +46,23 @@ function RoutePanel({
   keyboardDisabled,
   guestProgress,
   onGameComplete,
+  authState,
   onResetProgress,
   onSelectRoute,
+  onSendMagicLink,
+  onSignOut,
+  syncStatus,
 }: {
+  readonly authState: AuthState
   readonly guestProgress: ReturnType<typeof loadGuestProgress>
   readonly keyboardDisabled?: boolean
   readonly onGameComplete: (input: CompletedGameInput) => void
   readonly onResetProgress: () => void
+  readonly onSendMagicLink: (email: string) => void
+  readonly onSignOut: () => void
   readonly route: AppRoute
   readonly onSelectRoute: (routeId: AppRoute['id']) => void
+  readonly syncStatus: ReturnType<typeof createSyncStatus>
 }) {
   if (route.id === 'home') {
     return (
@@ -84,26 +93,11 @@ function RoutePanel({
   }
 
   if (route.id === 'settings') {
-    return (
-      <section className="space-y-4" aria-labelledby="settings-title">
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-ice-200)]">guest persistence</p>
-        <h2 id="settings-title" className="text-3xl font-bold text-white">Local guest progress</h2>
-        <Panel className="space-y-3 text-sm leading-6 text-slate-300" tone="muted">
-          <p>Guest progress is saved locally with a versioned schema for future migrations.</p>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div><p className="font-semibold text-cyan-100">Level</p><p>{guestProgress.progression.level}</p></div>
-            <div><p className="font-semibold text-cyan-100">XP</p><p>{guestProgress.progression.xp}</p></div>
-            <div><p className="font-semibold text-cyan-100">Coins</p><p>{guestProgress.progression.coins}</p></div>
-          </div>
-          <textarea
-            className="h-40 w-full rounded-2xl border border-slate-700 bg-slate-950 p-3 font-mono text-xs text-slate-200"
-            readOnly
-            value={exportGuestProgress(guestProgress)}
-          />
-          <Button onClick={onResetProgress} variant="secondary">Reset local guest progress</Button>
-        </Panel>
-      </section>
-    )
+    return <Settings authState={authState} guestProgress={guestProgress} onResetProgress={onResetProgress} onSendMagicLink={onSendMagicLink} onSignOut={onSignOut} syncStatus={syncStatus} />
+  }
+
+  if (route.id === 'admin') {
+    return <AdminPanel authState={authState} />
   }
 
   return (
@@ -123,8 +117,8 @@ function RoutePanel({
 const shellMessages: readonly ToastMessage[] = [
   {
     id: 'shell-ready',
-    message: 'Local guest progression, coins, and statistics are active for Phase 7 review.',
-    title: 'progression ready',
+    message: 'Optional Supabase accounts, cloud sync foundations, and protected admin checks are active for Phase 8 review.',
+    title: 'account sync ready',
     tone: 'info',
   },
 ]
@@ -132,6 +126,9 @@ const shellMessages: readonly ToastMessage[] = [
 function App() {
   const [activeRouteId, setActiveRouteId] = useState(DEFAULT_ROUTE_ID)
   const [guestProgress, setGuestProgress] = useState(() => loadGuestProgress())
+  const supabaseClient = useMemo(() => createBrrrdleSupabaseClient(), [])
+  const [authState, setAuthState] = useState<AuthState>(() => supabaseClient ? { status: 'anonymous' } : { status: 'unconfigured' })
+  const [syncStatus] = useState(() => createSyncStatus(supabaseClient ? 'idle' : 'error'))
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const activeRoute = getRouteById(activeRouteId)
   const navigationRoutes = useMemo(() => APP_ROUTES, [])
@@ -147,6 +144,33 @@ function App() {
   const handleResetProgress = useCallback(() => {
     setGuestProgress(resetGuestProgress())
   }, [])
+  const handleSendMagicLink = useCallback((email: string) => {
+    if (!supabaseClient || !email.trim()) {
+      return
+    }
+
+    void sendMagicLink(supabaseClient, email)
+  }, [supabaseClient])
+  const handleSignOut = useCallback(() => {
+    if (!supabaseClient) {
+      return
+    }
+
+    void signOut(supabaseClient).then(() => setAuthState({ status: 'anonymous' }))
+  }, [supabaseClient])
+
+  useEffect(() => {
+    let isMounted = true
+    void getCurrentAuthState(supabaseClient).then((nextAuthState) => {
+      if (isMounted) {
+        setAuthState(nextAuthState)
+      }
+    })
+
+    return () => {
+      isMounted = false
+    }
+  }, [supabaseClient])
 
   return (
     <>
@@ -181,19 +205,13 @@ function App() {
           </section>
 
           <section className="grid gap-4 lg:grid-cols-[1fr_20rem]">
-            <RoutePanel guestProgress={guestProgress} keyboardDisabled={isDialogOpen} onGameComplete={handleGameComplete} onResetProgress={handleResetProgress} onSelectRoute={setActiveRouteId} route={activeRoute} />
+            <RoutePanel authState={authState} guestProgress={guestProgress} keyboardDisabled={isDialogOpen} onGameComplete={handleGameComplete} onResetProgress={handleResetProgress} onSelectRoute={setActiveRouteId} onSendMagicLink={handleSendMagicLink} onSignOut={handleSignOut} route={activeRoute} syncStatus={syncStatus} />
             <aside className="space-y-4" aria-label="Interface readiness">
               <Panel className="space-y-4" tone="muted">
                 <h2 className="text-xl font-bold text-white">UI foundation</h2>
                 <LoadingState label="Preparing future game surfaces" />
                 <Button onClick={() => setIsDialogOpen(true)} variant="primary">Review shell notes</Button>
               </Panel>
-              {activeRoute.id === 'admin' ? (
-                <ErrorState
-                  message="Protected refresh controls are intentionally unavailable until the Supabase admin phase."
-                  title="Admin controls locked"
-                />
-              ) : null}
             </aside>
           </section>
         </div>
@@ -203,10 +221,10 @@ function App() {
         description="A non-gameplay modal used to verify the reusable dialog pattern, Escape handling, labels, and focusable close control."
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        title="Phase 7 shell notes"
+        title="Phase 8 shell notes"
       >
         <p>
-          The shell now has reusable icy visual tokens, accessible primitives, keyboard input plumbing, and active og and go daily/practice gameplay, post-game definitions, local guest progression, coins, and stats for Phase 7 review.
+          The shell now has reusable icy visual tokens, accessible primitives, keyboard input plumbing, and active og and go daily/practice gameplay, post-game definitions, local guest progression, optional Supabase account setup, sync foundations, and protected admin route checks for Phase 8 review.
         </p>
       </Dialog>
       <ToastRegion messages={shellMessages} />
