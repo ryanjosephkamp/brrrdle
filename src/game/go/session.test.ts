@@ -66,7 +66,9 @@ describe('go session model', () => {
   })
 
   it('creates practice go sessions with one selected length for all puzzles', () => {
-    expect(getAvailableGoPracticeLengths()).toEqual([2, 5, 35])
+    expect(getAvailableGoPracticeLengths()).toEqual(
+      Array.from({ length: 34 }, (_, index) => index + 2),
+    )
     for (const length of [2, 5, 35]) {
       const setup = createPracticeGoSetup(length, 0)
       expect(setup.wordLength).toBe(length)

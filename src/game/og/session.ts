@@ -1,7 +1,7 @@
 import { BUNDLED_WORD_LIST_LENGTHS, getWordRepository } from '../../data'
 import type { WordEntry } from '../../data'
 import { getDailyOgPuzzle } from '../../data/daily'
-import { DAILY_WORD_LENGTH } from '../constants'
+import { DAILY_WORD_LENGTH, SUPPORTED_PRACTICE_WORD_LENGTHS } from '../constants'
 import { createPuzzleSession, type PuzzleSessionState } from '../session'
 import { getGuessResult } from '../tileStates'
 
@@ -30,7 +30,7 @@ function selectPracticeAnswer(answers: readonly WordEntry[], seed: number): stri
 }
 
 export function getAvailableOgPracticeLengths(): readonly number[] {
-  return BUNDLED_WORD_LIST_LENGTHS.filter((length) => length >= 2 && length <= 35)
+  return SUPPORTED_PRACTICE_WORD_LENGTHS.filter((length) => BUNDLED_WORD_LIST_LENGTHS.includes(length))
 }
 
 export function createDailyOgSetup(date = new Date()): OgPuzzleSetup {

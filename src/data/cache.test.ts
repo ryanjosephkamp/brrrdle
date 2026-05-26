@@ -25,8 +25,8 @@ describe('data cache and statuses', () => {
     expect(second.wordList).toBe(first.wordList)
   })
 
-  it('returns failed status without blocking other playable bundled data', () => {
-    expect(getCachedWordList('practice', 3).status.kind).toBe('failed')
+  it('returns failed status for unsupported lengths without blocking other playable bundled data', () => {
+    expect(getCachedWordList('practice', 1).status.kind).toBe('failed')
     expect(getCachedWordList('practice', 5).status.playable).toBe(true)
   })
 })

@@ -1,5 +1,5 @@
-import type { WordListStore } from '../../src/data/refreshStore'
-import { VercelBlobWordListStore } from './vercelBlobStore'
+import type { WordListStore } from '../../src/data/refreshStore.js'
+import { VercelBlobWordListStore } from './vercelBlobStore.js'
 
 export interface ResolvedWordListStore {
   readonly store: WordListStore | null

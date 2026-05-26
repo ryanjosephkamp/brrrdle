@@ -1,5 +1,5 @@
 import { BUNDLED_WORD_LIST_LENGTHS, getDailyAnswerIndex, getDailyDateKey, getWordRepository } from '../../data'
-import { DAILY_WORD_LENGTH, GO_PUZZLE_COUNT } from '../constants'
+import { DAILY_WORD_LENGTH, GO_PUZZLE_COUNT, SUPPORTED_PRACTICE_WORD_LENGTHS } from '../constants'
 import {
   createPuzzleSession,
   continueAfterLoss,
@@ -75,7 +75,7 @@ function getStatus(puzzles: readonly PuzzleSessionState[], currentPuzzleIndex: n
 }
 
 export function getAvailableGoPracticeLengths(): readonly number[] {
-  return BUNDLED_WORD_LIST_LENGTHS.filter((length) => length >= 2 && length <= 35)
+  return SUPPORTED_PRACTICE_WORD_LENGTHS.filter((length) => BUNDLED_WORD_LIST_LENGTHS.includes(length))
 }
 
 export function createDailyGoSetup(date = new Date()): GoSessionSetup {

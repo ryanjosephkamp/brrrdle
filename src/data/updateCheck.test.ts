@@ -13,10 +13,10 @@ describe('checkForWordListUpdates', () => {
     const result = await checkForWordListUpdates(BUNDLED_REMOTE_METADATA, async () => ({
       version: 'remote-newer',
       generatedAt: '2026-05-26T00:00:00Z',
-      lengths: [2, 5, 35, 6],
+      lengths: [...BUNDLED_REMOTE_METADATA.lengths, 36],
     }))
 
-    expect(result).toMatchObject({ status: 'stale', missingLengths: [6] })
+    expect(result).toMatchObject({ status: 'stale', missingLengths: [36] })
   })
 
   it('degrades gracefully on failed network checks', async () => {

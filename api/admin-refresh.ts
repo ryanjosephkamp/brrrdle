@@ -5,8 +5,8 @@ import {
   fetchHuggingFaceRemoteMetadata,
   refreshWordListsFromHuggingFace,
   type RefreshSourceInfo,
-} from '../src/data'
-import { resolveWordListStore } from './_lib/wordListStore'
+} from '../src/data/index.js'
+import { resolveWordListStore } from './_lib/wordListStore.js'
 
 const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY

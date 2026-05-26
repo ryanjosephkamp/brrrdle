@@ -5,8 +5,8 @@ import {
   fetchHuggingFaceRemoteMetadata,
   refreshWordListsFromHuggingFace,
   type RefreshSourceInfo,
-} from '../../src/data'
-import { resolveWordListStore } from '../_lib/wordListStore'
+} from '../../src/data/index.js'
+import { resolveWordListStore } from '../_lib/wordListStore.js'
 
 const CRON_SECRET = process.env.CRON_SECRET
 

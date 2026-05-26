@@ -23,9 +23,9 @@ describe('wordRepository', () => {
     expect(getValidGuesses({ mode: 'go', scope: 'practice', length: 35 }).has('abcdefghijklmnopqrstuvwxyzabcdefghi')).toBe(true)
   })
 
-  it('returns empty collections for unavailable supported lengths', () => {
-    expect(getAnswerCandidates({ mode: 'og', scope: 'practice', length: 4 })).toEqual([])
-    expect(getValidGuesses({ mode: 'og', scope: 'practice', length: 4 }).size).toBe(0)
+  it('returns populated collections for every supported practice length', () => {
+    expect(getAnswerCandidates({ mode: 'og', scope: 'practice', length: 4 }).length).toBeGreaterThan(0)
+    expect(getValidGuesses({ mode: 'og', scope: 'practice', length: 4 }).size).toBeGreaterThan(0)
   })
 
   it('returns bundled definitions when present', () => {

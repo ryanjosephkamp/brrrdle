@@ -1,4 +1,4 @@
-import { resolveWordListStore } from '../_lib/wordListStore'
+import { resolveWordListStore } from '../_lib/wordListStore.js'
 
 interface JsonResponseInit {
   readonly status: number

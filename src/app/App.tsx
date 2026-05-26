@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createBrrrdleSupabaseClient, createSyncStatus, getCurrentAuthState, loadGuestProgress, recordCompletedGame, resetGuestProgress, saveGuestProgress, sendMagicLink, Settings, signOut, type AuthState, type CompletedGameInput } from '../account'
 import { BUNDLED_WORD_LIST_LENGTHS } from '../data'
 import { DAILY_WORD_LENGTH, MAX_PRACTICE_WORD_LENGTH, MIN_PRACTICE_WORD_LENGTH } from '../game/constants'
-import { Button, Dialog, Layout, LoadingState, Navigation, Panel, ToastRegion, type ToastMessage } from '../ui'
+import { Button, Layout, Navigation, Panel } from '../ui'
 import { AdminPanel } from '../admin'
 import { StatsDashboard } from '../stats'
 import { GoGame } from './GoGame'
@@ -128,22 +128,12 @@ function RoutePanel({
   )
 }
 
-const shellMessages: readonly ToastMessage[] = [
-  {
-    id: 'shell-ready',
-    message: 'Sharing, installability, motion polish, accessibility refinements, and offline shell caching are active for Phase 9 review.',
-    title: 'polish ready',
-    tone: 'info',
-  },
-]
-
 function App() {
   const [activeRouteId, setActiveRouteId] = useState(DEFAULT_ROUTE_ID)
   const [guestProgress, setGuestProgress] = useState(() => loadGuestProgress())
   const supabaseClient = useMemo(() => createBrrrdleSupabaseClient(), [])
   const [authState, setAuthState] = useState<AuthState>(() => supabaseClient ? { status: 'anonymous' } : { status: 'unconfigured' })
   const [syncStatus] = useState(() => createSyncStatus(supabaseClient ? 'idle' : 'error'))
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const activeRoute = getRouteById(activeRouteId)
   const navigationRoutes = useMemo(() => APP_ROUTES, [])
   const handleGameComplete = useCallback((input: CompletedGameInput) => {
@@ -203,62 +193,41 @@ function App() {
   }, [supabaseClient])
 
   return (
-    <>
-      <Layout
-        description="An accessible, mobile-first shell for daily modes, practice, definitions, settings, stats, and future admin controls."
-        eyebrow="brrrdle"
-        navigation={<Navigation activeRouteId={activeRoute.id} onNavigate={setActiveRouteId} routes={navigationRoutes} />}
-        title="Choose your puzzle path."
-      >
-        <div className="space-y-6">
-          <section className="grid gap-4 rounded-3xl border border-[var(--color-ice-300)]/20 bg-cyan-950/20 p-5 text-sm leading-6 text-cyan-50 sm:grid-cols-5">
-            <div>
-              <p className="font-semibold text-cyan-100">Daily launch length</p>
-              <p>{DAILY_WORD_LENGTH} letters for og and go</p>
-            </div>
-            <div>
-              <p className="font-semibold text-cyan-100">Practice range</p>
-              <p>{MIN_PRACTICE_WORD_LENGTH}–{MAX_PRACTICE_WORD_LENGTH} letters</p>
-            </div>
-            <div>
-              <p className="font-semibold text-cyan-100">Bundled seed lengths</p>
-              <p>{BUNDLED_WORD_LIST_LENGTHS.join(', ')}</p>
-            </div>
-            <div>
-              <p className="font-semibold text-cyan-100">Guest level</p>
-              <p>{guestProgress.progression.level} ({guestProgress.progression.xp} XP)</p>
-            </div>
-            <div>
-              <p className="font-semibold text-cyan-100">Coins</p>
-              <p>{guestProgress.progression.coins}</p>
-            </div>
-          </section>
+    <Layout
+      description="An accessible, mobile-first shell for daily modes, practice, definitions, settings, stats, and future admin controls."
+      eyebrow="brrrdle"
+      navigation={<Navigation activeRouteId={activeRoute.id} onNavigate={setActiveRouteId} routes={navigationRoutes} />}
+      title="Choose your puzzle path."
+    >
+      <div className="space-y-6">
+        <section className="grid gap-4 rounded-3xl border border-[var(--color-ice-300)]/20 bg-cyan-950/20 p-5 text-sm leading-6 text-cyan-50 sm:grid-cols-5">
+          <div>
+            <p className="font-semibold text-cyan-100">Daily launch length</p>
+            <p>{DAILY_WORD_LENGTH} letters for og and go</p>
+          </div>
+          <div>
+            <p className="font-semibold text-cyan-100">Practice range</p>
+            <p>{MIN_PRACTICE_WORD_LENGTH}–{MAX_PRACTICE_WORD_LENGTH} letters</p>
+          </div>
+          <div>
+            <p className="font-semibold text-cyan-100">Bundled seed lengths</p>
+            <p>{BUNDLED_WORD_LIST_LENGTHS.join(', ')}</p>
+          </div>
+          <div>
+            <p className="font-semibold text-cyan-100">Guest level</p>
+            <p>{guestProgress.progression.level} ({guestProgress.progression.xp} XP)</p>
+          </div>
+          <div>
+            <p className="font-semibold text-cyan-100">Coins</p>
+            <p>{guestProgress.progression.coins}</p>
+          </div>
+        </section>
 
-          <section className="grid gap-4 lg:grid-cols-[1fr_20rem]">
-            <RoutePanel authState={authState} guestProgress={guestProgress} keyboardDisabled={isDialogOpen} onGameComplete={handleGameComplete} onResetProgress={handleResetProgress} onSelectRoute={setActiveRouteId} onSendMagicLink={handleSendMagicLink} onSpendCoins={handleSpendCoins} onSignOut={handleSignOut} route={activeRoute} syncStatus={syncStatus} />
-            <aside className="space-y-4" aria-label="Interface readiness">
-              <Panel className="space-y-4" tone="muted">
-                <h2 className="text-xl font-bold text-white">Phase 9 polish</h2>
-                <LoadingState label="Checking responsive, share, and offline-ready surfaces" />
-                <Button onClick={() => setIsDialogOpen(true)} variant="primary">Review shell notes</Button>
-              </Panel>
-            </aside>
-          </section>
-        </div>
-      </Layout>
-
-      <Dialog
-        description="A non-gameplay modal used to verify the reusable dialog pattern, Escape handling, labels, and focusable close control."
-        isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        title="Phase 9 shell notes"
-      >
-        <p>
-          The shell now has reusable icy visual tokens, accessible primitives, keyboard input plumbing, and active og and go daily/practice gameplay, post-game definitions, local guest progression, optional Supabase account setup, emoji sharing, PWA shell caching, reduced-motion-aware animation, and accessibility refinements for Phase 9 review.
-        </p>
-      </Dialog>
-      <ToastRegion messages={shellMessages} />
-    </>
+        <section className="grid gap-4">
+          <RoutePanel authState={authState} guestProgress={guestProgress} onGameComplete={handleGameComplete} onResetProgress={handleResetProgress} onSelectRoute={setActiveRouteId} onSendMagicLink={handleSendMagicLink} onSpendCoins={handleSpendCoins} onSignOut={handleSignOut} route={activeRoute} syncStatus={syncStatus} />
+        </section>
+      </div>
+    </Layout>
   )
 }
 

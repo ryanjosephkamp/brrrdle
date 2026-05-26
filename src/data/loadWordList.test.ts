@@ -8,6 +8,12 @@ describe('loadBundledWordList', () => {
     expect(loadBundledWordList('practice', 35).ok).toBe(true)
   })
 
+  it('loads every supported practice length between 2 and 35', () => {
+    for (let length = 2; length <= 35; length += 1) {
+      expect(loadBundledWordList('practice', length).ok).toBe(true)
+    }
+  })
+
   it('rejects practice lengths outside 2 through 35', () => {
     expect(resolveWordListLength('practice', 1)).toMatchObject({ ok: false, reason: 'unsupported-length' })
     expect(resolveWordListLength('practice', 36)).toMatchObject({ ok: false, reason: 'unsupported-length' })
@@ -16,10 +22,6 @@ describe('loadBundledWordList', () => {
   it('locks direct daily loading to five letters', () => {
     expect(resolveWordListLength('daily', 5)).toEqual({ ok: true, length: 5 })
     expect(resolveWordListLength('daily', 6)).toMatchObject({ ok: false, reason: 'daily-length-locked' })
-  })
-
-  it('reports missing bundled lists for supported but unseeded practice lengths', () => {
-    expect(loadBundledWordList('practice', 3)).toMatchObject({ ok: false, reason: 'missing-bundled-list' })
   })
 
   it('returns normalized valid guesses and definitions', () => {

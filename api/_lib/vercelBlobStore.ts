@@ -4,8 +4,8 @@ import type {
   AtomicSwapResult,
   ServedManifest,
   WordListStore,
-} from '../../src/data/refreshStore'
-import { projectManifest } from '../../src/data/refreshStore'
+} from '../../src/data/refreshStore.js'
+import { projectManifest } from '../../src/data/refreshStore.js'
 
 const MANIFEST_PATHNAME = 'word-lists/manifest.json'
 
@@ -38,8 +38,11 @@ function lengthPathname(revision: string, length: number): string {
  */
 export class VercelBlobWordListStore implements WordListStore {
   readonly name = 'vercel-blob'
+  private readonly token: string
 
-  constructor(private readonly token: string) {}
+  constructor(token: string) {
+    this.token = token
+  }
 
   async loadManifest(): Promise<ServedManifest | null> {
     const listed = await list({ prefix: MANIFEST_PATHNAME, token: this.token })

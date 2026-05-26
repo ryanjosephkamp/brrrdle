@@ -12,8 +12,10 @@ describe('og session setup', () => {
     expect(setup.dateKey).toBe('2026-05-26')
   })
 
-  it('offers bundled launch practice lengths and creates matching practice setups', () => {
-    expect(getAvailableOgPracticeLengths()).toEqual([2, 5, 35])
+  it('offers the full launch practice length range and creates matching practice setups', () => {
+    expect(getAvailableOgPracticeLengths()).toEqual(
+      Array.from({ length: 34 }, (_, index) => index + 2),
+    )
     expect(createPracticeOgSetup(2, 0).answer).toHaveLength(2)
     expect(createPracticeOgSetup(5, 1).answer).toHaveLength(5)
     expect(createPracticeOgSetup(35, 0).answer).toHaveLength(35)
