@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { BUNDLED_WORD_LIST_LENGTHS } from '../data'
 import { DAILY_WORD_LENGTH, MAX_PRACTICE_WORD_LENGTH, MIN_PRACTICE_WORD_LENGTH } from '../game/constants'
 import { Button, Dialog, ErrorState, Layout, LoadingState, Navigation, Panel, ToastRegion, type ToastMessage } from '../ui'
+import { GoGame } from './GoGame'
 import { OgGame } from './OgGame'
 import { APP_ROUTES, DEFAULT_ROUTE_ID, getRouteById, getRoutesByGroup, type AppRoute } from './routes'
 
@@ -19,6 +20,21 @@ function ModeCard({ route, onSelect }: { readonly route: AppRoute; readonly onSe
         <p className="mt-4 text-sm font-semibold text-cyan-100">{route.wordLength} letters</p>
       ) : null}
     </button>
+  )
+}
+
+
+function PracticeGameSwitcher({ keyboardDisabled }: { readonly keyboardDisabled?: boolean }) {
+  const [practiceMode, setPracticeMode] = useState<'og' | 'go'>('og')
+
+  return (
+    <section className="space-y-5" aria-label="Practice mode selector">
+      <div className="flex flex-wrap gap-2 rounded-2xl border border-slate-700 bg-slate-950/60 p-2">
+        <Button onClick={() => setPracticeMode('og')} variant={practiceMode === 'og' ? 'primary' : 'secondary'}>og practice</Button>
+        <Button onClick={() => setPracticeMode('go')} variant={practiceMode === 'go' ? 'primary' : 'secondary'}>go practice</Button>
+      </div>
+      {practiceMode === 'og' ? <OgGame keyboardDisabled={keyboardDisabled} scope="practice" /> : <GoGame keyboardDisabled={keyboardDisabled} scope="practice" />}
+    </section>
   )
 }
 
@@ -47,8 +63,12 @@ function RoutePanel({
     return <OgGame keyboardDisabled={keyboardDisabled} scope="daily" />
   }
 
+  if (route.id === 'go-daily') {
+    return <GoGame keyboardDisabled={keyboardDisabled} scope="daily" />
+  }
+
   if (route.id === 'practice') {
-    return <OgGame keyboardDisabled={keyboardDisabled} scope="practice" />
+    return <PracticeGameSwitcher keyboardDisabled={keyboardDisabled} />
   }
 
   return (
@@ -68,8 +88,8 @@ function RoutePanel({
 const shellMessages: readonly ToastMessage[] = [
   {
     id: 'shell-ready',
-    message: 'Daily and practice og gameplay are active for Phase 4 review.',
-    title: 'og gameplay ready',
+    message: 'Daily/practice og and go gameplay are active for Phase 5 review.',
+    title: 'go gameplay ready',
     tone: 'info',
   },
 ]
@@ -127,10 +147,10 @@ function App() {
         description="A non-gameplay modal used to verify the reusable dialog pattern, Escape handling, labels, and focusable close control."
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        title="Phase 4 shell notes"
+        title="Phase 5 shell notes"
       >
         <p>
-          The shell now has reusable icy visual tokens, accessible primitives, keyboard input plumbing, and active og daily/practice gameplay for Phase 4 review.
+          The shell now has reusable icy visual tokens, accessible primitives, keyboard input plumbing, and active og and go daily/practice gameplay for Phase 5 review.
         </p>
       </Dialog>
       <ToastRegion messages={shellMessages} />
