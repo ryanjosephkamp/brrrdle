@@ -5,6 +5,10 @@ All notable changes to `brrrdle` will be documented in this file.
 ## Unreleased
 
 ### Added
+- Added Phase 1 UI-independent core game engine domain types and constants.
+- Added canonical Wordle-style tile coloring with duplicate-letter accounting.
+- Added guess validation, hard-mode constraints, and puzzle session state transitions.
+- Added Vitest unit tests for Phase 1 game engine behavior.
 - Initialized Phase 0 React, TypeScript, Vite, and Tailwind CSS scaffold.
 - Added baseline project directories for future implementation phases.
 - Added Vercel, environment, README, and GitHub Pages/Jekyll documentation foundations.
