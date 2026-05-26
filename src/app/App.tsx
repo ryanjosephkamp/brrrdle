@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { exportGuestProgress, loadGuestProgress, recordCompletedGame, resetGuestProgress, saveGuestProgress, type CompletedGameInput } from '../account'
 import { BUNDLED_WORD_LIST_LENGTHS } from '../data'
 import { DAILY_WORD_LENGTH, MAX_PRACTICE_WORD_LENGTH, MIN_PRACTICE_WORD_LENGTH } from '../game/constants'
 import { Button, Dialog, ErrorState, Layout, LoadingState, Navigation, Panel, ToastRegion, type ToastMessage } from '../ui'
+import { StatsDashboard } from '../stats'
 import { GoGame } from './GoGame'
 import { OgGame } from './OgGame'
 import { APP_ROUTES, DEFAULT_ROUTE_ID, getRouteById, getRoutesByGroup, type AppRoute } from './routes'
@@ -24,7 +26,7 @@ function ModeCard({ route, onSelect }: { readonly route: AppRoute; readonly onSe
 }
 
 
-function PracticeGameSwitcher({ keyboardDisabled }: { readonly keyboardDisabled?: boolean }) {
+function PracticeGameSwitcher({ keyboardDisabled, onGameComplete }: { readonly keyboardDisabled?: boolean; readonly onGameComplete: (input: CompletedGameInput) => void }) {
   const [practiceMode, setPracticeMode] = useState<'og' | 'go'>('og')
 
   return (
@@ -33,7 +35,7 @@ function PracticeGameSwitcher({ keyboardDisabled }: { readonly keyboardDisabled?
         <Button onClick={() => setPracticeMode('og')} variant={practiceMode === 'og' ? 'primary' : 'secondary'}>og practice</Button>
         <Button onClick={() => setPracticeMode('go')} variant={practiceMode === 'go' ? 'primary' : 'secondary'}>go practice</Button>
       </div>
-      {practiceMode === 'og' ? <OgGame keyboardDisabled={keyboardDisabled} scope="practice" /> : <GoGame keyboardDisabled={keyboardDisabled} scope="practice" />}
+      {practiceMode === 'og' ? <OgGame keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} scope="practice" /> : <GoGame keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} scope="practice" />}
     </section>
   )
 }
@@ -41,9 +43,15 @@ function PracticeGameSwitcher({ keyboardDisabled }: { readonly keyboardDisabled?
 function RoutePanel({
   route,
   keyboardDisabled,
+  guestProgress,
+  onGameComplete,
+  onResetProgress,
   onSelectRoute,
 }: {
+  readonly guestProgress: ReturnType<typeof loadGuestProgress>
   readonly keyboardDisabled?: boolean
+  readonly onGameComplete: (input: CompletedGameInput) => void
+  readonly onResetProgress: () => void
   readonly route: AppRoute
   readonly onSelectRoute: (routeId: AppRoute['id']) => void
 }) {
@@ -60,15 +68,42 @@ function RoutePanel({
   }
 
   if (route.id === 'og-daily') {
-    return <OgGame keyboardDisabled={keyboardDisabled} scope="daily" />
+    return <OgGame keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} scope="daily" />
   }
 
   if (route.id === 'go-daily') {
-    return <GoGame keyboardDisabled={keyboardDisabled} scope="daily" />
+    return <GoGame keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} scope="daily" />
   }
 
   if (route.id === 'practice') {
-    return <PracticeGameSwitcher keyboardDisabled={keyboardDisabled} />
+    return <PracticeGameSwitcher keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} />
+  }
+
+  if (route.id === 'stats') {
+    return <StatsDashboard stats={guestProgress.stats} />
+  }
+
+  if (route.id === 'settings') {
+    return (
+      <section className="space-y-4" aria-labelledby="settings-title">
+        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-ice-200)]">guest persistence</p>
+        <h2 id="settings-title" className="text-3xl font-bold text-white">Local guest progress</h2>
+        <Panel className="space-y-3 text-sm leading-6 text-slate-300" tone="muted">
+          <p>Guest progress is saved locally with a versioned schema for future migrations.</p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div><p className="font-semibold text-cyan-100">Level</p><p>{guestProgress.progression.level}</p></div>
+            <div><p className="font-semibold text-cyan-100">XP</p><p>{guestProgress.progression.xp}</p></div>
+            <div><p className="font-semibold text-cyan-100">Coins</p><p>{guestProgress.progression.coins}</p></div>
+          </div>
+          <textarea
+            className="h-40 w-full rounded-2xl border border-slate-700 bg-slate-950 p-3 font-mono text-xs text-slate-200"
+            readOnly
+            value={exportGuestProgress(guestProgress)}
+          />
+          <Button onClick={onResetProgress} variant="secondary">Reset local guest progress</Button>
+        </Panel>
+      </section>
+    )
   }
 
   return (
@@ -88,17 +123,30 @@ function RoutePanel({
 const shellMessages: readonly ToastMessage[] = [
   {
     id: 'shell-ready',
-    message: 'Daily/practice gameplay now shows post-game definitions for Phase 6 review.',
-    title: 'definitions ready',
+    message: 'Local guest progression, coins, and statistics are active for Phase 7 review.',
+    title: 'progression ready',
     tone: 'info',
   },
 ]
 
 function App() {
   const [activeRouteId, setActiveRouteId] = useState(DEFAULT_ROUTE_ID)
+  const [guestProgress, setGuestProgress] = useState(() => loadGuestProgress())
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const activeRoute = getRouteById(activeRouteId)
   const navigationRoutes = useMemo(() => APP_ROUTES, [])
+  const handleGameComplete = useCallback((input: CompletedGameInput) => {
+    setGuestProgress((currentProgress) => {
+      const nextProgress = recordCompletedGame(input, currentProgress)
+      if (nextProgress !== currentProgress) {
+        saveGuestProgress(nextProgress)
+      }
+      return nextProgress
+    })
+  }, [])
+  const handleResetProgress = useCallback(() => {
+    setGuestProgress(resetGuestProgress())
+  }, [])
 
   return (
     <>
@@ -109,7 +157,7 @@ function App() {
         title="Choose your puzzle path."
       >
         <div className="space-y-6">
-          <section className="grid gap-4 rounded-3xl border border-[var(--color-ice-300)]/20 bg-cyan-950/20 p-5 text-sm leading-6 text-cyan-50 sm:grid-cols-3">
+          <section className="grid gap-4 rounded-3xl border border-[var(--color-ice-300)]/20 bg-cyan-950/20 p-5 text-sm leading-6 text-cyan-50 sm:grid-cols-5">
             <div>
               <p className="font-semibold text-cyan-100">Daily launch length</p>
               <p>{DAILY_WORD_LENGTH} letters for og and go</p>
@@ -122,10 +170,18 @@ function App() {
               <p className="font-semibold text-cyan-100">Bundled seed lengths</p>
               <p>{BUNDLED_WORD_LIST_LENGTHS.join(', ')}</p>
             </div>
+            <div>
+              <p className="font-semibold text-cyan-100">Guest level</p>
+              <p>{guestProgress.progression.level} ({guestProgress.progression.xp} XP)</p>
+            </div>
+            <div>
+              <p className="font-semibold text-cyan-100">Coins</p>
+              <p>{guestProgress.progression.coins}</p>
+            </div>
           </section>
 
           <section className="grid gap-4 lg:grid-cols-[1fr_20rem]">
-            <RoutePanel keyboardDisabled={isDialogOpen} onSelectRoute={setActiveRouteId} route={activeRoute} />
+            <RoutePanel guestProgress={guestProgress} keyboardDisabled={isDialogOpen} onGameComplete={handleGameComplete} onResetProgress={handleResetProgress} onSelectRoute={setActiveRouteId} route={activeRoute} />
             <aside className="space-y-4" aria-label="Interface readiness">
               <Panel className="space-y-4" tone="muted">
                 <h2 className="text-xl font-bold text-white">UI foundation</h2>
@@ -147,10 +203,10 @@ function App() {
         description="A non-gameplay modal used to verify the reusable dialog pattern, Escape handling, labels, and focusable close control."
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        title="Phase 6 shell notes"
+        title="Phase 7 shell notes"
       >
         <p>
-          The shell now has reusable icy visual tokens, accessible primitives, keyboard input plumbing, and active og and go daily/practice gameplay plus post-game definitions for Phase 6 review.
+          The shell now has reusable icy visual tokens, accessible primitives, keyboard input plumbing, and active og and go daily/practice gameplay, post-game definitions, local guest progression, coins, and stats for Phase 7 review.
         </p>
       </Dialog>
       <ToastRegion messages={shellMessages} />

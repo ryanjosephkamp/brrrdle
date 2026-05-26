@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BUNDLED_WORD_LIST_LENGTHS } from '../data'
+import type { CompletedGameInput } from '../account'
 import { DefinitionPanel } from '../definitions'
 import {
   createDailyOgSetup,
@@ -24,6 +25,7 @@ import { classNames } from '../ui/classNames'
 
 interface OgGameProps {
   readonly keyboardDisabled?: boolean
+  readonly onGameComplete?: (input: CompletedGameInput) => void
   readonly scope: 'daily' | 'practice'
 }
 
@@ -89,6 +91,7 @@ function GuessGrid({ session }: { readonly session: PuzzleSessionState }) {
 
 function OgGameSession({
   keyboardDisabled,
+  onGameComplete,
   onPracticeLengthChange,
   onPracticeSeedChange,
   practiceLength,
@@ -97,6 +100,7 @@ function OgGameSession({
   setup,
 }: {
   readonly keyboardDisabled: boolean
+  readonly onGameComplete?: (input: CompletedGameInput) => void
   readonly onPracticeLengthChange: (length: number) => void
   readonly onPracticeSeedChange: () => void
   readonly practiceLength: number
@@ -116,6 +120,23 @@ function OgGameSession({
       session: serializeOgSession(session),
     })
   }, [scope, session, setup.dateKey])
+
+  useEffect(() => {
+    if (session.status === 'playing') {
+      return
+    }
+
+    onGameComplete?.({
+      attemptsUsed: session.guesses.length,
+      gameId: scope === 'daily' ? `og:daily:${setup.dateKey}` : `og:practice:${practiceLength}:${setup.answer}`,
+      maxAttempts: session.maxAttempts,
+      mode: 'og',
+      scope,
+      status: session.status,
+      word: session.answer,
+      wordLength: session.wordLength,
+    })
+  }, [onGameComplete, practiceLength, scope, session.answer, session.guesses.length, session.maxAttempts, session.status, session.wordLength, setup.answer, setup.dateKey])
 
   const handleInput = useCallback((input: KeyboardInput) => {
     setSession((currentSession) => {
@@ -218,7 +239,7 @@ function OgGameSession({
   )
 }
 
-export function OgGame({ keyboardDisabled = false, scope }: OgGameProps) {
+export function OgGame({ keyboardDisabled = false, onGameComplete, scope }: OgGameProps) {
   const practiceLengths = useMemo(() => getAvailableOgPracticeLengths(), [])
   const [practiceLength, setPracticeLength] = useState(5)
   const [practiceSeed, setPracticeSeed] = useState(0)
@@ -232,6 +253,7 @@ export function OgGame({ keyboardDisabled = false, scope }: OgGameProps) {
     <OgGameSession
       key={sessionKey}
       keyboardDisabled={keyboardDisabled}
+      onGameComplete={onGameComplete}
       onPracticeLengthChange={setPracticeLength}
       onPracticeSeedChange={() => setPracticeSeed((seed) => seed + 1)}
       practiceLength={practiceLength}

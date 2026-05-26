@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BUNDLED_WORD_LIST_LENGTHS } from '../data'
+import type { CompletedGameInput } from '../account'
 import { DefinitionPanel } from '../definitions'
 import {
   createDailyGoSetup,
@@ -26,6 +27,7 @@ import { classNames } from '../ui/classNames'
 
 interface GoGameProps {
   readonly keyboardDisabled?: boolean
+  readonly onGameComplete?: (input: CompletedGameInput) => void
   readonly scope: 'daily' | 'practice'
 }
 
@@ -91,6 +93,7 @@ function GuessGrid({ session }: { readonly session: PuzzleSessionState }) {
 
 function GoGameSession({
   keyboardDisabled,
+  onGameComplete,
   onPracticeLengthChange,
   onPracticeSeedChange,
   practiceLength,
@@ -99,6 +102,7 @@ function GoGameSession({
   setup,
 }: {
   readonly keyboardDisabled: boolean
+  readonly onGameComplete?: (input: CompletedGameInput) => void
   readonly onPracticeLengthChange: (length: number) => void
   readonly onPracticeSeedChange: () => void
   readonly practiceLength: number
@@ -118,6 +122,27 @@ function GoGameSession({
       session: serializeGoSession(session),
     })
   }, [scope, session, setup.dateKey])
+
+  useEffect(() => {
+    if (session.status === 'playing') {
+      return
+    }
+
+    const attemptsUsed = session.puzzles.reduce((total, puzzle) => total + puzzle.guesses.length, 0)
+    const maxAttempts = session.puzzles.reduce((total, puzzle) => total + puzzle.maxAttempts, 0)
+    const puzzleCount = session.status === 'won' ? session.puzzles.length : session.currentPuzzleIndex + 1
+    onGameComplete?.({
+      attemptsUsed,
+      gameId: scope === 'daily' ? `go:daily:${setup.dateKey}` : `go:practice:${practiceLength}:${setup.puzzles.map((puzzle) => puzzle.answer).join('-')}`,
+      maxAttempts,
+      mode: 'go',
+      puzzleCount,
+      scope,
+      status: session.status,
+      word: session.status === 'won' ? session.puzzles.map((puzzle) => puzzle.answer).join(',') : session.puzzles[session.currentPuzzleIndex].answer,
+      wordLength: session.wordLength,
+    })
+  }, [onGameComplete, practiceLength, scope, session.currentPuzzleIndex, session.puzzles, session.status, session.wordLength, setup.dateKey, setup.puzzles])
 
   const handleInput = useCallback((input: KeyboardInput) => {
     setSession((currentSession) => {
@@ -241,7 +266,7 @@ function GoGameSession({
   )
 }
 
-export function GoGame({ keyboardDisabled = false, scope }: GoGameProps) {
+export function GoGame({ keyboardDisabled = false, onGameComplete, scope }: GoGameProps) {
   const practiceLengths = useMemo(() => getAvailableGoPracticeLengths(), [])
   const [practiceLength, setPracticeLength] = useState(5)
   const [practiceSeed, setPracticeSeed] = useState(0)
@@ -255,6 +280,7 @@ export function GoGame({ keyboardDisabled = false, scope }: GoGameProps) {
     <GoGameSession
       key={sessionKey}
       keyboardDisabled={keyboardDisabled}
+      onGameComplete={onGameComplete}
       onPracticeLengthChange={setPracticeLength}
       onPracticeSeedChange={() => setPracticeSeed((seed) => seed + 1)}
       practiceLength={practiceLength}
