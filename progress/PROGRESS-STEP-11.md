@@ -5,7 +5,7 @@
 - **Implementation-plan reference**: `AGENT-IMPLEMENTATION-PLAN.md`, Phase 11
 - **Report file**: `progress/PROGRESS-STEP-11.md`
 - **Date updated**: 2026-05-26
-- **Status**: Complete — production release preparation in progress
+- **Status**: Complete — release PR ready; awaiting review before merge/deploy
 
 ## Summary of Changes
 - Ran full automated release verification for the implemented v1 launch scope.
@@ -15,6 +15,7 @@
 - Updated release/deployment docs to document update checks, protected `/api/admin-refresh`, Hard Mode, and Pay-to-Continue verification.
 - Updated `README.md` and `CHANGELOG.md` for final release readiness.
 - Finalized production release preparation docs covering Vercel env handling, `/api/admin-refresh`, PWA assets, and the approval gate before merge/deploy.
+- Re-ran release-preparation verification after documentation/progress updates.
 - Completed production-preview smoke checks for daily fixed length, practice launch lengths, Pay-to-Continue, settings/export/reset, admin locked state, manifest, service worker, and preview shell assets.
 
 ## Files Changed
@@ -52,6 +53,13 @@
   - Static secret/config review; matches are public placeholder Supabase env names/values or explicit warnings, not committed secrets.
   - Progress CSV validation.
   - CodeQL/security review after Phase 11 changes: 0 alerts.
+  - Release-prep follow-up: `npm ci`.
+  - Release-prep follow-up: `npm run test` — 29 test files, 97 tests passed.
+  - Release-prep follow-up: `npm run lint`.
+  - Release-prep follow-up: `npm run build`.
+  - Release-prep follow-up: `git diff --check`.
+  - Release-prep follow-up: manifest and `vercel.json` JSON validation.
+  - Release-prep follow-up: CodeQL skipped as trivial docs/env-example/progress-only changes.
 - **Checks not run**:
   - Lighthouse score target.
   - Live Vercel deployment.
@@ -78,4 +86,4 @@
 - **Exact approval needed, if any**: Explicit approval is still required before merging the PR or triggering production deployment.
 
 ## Additional Notes / Annotations
-- Phase 11 is complete. Production release preparation has started after explicit approval; deployment remains blocked until PR review and explicit production deployment approval.
+- Phase 11 is complete. Production release preparation docs and verification are complete after explicit approval; deployment remains blocked until PR review and explicit production deployment approval.
