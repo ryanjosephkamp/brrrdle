@@ -11,7 +11,7 @@ Phase 10 documentation is in progress. Implemented foundations include:
 - React 19 + TypeScript + Vite + Tailwind CSS v4 app shell.
 - Daily `og` and `go` modes fixed at 5 letters for launch.
 - Practice gameplay using available launch seed lengths in the approved 2–35 range.
-- Hard Mode, keyboard input, definitions, local guest persistence, progression/statistics, optional Supabase account sync, protected admin-route foundations, sharing, and PWA shell caching.
+- Hard Mode, keyboard input, definitions, local guest persistence, progression/statistics, Pay-to-Continue, optional Supabase account sync, protected admin-route foundations, sharing, and PWA shell caching.
 - GitHub Pages + Jekyll docs in `docs/`.
 
 ## Local development

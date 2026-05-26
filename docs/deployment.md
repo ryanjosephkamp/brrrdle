@@ -44,6 +44,21 @@ Deployment checklist:
 4. Deploy with the default Vercel build command from `vercel.json`.
 5. Confirm the app loads, daily modes remain 5 letters, practice routes load, sharing works after a completed game, and the manifest/service worker are available.
 
+## Word-list update checks and manual refresh
+
+The v1 data strategy is hybrid:
+
+- Bundled word-list seed data ships with the Vite production build.
+- Runtime update-check helpers can compare bundled metadata with newer production metadata.
+- Protected manual refresh is exposed through `/api/admin-refresh` and must remain limited to authenticated Supabase users with the `admin` role.
+
+Production verification checklist:
+
+1. Confirm the deployed bundle contains the expected launch seed lengths.
+2. Confirm non-admin users cannot trigger `/api/admin-refresh`.
+3. Confirm authenticated admin users can call `/api/admin-refresh` with `POST` where Supabase auth is configured.
+4. Confirm failed update checks leave bundled data available so gameplay is not blocked.
+
 ## GitHub Pages + Jekyll docs deployment
 
 The docs surface lives in `docs/` and uses the `minima` Jekyll theme through `docs/_config.yml`.
@@ -70,6 +85,8 @@ Manual smoke checklist:
 - `og` daily loads at 5 letters.
 - `go` daily loads at 5 letters.
 - Practice mode can select available launch seed lengths.
+- Hard Mode rejects guesses that violate revealed feedback.
+- Pay-to-Continue appears after losses, blocks insufficient coin balances, and spends coins for one more attempt when affordable.
 - Post-game definitions and Google search fallback remain available.
 - Share text appears after completion and can be shared or copied where supported.
 - Settings account panel clearly reports whether Supabase is configured.
