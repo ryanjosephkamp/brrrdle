@@ -5,7 +5,7 @@
 - **Implementation-plan reference**: `AGENT-IMPLEMENTATION-PLAN.md`, Phase 3
 - **Report file**: `progress/PROGRESS-STEP-3.md`
 - **Date updated**: 2026-05-26
-- **Status**: In progress — Step 3.2 complete, awaiting user confirmation before Step 3.3
+- **Status**: Complete — awaiting user approval before Phase 4
 
 ## Summary of Changes
 - Added minimal app route definitions for home, daily `og`, daily `go`, practice, definitions, stats, settings, and admin shell destinations.
@@ -20,6 +20,10 @@
 - Integrated UI primitives into the shell without enabling unfinished gameplay, persistence, definitions, account, or admin behavior.
 - Added a non-gameplay dialog smoke surface and admin locked-state alert for accessibility/state verification.
 - Added a tiny class-name helper and unit test for reusable UI composition.
+- Added physical keyboard input normalization and a reusable `useKeyboardInput` hook.
+- Added keyboard state derivation from canonical `GuessResult` tile states produced by `getTileStates`/`getGuessResult`.
+- Added a responsive on-screen keyboard component with letter, submit, and delete controls.
+- Integrated a non-gameplay keyboard preview into the shell to smoke-test physical and on-screen input without exposing gameplay submission.
 
 ## Files Changed
 - `CHANGELOG.md`
@@ -29,9 +33,13 @@
 - `src/app/App.tsx`
 - `src/app/routes.ts`
 - `src/app/routes.test.ts`
+- `src/game/index.ts`
+- `src/game/useKeyboardInput.ts`
+- `src/game/useKeyboardInput.test.ts`
 - `src/index.css`
 - `src/ui/Button.tsx`
 - `src/ui/Dialog.tsx`
+- `src/ui/Keyboard.tsx`
 - `src/ui/Layout.tsx`
 - `src/ui/Navigation.tsx`
 - `src/ui/Panel.tsx`
@@ -43,39 +51,42 @@
 
 ## Verification
 - **Checks run**:
-  - `npm ci` baseline dependency install from lockfile before edits.
-  - Baseline `npm run test`, `npm run lint`, and `npm run build` before Step 3.2 edits.
-  - `npm run test` — 12 test files, 53 tests passed.
+  - `npm ci` baseline dependency install from lockfile before Step 3.3 edits.
+  - Baseline `npm run test`, `npm run lint`, and `npm run build` before Step 3.3 edits.
+  - `npm run test` — 13 test files, 57 tests passed.
   - `npm run lint`.
   - `npm run build`.
   - Browser smoke check at mobile viewport `390x844`.
   - Browser smoke check at desktop viewport `1280x900`.
-  - Dialog smoke check: open via keyboard-focusable button and close with `Escape`.
-  - Keyboard tab navigation smoke check reached primary shell controls and the shell notes control.
-  - Admin route smoke check displayed the locked-state alert.
+  - Step 3.2 dialog smoke check: open via keyboard-focusable button and close with `Escape`.
+  - Step 3.2 keyboard tab navigation smoke check reached primary shell controls and the shell notes control.
+  - Step 3.2 admin route smoke check displayed the locked-state alert.
+  - Step 3.3 physical keyboard smoke check accepted a letter and submit key in the preview surface.
+  - Step 3.3 on-screen keyboard smoke check accepted a letter and delete key in the preview surface.
   - Console check showed no application errors.
   - Progress CSV validation.
-  - CodeQL/security review after Step 3.2 changes: 0 alerts.
+  - CodeQL/security review after Step 3.3 changes: 0 alerts.
 - **Checks not run**:
   - Full automated accessibility audit.
   - Gameplay smoke tests.
 - **Reason any checks were skipped**:
-  - Step 3.2 establishes shell and design-system primitives only; gameplay is scheduled for later phases.
+  - Phase 3 establishes shell, UI, and keyboard foundations only; gameplay is scheduled for Phase 4 and later.
   - No automated accessibility tooling exists in the repository yet, so accessibility checks were manual smoke checks.
 
 ## Blockers, Errors, or Critical Notes
 - No blockers.
-- During mobile smoke testing, the toast region initially intercepted the shell notes button; the toast region was corrected to be non-interactive before completion.
+- During Step 3.2 mobile smoke testing, the toast region initially intercepted the shell notes button; the toast region was corrected to be non-interactive before completion.
 - Shell routes intentionally expose placeholders only; no unfinished gameplay, persistence, definitions, account, or admin behavior is active.
+- Step 3.3 keyboard submit is intentionally preview-only and does not submit gameplay guesses until Phase 4.
 
 ## User Action Required Before Next Step
-- Review Step 3.2 design tokens, UI primitives, accessibility shell states, tests, changelog, and progress artifacts.
-- Provide explicit approval before Step 3.3 begins.
+- Review Phase 3 app shell, design tokens, UI primitives, keyboard foundation, tests, changelog, and progress artifacts.
+- Provide explicit approval before Phase 4 begins.
 
 ## Authorization to Proceed
 - **Safe/authorized to proceed to next major step?**: Yes, pending explicit user approval.
-- **Next major step**: Phase 3 Step 3.3 — Keyboard Input Foundation.
-- **Exact approval needed, if any**: Please reply with explicit approval such as “Proceed to Step 3.3” or “APPROVE Phase 3 Step 3.3”.
+- **Next major step**: Phase 4 — `og` Mode Gameplay.
+- **Exact approval needed, if any**: Please reply with explicit approval such as “Proceed to Phase 4” or “APPROVE Phase 4”.
 
 ## Additional Notes / Annotations
-- Phase 3 remains open until Step 3.3 is completed, verified, and approved.
+- Phase 3 is complete and awaiting approval to proceed to Phase 4.
