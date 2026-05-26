@@ -88,8 +88,8 @@ function RoutePanel({
 const shellMessages: readonly ToastMessage[] = [
   {
     id: 'shell-ready',
-    message: 'Daily/practice og and go gameplay are active for Phase 5 review.',
-    title: 'go gameplay ready',
+    message: 'Daily/practice gameplay now shows post-game definitions for Phase 6 review.',
+    title: 'definitions ready',
     tone: 'info',
   },
 ]
@@ -147,10 +147,10 @@ function App() {
         description="A non-gameplay modal used to verify the reusable dialog pattern, Escape handling, labels, and focusable close control."
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        title="Phase 5 shell notes"
+        title="Phase 6 shell notes"
       >
         <p>
-          The shell now has reusable icy visual tokens, accessible primitives, keyboard input plumbing, and active og and go daily/practice gameplay for Phase 5 review.
+          The shell now has reusable icy visual tokens, accessible primitives, keyboard input plumbing, and active og and go daily/practice gameplay plus post-game definitions for Phase 6 review.
         </p>
       </Dialog>
       <ToastRegion messages={shellMessages} />

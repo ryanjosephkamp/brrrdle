@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BUNDLED_WORD_LIST_LENGTHS } from '../data'
+import { DefinitionPanel } from '../definitions'
 import {
   createDailyGoSetup,
   createGoSession,
@@ -227,6 +228,14 @@ function GoGameSession({
         </div>
 
         <Keyboard disabled={session.status !== 'playing'} letterStates={letterStates} onInput={handleInput} />
+
+        <DefinitionPanel
+          enabled={session.status !== 'playing'}
+          mode="go"
+          scope={scope}
+          word={currentPuzzle.answer}
+          wordLength={currentPuzzle.wordLength}
+        />
       </Panel>
     </section>
   )

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BUNDLED_WORD_LIST_LENGTHS } from '../data'
+import { DefinitionPanel } from '../definitions'
 import {
   createDailyOgSetup,
   createOgSession,
@@ -204,6 +205,14 @@ function OgGameSession({
         </div>
 
         <Keyboard disabled={session.status !== 'playing'} letterStates={letterStates} onInput={handleInput} />
+
+        <DefinitionPanel
+          enabled={session.status !== 'playing'}
+          mode="og"
+          scope={scope}
+          word={session.answer}
+          wordLength={session.wordLength}
+        />
       </Panel>
     </section>
   )
