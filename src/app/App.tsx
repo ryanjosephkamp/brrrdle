@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { BUNDLED_WORD_LIST_LENGTHS } from '../data'
 import { DAILY_WORD_LENGTH, MAX_PRACTICE_WORD_LENGTH, MIN_PRACTICE_WORD_LENGTH } from '../game/constants'
-import { deriveKeyboardLetterStates, getGuessResult, useKeyboardInput, type KeyboardInput } from '../game'
-import { Button, Dialog, ErrorState, Keyboard, Layout, LoadingState, Navigation, Panel, ToastRegion, type ToastMessage } from '../ui'
+import { Button, Dialog, ErrorState, Layout, LoadingState, Navigation, Panel, ToastRegion, type ToastMessage } from '../ui'
+import { OgGame } from './OgGame'
 import { APP_ROUTES, DEFAULT_ROUTE_ID, getRouteById, getRoutesByGroup, type AppRoute } from './routes'
 
 function ModeCard({ route, onSelect }: { readonly route: AppRoute; readonly onSelect: (route: AppRoute) => void }) {
@@ -24,8 +24,10 @@ function ModeCard({ route, onSelect }: { readonly route: AppRoute; readonly onSe
 
 function RoutePanel({
   route,
+  keyboardDisabled,
   onSelectRoute,
 }: {
+  readonly keyboardDisabled?: boolean
   readonly route: AppRoute
   readonly onSelectRoute: (routeId: AppRoute['id']) => void
 }) {
@@ -39,6 +41,14 @@ function RoutePanel({
           ))}
       </div>
     )
+  }
+
+  if (route.id === 'og-daily') {
+    return <OgGame keyboardDisabled={keyboardDisabled} scope="daily" />
+  }
+
+  if (route.id === 'practice') {
+    return <OgGame keyboardDisabled={keyboardDisabled} scope="practice" />
   }
 
   return (
@@ -55,15 +65,11 @@ function RoutePanel({
   )
 }
 
-const keyboardPreviewAnswer = 'cacao'
-const keyboardPreviewGuess = 'cigar'
-const previewLetterStates = deriveKeyboardLetterStates([getGuessResult(keyboardPreviewGuess, keyboardPreviewAnswer)])
-
 const shellMessages: readonly ToastMessage[] = [
   {
     id: 'shell-ready',
-    message: 'Design tokens, focus states, shell primitives, and keyboard input plumbing are active for Phase 3.3 review.',
-    title: 'Shell and keyboard foundation ready',
+    message: 'Daily and practice og gameplay are active for Phase 4 review.',
+    title: 'og gameplay ready',
     tone: 'info',
   },
 ]
@@ -71,33 +77,8 @@ const shellMessages: readonly ToastMessage[] = [
 function App() {
   const [activeRouteId, setActiveRouteId] = useState(DEFAULT_ROUTE_ID)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [keyboardPreview, setKeyboardPreview] = useState('')
-  const [keyboardStatus, setKeyboardStatus] = useState('Physical and on-screen keys are ready for future gameplay surfaces.')
   const activeRoute = getRouteById(activeRouteId)
   const navigationRoutes = useMemo(() => APP_ROUTES, [])
-  const handleKeyboardInput = useCallback((input: KeyboardInput) => {
-    if (input.type === 'letter') {
-      setKeyboardPreview((currentValue) => {
-        if (currentValue.length >= DAILY_WORD_LENGTH) {
-          return currentValue
-        }
-
-        return `${currentValue}${input.value}`
-      })
-      setKeyboardStatus(`Accepted letter ${input.value.toLocaleUpperCase('en-US')} for the keyboard preview.`)
-      return
-    }
-
-    if (input.type === 'delete') {
-      setKeyboardPreview((currentValue) => currentValue.slice(0, -1))
-      setKeyboardStatus('Deleted one preview letter.')
-      return
-    }
-
-    setKeyboardStatus('Submit key received; gameplay submission remains disabled until Phase 4.')
-  }, [])
-
-  useKeyboardInput({ disabled: isDialogOpen, onInput: handleKeyboardInput })
 
   return (
     <>
@@ -124,25 +105,12 @@ function App() {
           </section>
 
           <section className="grid gap-4 lg:grid-cols-[1fr_20rem]">
-            <RoutePanel onSelectRoute={setActiveRouteId} route={activeRoute} />
+            <RoutePanel keyboardDisabled={isDialogOpen} onSelectRoute={setActiveRouteId} route={activeRoute} />
             <aside className="space-y-4" aria-label="Interface readiness">
               <Panel className="space-y-4" tone="muted">
                 <h2 className="text-xl font-bold text-white">UI foundation</h2>
                 <LoadingState label="Preparing future game surfaces" />
                 <Button onClick={() => setIsDialogOpen(true)} variant="primary">Review shell notes</Button>
-              </Panel>
-              <Panel className="space-y-4" tone="muted">
-                <div className="space-y-2">
-                  <h2 className="text-xl font-bold text-white">Keyboard foundation</h2>
-                  <p className="text-sm leading-6 text-slate-300">
-                    Physical and on-screen keyboard input is normalized for future gameplay. Letter colors below are derived from canonical tile-state results.
-                  </p>
-                </div>
-                <div aria-live="polite" className="rounded-2xl border border-slate-700 bg-slate-950/70 p-3 text-sm text-slate-200">
-                  <p className="font-semibold text-cyan-100">Preview input: {keyboardPreview || 'empty'}</p>
-                  <p className="mt-1 text-slate-300">{keyboardStatus}</p>
-                </div>
-                <Keyboard letterStates={previewLetterStates} onInput={handleKeyboardInput} />
               </Panel>
               {activeRoute.id === 'admin' ? (
                 <ErrorState
@@ -159,10 +127,10 @@ function App() {
         description="A non-gameplay modal used to verify the reusable dialog pattern, Escape handling, labels, and focusable close control."
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        title="Phase 3.3 shell notes"
+        title="Phase 4 shell notes"
       >
         <p>
-          The shell now has reusable icy visual tokens, accessible button styles, panel surfaces, toast notifications, loading states, error states, dialog behavior, and keyboard input plumbing for future gameplay phases.
+          The shell now has reusable icy visual tokens, accessible primitives, keyboard input plumbing, and active og daily/practice gameplay for Phase 4 review.
         </p>
       </Dialog>
       <ToastRegion messages={shellMessages} />
