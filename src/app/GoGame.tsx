@@ -6,6 +6,7 @@ import {
   createDailyGoSetup,
   createGoSession,
   createPracticeGoSetup,
+  continueGoAfterLoss,
   deleteGoLetter,
   deriveKeyboardLetterStates,
   enterGoLetter,
@@ -23,12 +24,15 @@ import {
   formatGoShare,
 } from '../game'
 import { clearDailyGoStoredSession, loadDailyGoStoredSession, saveDailyGoStoredSession } from '../lib/storage/dailyGoStorage'
+import { calculatePayToContinueCost } from '../progression'
 import { Button, Keyboard, Panel, ShareButton } from '../ui'
 import { classNames } from '../ui/classNames'
 
 interface GoGameProps {
+  readonly coins: number
   readonly keyboardDisabled?: boolean
   readonly onGameComplete?: (input: CompletedGameInput) => void
+  readonly onSpendCoins: (amount: number) => boolean
   readonly scope: 'daily' | 'practice'
 }
 
@@ -96,26 +100,48 @@ function GuessGrid({ session }: { readonly session: PuzzleSessionState }) {
   )
 }
 
+function getCompletionPercentage(session: PuzzleSessionState): number {
+  const bestCorrectTiles = session.guesses.reduce((best, guess) => {
+    const correctTiles = guess.tiles.filter((tile) => tile.state === 'correct').length
+    return Math.max(best, correctTiles)
+  }, 0)
+
+  return Math.round((bestCorrectTiles / session.wordLength) * 100)
+}
+
 function GoGameSession({
+  coins,
   keyboardDisabled,
   onGameComplete,
   onPracticeLengthChange,
   onPracticeSeedChange,
+  onSpendCoins,
   practiceLength,
   practiceLengths,
   scope,
   setup,
 }: {
+  readonly coins: number
   readonly keyboardDisabled: boolean
   readonly onGameComplete?: (input: CompletedGameInput) => void
   readonly onPracticeLengthChange: (length: number) => void
   readonly onPracticeSeedChange: () => void
+  readonly onSpendCoins: (amount: number) => boolean
   readonly practiceLength: number
   readonly practiceLengths: readonly number[]
   readonly scope: GoGameProps['scope']
   readonly setup: GoSessionSetup
 }) {
   const [session, setSession] = useState(() => scope === 'daily' ? createInitialDailySession(setup) : createGoSession(setup))
+  const [continuationMessage, setContinuationMessage] = useState<string>()
+  const currentPuzzle = session.puzzles[session.currentPuzzleIndex]
+  const completionPercentage = getCompletionPercentage(currentPuzzle)
+  const continuationCost = calculatePayToContinueCost({
+    completionPercentage,
+    continuationCount: currentPuzzle.continuationCount,
+    wordLength: currentPuzzle.wordLength,
+  })
+  const canAffordContinuation = session.status === 'lost' && coins >= continuationCost
 
   useEffect(() => {
     if (scope !== 'daily' || !setup.dateKey) {
@@ -133,6 +159,10 @@ function GoGameSession({
       return
     }
 
+    if (session.status === 'lost' && canAffordContinuation) {
+      return
+    }
+
     const attemptsUsed = session.puzzles.reduce((total, puzzle) => total + puzzle.guesses.length, 0)
     const maxAttempts = session.puzzles.reduce((total, puzzle) => total + puzzle.maxAttempts, 0)
     const puzzleCount = session.status === 'won' ? session.puzzles.length : session.currentPuzzleIndex + 1
@@ -147,9 +177,10 @@ function GoGameSession({
       word: session.status === 'won' ? session.puzzles.map((puzzle) => puzzle.answer).join(',') : session.puzzles[session.currentPuzzleIndex].answer,
       wordLength: session.wordLength,
     })
-  }, [onGameComplete, practiceLength, scope, session.currentPuzzleIndex, session.puzzles, session.status, session.wordLength, setup.dateKey, setup.puzzles])
+  }, [canAffordContinuation, onGameComplete, practiceLength, scope, session.currentPuzzleIndex, session.puzzles, session.status, session.wordLength, setup.dateKey, setup.puzzles])
 
   const handleInput = useCallback((input: KeyboardInput) => {
+    setContinuationMessage(undefined)
     setSession((currentSession) => {
       if (input.type === 'letter') {
         return enterGoLetter(currentSession, input.value)
@@ -165,7 +196,20 @@ function GoGameSession({
 
   useKeyboardInput({ disabled: keyboardDisabled, onInput: handleInput })
 
-  const currentPuzzle = session.puzzles[session.currentPuzzleIndex]
+  const handlePayToContinue = useCallback(() => {
+    if (session.status !== 'lost') {
+      return
+    }
+
+    if (!onSpendCoins(continuationCost)) {
+      setContinuationMessage(`You need ${continuationCost} coins to continue this puzzle.`)
+      return
+    }
+
+    setSession((currentSession) => continueGoAfterLoss(currentSession))
+    setContinuationMessage(`Spent ${continuationCost} coins for one more attempt.`)
+  }, [continuationCost, onSpendCoins, session.status])
+
   const letterStates = deriveKeyboardLetterStates(currentPuzzle.guesses)
   const statusMessage = session.status === 'won'
     ? 'Solved all five go puzzles. Daily completion is preserved on refresh.'
@@ -257,6 +301,19 @@ function GoGameSession({
           {currentPuzzle.lastValidation ? <p className="mt-1 font-semibold text-amber-100">{currentPuzzle.lastValidation.message}</p> : null}
         </div>
 
+        {session.status === 'lost' ? (
+          <div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm leading-6 text-amber-50">
+            <p className="font-bold">Pay to Continue</p>
+            <p>Spend {continuationCost} coins for one more attempt on puzzle {session.currentPuzzleIndex + 1}. Current balance: {coins} coins.</p>
+            <Button disabled={!canAffordContinuation} onClick={handlePayToContinue} variant="secondary">
+              {canAffordContinuation ? `Pay ${continuationCost} coins to continue` : `Need ${continuationCost} coins to continue`}
+            </Button>
+            {continuationMessage ? <p className="mt-2 font-semibold">{continuationMessage}</p> : null}
+          </div>
+        ) : continuationMessage ? (
+          <div className="rounded-2xl border border-cyan-300/30 bg-cyan-300/10 p-3 text-sm font-semibold text-cyan-50">{continuationMessage}</div>
+        ) : null}
+
         <Keyboard disabled={session.status !== 'playing'} letterStates={letterStates} onInput={handleInput} />
 
 
@@ -286,7 +343,7 @@ function GoGameSession({
   )
 }
 
-export function GoGame({ keyboardDisabled = false, onGameComplete, scope }: GoGameProps) {
+export function GoGame({ coins, keyboardDisabled = false, onGameComplete, onSpendCoins, scope }: GoGameProps) {
   const practiceLengths = useMemo(() => getAvailableGoPracticeLengths(), [])
   const [practiceLength, setPracticeLength] = useState(5)
   const [practiceSeed, setPracticeSeed] = useState(0)
@@ -299,10 +356,12 @@ export function GoGame({ keyboardDisabled = false, onGameComplete, scope }: GoGa
   return (
     <GoGameSession
       key={sessionKey}
+      coins={coins}
       keyboardDisabled={keyboardDisabled}
       onGameComplete={onGameComplete}
       onPracticeLengthChange={setPracticeLength}
       onPracticeSeedChange={() => setPracticeSeed((seed) => seed + 1)}
+      onSpendCoins={onSpendCoins}
       practiceLength={practiceLength}
       practiceLengths={practiceLengths}
       scope={scope}

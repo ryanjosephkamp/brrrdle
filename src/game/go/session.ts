@@ -2,6 +2,7 @@ import { BUNDLED_WORD_LIST_LENGTHS, getDailyAnswerIndex, getDailyDateKey, getWor
 import { DAILY_WORD_LENGTH, GO_PUZZLE_COUNT } from '../constants'
 import {
   createPuzzleSession,
+  continueAfterLoss,
   deleteLetter,
   enterLetter,
   submitGuess,
@@ -202,6 +203,21 @@ export function setGoHardMode(state: GoSessionState, hardMode: boolean): GoSessi
     ...state,
     hardMode,
     puzzles: state.puzzles.map((puzzle) => ({ ...puzzle, hardMode, lastValidation: undefined })),
+  }
+}
+
+export function continueGoAfterLoss(state: GoSessionState, extraAttempts = 1): GoSessionState {
+  if (state.status !== 'lost') {
+    return state
+  }
+
+  const puzzles = [...state.puzzles]
+  puzzles[state.currentPuzzleIndex] = continueAfterLoss(puzzles[state.currentPuzzleIndex], extraAttempts)
+
+  return {
+    ...state,
+    puzzles,
+    status: 'playing',
   }
 }
 

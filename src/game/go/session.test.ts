@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { DAILY_WORD_LENGTH, GO_PUZZLE_COUNT } from '../constants'
-import { createDailyGoSetup, createGoSession, createPracticeGoSetup, deleteGoLetter, enterGoLetter, getAvailableGoPracticeLengths, restoreGoSession, serializeGoSession, setGoHardMode, submitGoGuess } from './session'
+import { continueGoAfterLoss, createDailyGoSetup, createGoSession, createPracticeGoSetup, deleteGoLetter, enterGoLetter, getAvailableGoPracticeLengths, restoreGoSession, serializeGoSession, setGoHardMode, submitGoGuess } from './session'
 
 function submitWord(state: ReturnType<typeof createGoSession>, word: string) {
   const filled = [...word].reduce((currentState, letter) => enterGoLetter(currentState, letter), state)
@@ -48,6 +48,21 @@ describe('go session model', () => {
 
     expect(session.status).toBe('lost')
     expect(session.puzzles[0].status).toBe('lost')
+  })
+
+  it('can continue the failed current puzzle with an extra attempt', () => {
+    const setup = createPracticeGoSetup(5, 0)
+    let session = createGoSession(setup)
+
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      session = submitWord(session, 'slate')
+    }
+
+    const continued = continueGoAfterLoss(session)
+    expect(continued.status).toBe('playing')
+    expect(continued.puzzles[0].status).toBe('playing')
+    expect(continued.puzzles[0].maxAttempts).toBe(7)
+    expect(continued.puzzles[0].continuationCount).toBe(1)
   })
 
   it('creates practice go sessions with one selected length for all puzzles', () => {

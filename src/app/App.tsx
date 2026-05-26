@@ -27,7 +27,17 @@ function ModeCard({ route, onSelect }: { readonly route: AppRoute; readonly onSe
 }
 
 
-function PracticeGameSwitcher({ keyboardDisabled, onGameComplete }: { readonly keyboardDisabled?: boolean; readonly onGameComplete: (input: CompletedGameInput) => void }) {
+function PracticeGameSwitcher({
+  coins,
+  keyboardDisabled,
+  onGameComplete,
+  onSpendCoins,
+}: {
+  readonly coins: number
+  readonly keyboardDisabled?: boolean
+  readonly onGameComplete: (input: CompletedGameInput) => void
+  readonly onSpendCoins: (amount: number) => boolean
+}) {
   const [practiceMode, setPracticeMode] = useState<'og' | 'go'>('og')
 
   return (
@@ -36,7 +46,9 @@ function PracticeGameSwitcher({ keyboardDisabled, onGameComplete }: { readonly k
         <Button onClick={() => setPracticeMode('og')} variant={practiceMode === 'og' ? 'primary' : 'secondary'}>og practice</Button>
         <Button onClick={() => setPracticeMode('go')} variant={practiceMode === 'go' ? 'primary' : 'secondary'}>go practice</Button>
       </div>
-      {practiceMode === 'og' ? <OgGame keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} scope="practice" /> : <GoGame keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} scope="practice" />}
+      {practiceMode === 'og'
+        ? <OgGame coins={coins} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onSpendCoins={onSpendCoins} scope="practice" />
+        : <GoGame coins={coins} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onSpendCoins={onSpendCoins} scope="practice" />}
     </section>
   )
 }
@@ -50,6 +62,7 @@ function RoutePanel({
   onResetProgress,
   onSelectRoute,
   onSendMagicLink,
+  onSpendCoins,
   onSignOut,
   syncStatus,
 }: {
@@ -63,6 +76,7 @@ function RoutePanel({
   readonly route: AppRoute
   readonly onSelectRoute: (routeId: AppRoute['id']) => void
   readonly syncStatus: ReturnType<typeof createSyncStatus>
+  readonly onSpendCoins: (amount: number) => boolean
 }) {
   if (route.id === 'home') {
     return (
@@ -77,15 +91,15 @@ function RoutePanel({
   }
 
   if (route.id === 'og-daily') {
-    return <OgGame keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} scope="daily" />
+    return <OgGame coins={guestProgress.progression.coins} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onSpendCoins={onSpendCoins} scope="daily" />
   }
 
   if (route.id === 'go-daily') {
-    return <GoGame keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} scope="daily" />
+    return <GoGame coins={guestProgress.progression.coins} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onSpendCoins={onSpendCoins} scope="daily" />
   }
 
   if (route.id === 'practice') {
-    return <PracticeGameSwitcher keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} />
+    return <PracticeGameSwitcher coins={guestProgress.progression.coins} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onSpendCoins={onSpendCoins} />
   }
 
   if (route.id === 'stats') {
@@ -144,6 +158,22 @@ function App() {
   const handleResetProgress = useCallback(() => {
     setGuestProgress(resetGuestProgress())
   }, [])
+  const handleSpendCoins = useCallback((amount: number) => {
+    if (guestProgress.progression.coins < amount) {
+      return false
+    }
+
+    const nextProgress = {
+      ...guestProgress,
+      progression: {
+        ...guestProgress.progression,
+        coins: guestProgress.progression.coins - amount,
+      },
+    }
+    saveGuestProgress(nextProgress)
+    setGuestProgress(nextProgress)
+    return true
+  }, [guestProgress])
   const handleSendMagicLink = useCallback((email: string) => {
     if (!supabaseClient || !email.trim()) {
       return
@@ -205,7 +235,7 @@ function App() {
           </section>
 
           <section className="grid gap-4 lg:grid-cols-[1fr_20rem]">
-            <RoutePanel authState={authState} guestProgress={guestProgress} keyboardDisabled={isDialogOpen} onGameComplete={handleGameComplete} onResetProgress={handleResetProgress} onSelectRoute={setActiveRouteId} onSendMagicLink={handleSendMagicLink} onSignOut={handleSignOut} route={activeRoute} syncStatus={syncStatus} />
+            <RoutePanel authState={authState} guestProgress={guestProgress} keyboardDisabled={isDialogOpen} onGameComplete={handleGameComplete} onResetProgress={handleResetProgress} onSelectRoute={setActiveRouteId} onSendMagicLink={handleSendMagicLink} onSpendCoins={handleSpendCoins} onSignOut={handleSignOut} route={activeRoute} syncStatus={syncStatus} />
             <aside className="space-y-4" aria-label="Interface readiness">
               <Panel className="space-y-4" tone="muted">
                 <h2 className="text-xl font-bold text-white">Phase 9 polish</h2>

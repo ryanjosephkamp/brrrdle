@@ -6,6 +6,7 @@ import {
   createDailyOgSetup,
   createOgSession,
   createPracticeOgSetup,
+  continueAfterLoss,
   deleteLetter,
   deriveKeyboardLetterStates,
   enterLetter,
@@ -21,12 +22,15 @@ import {
   formatOgShare,
 } from '../game'
 import { clearDailyOgStoredSession, loadDailyOgStoredSession, saveDailyOgStoredSession } from '../lib/storage/dailyOgStorage'
+import { calculatePayToContinueCost } from '../progression'
 import { Button, Keyboard, Panel, ShareButton } from '../ui'
 import { classNames } from '../ui/classNames'
 
 interface OgGameProps {
+  readonly coins: number
   readonly keyboardDisabled?: boolean
   readonly onGameComplete?: (input: CompletedGameInput) => void
+  readonly onSpendCoins: (amount: number) => boolean
   readonly scope: 'daily' | 'practice'
 }
 
@@ -94,21 +98,34 @@ function GuessGrid({ session }: { readonly session: PuzzleSessionState }) {
   )
 }
 
+function getCompletionPercentage(session: PuzzleSessionState): number {
+  const bestCorrectTiles = session.guesses.reduce((best, guess) => {
+    const correctTiles = guess.tiles.filter((tile) => tile.state === 'correct').length
+    return Math.max(best, correctTiles)
+  }, 0)
+
+  return Math.round((bestCorrectTiles / session.wordLength) * 100)
+}
+
 function OgGameSession({
+  coins,
   keyboardDisabled,
   onGameComplete,
   onPracticeLengthChange,
   onPracticeSeedChange,
+  onSpendCoins,
   practiceLength,
   practiceLengths,
   practiceSeed,
   scope,
   setup,
 }: {
+  readonly coins: number
   readonly keyboardDisabled: boolean
   readonly onGameComplete?: (input: CompletedGameInput) => void
   readonly onPracticeLengthChange: (length: number) => void
   readonly onPracticeSeedChange: () => void
+  readonly onSpendCoins: (amount: number) => boolean
   readonly practiceLength: number
   readonly practiceLengths: readonly number[]
   readonly practiceSeed: number
@@ -116,6 +133,14 @@ function OgGameSession({
   readonly setup: OgPuzzleSetup
 }) {
   const [session, setSession] = useState(() => scope === 'daily' ? createInitialDailySession(setup) : createOgSession(setup))
+  const [continuationMessage, setContinuationMessage] = useState<string>()
+  const completionPercentage = getCompletionPercentage(session)
+  const continuationCost = calculatePayToContinueCost({
+    completionPercentage,
+    continuationCount: session.continuationCount,
+    wordLength: session.wordLength,
+  })
+  const canAffordContinuation = session.status === 'lost' && coins >= continuationCost
 
   useEffect(() => {
     if (scope !== 'daily' || !setup.dateKey) {
@@ -133,6 +158,10 @@ function OgGameSession({
       return
     }
 
+    if (session.status === 'lost' && canAffordContinuation) {
+      return
+    }
+
     onGameComplete?.({
       attemptsUsed: session.guesses.length,
       gameId: scope === 'daily' ? `og:daily:${setup.dateKey}` : `og:practice:${practiceLength}:${practiceSeed}:${setup.answer}`,
@@ -143,9 +172,10 @@ function OgGameSession({
       word: session.answer,
       wordLength: session.wordLength,
     })
-  }, [onGameComplete, practiceLength, practiceSeed, scope, session.answer, session.guesses.length, session.maxAttempts, session.status, session.wordLength, setup.answer, setup.dateKey])
+  }, [canAffordContinuation, onGameComplete, practiceLength, practiceSeed, scope, session.answer, session.guesses.length, session.maxAttempts, session.status, session.wordLength, setup.answer, setup.dateKey])
 
   const handleInput = useCallback((input: KeyboardInput) => {
+    setContinuationMessage(undefined)
     setSession((currentSession) => {
       if (input.type === 'letter') {
         return enterLetter(currentSession, input.value)
@@ -158,6 +188,20 @@ function OgGameSession({
       return submitGuess(currentSession)
     })
   }, [])
+
+  const handlePayToContinue = useCallback(() => {
+    if (session.status !== 'lost') {
+      return
+    }
+
+    if (!onSpendCoins(continuationCost)) {
+      setContinuationMessage(`You need ${continuationCost} coins to continue this puzzle.`)
+      return
+    }
+
+    setSession((currentSession) => continueAfterLoss(currentSession))
+    setContinuationMessage(`Spent ${continuationCost} coins for one more attempt.`)
+  }, [continuationCost, onSpendCoins, session.status])
 
   useKeyboardInput({ disabled: keyboardDisabled, onInput: handleInput })
 
@@ -232,6 +276,19 @@ function OgGameSession({
           {session.lastValidation ? <p className="mt-1 font-semibold text-amber-100">{session.lastValidation.message}</p> : null}
         </div>
 
+        {session.status === 'lost' ? (
+          <div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm leading-6 text-amber-50">
+            <p className="font-bold">Pay to Continue</p>
+            <p>Spend {continuationCost} coins for one more attempt. Current balance: {coins} coins.</p>
+            <Button disabled={!canAffordContinuation} onClick={handlePayToContinue} variant="secondary">
+              {canAffordContinuation ? `Pay ${continuationCost} coins to continue` : `Need ${continuationCost} coins to continue`}
+            </Button>
+            {continuationMessage ? <p className="mt-2 font-semibold">{continuationMessage}</p> : null}
+          </div>
+        ) : continuationMessage ? (
+          <div className="rounded-2xl border border-cyan-300/30 bg-cyan-300/10 p-3 text-sm font-semibold text-cyan-50">{continuationMessage}</div>
+        ) : null}
+
         <Keyboard disabled={session.status !== 'playing'} letterStates={letterStates} onInput={handleInput} />
 
 
@@ -261,7 +318,7 @@ function OgGameSession({
   )
 }
 
-export function OgGame({ keyboardDisabled = false, onGameComplete, scope }: OgGameProps) {
+export function OgGame({ coins, keyboardDisabled = false, onGameComplete, onSpendCoins, scope }: OgGameProps) {
   const practiceLengths = useMemo(() => getAvailableOgPracticeLengths(), [])
   const [practiceLength, setPracticeLength] = useState(5)
   const [practiceSeed, setPracticeSeed] = useState(0)
@@ -274,10 +331,12 @@ export function OgGame({ keyboardDisabled = false, onGameComplete, scope }: OgGa
   return (
     <OgGameSession
       key={sessionKey}
+      coins={coins}
       keyboardDisabled={keyboardDisabled}
       onGameComplete={onGameComplete}
       onPracticeLengthChange={setPracticeLength}
       onPracticeSeedChange={() => setPracticeSeed((seed) => seed + 1)}
+      onSpendCoins={onSpendCoins}
       practiceLength={practiceLength}
       practiceLengths={practiceLengths}
       practiceSeed={practiceSeed}
