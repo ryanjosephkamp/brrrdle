@@ -1,9 +1,9 @@
 # AGENT-IMPLEMENTATION-PLAN.md
 
 **Project**: brrrdle  
-**Plan Version**: 1.1
-**Date**: 2026-05-25  
-**Status**: Draft for user review — amended with progress logging and tracking requirements
+**Plan Version**: 1.2
+**Date**: 2026-05-26  
+**Status**: Draft for user review — amended with Hugging Face word-list source integration
 **Authority**: Must follow `CONSTITUTION.md`, `BRRRDLE-SPEC.md`, and the approved v2.6 plan in `BRRRDLE-OVERVIEW.md`.
 
 ---
@@ -17,7 +17,8 @@ This plan is the working implementation guide for building `brrrdle`. It is not 
 - Build only the approved v1 scope.
 - Keep daily `og` and `go` modes fixed at 5 letters for initial launch.
 - Support practice mode lengths 2 through 35.
-- Use the hybrid word-list strategy: bundled pre-processed JSON at build time plus production update checks and protected manual admin refresh.
+- Use the hybrid word-list strategy: bundle pre-processed JSON sourced from the `latest/brrrdle/` folder of the `https://huggingface.co/datasets/ryanjosephkamp/english-openlist` dataset at build time, paired with a daily scheduled refresh around 12 AM (after the upstream ~11 PM nightly regeneration), production update checks, and a protected manual admin refresh.
+- Treat `latest/brrrdle/` in the Hugging Face dataset as the authoritative upstream source. It contains exactly 34 JSON dictionaries — one per valid word length from 2 through 35 — and the brrrdle app must keep its served dictionaries in sync with that folder on a daily cadence.
 - Prefer pre-processed definitions, then Dictionary API, then Wiktionary, then an always-available dynamic Google search button.
 - Protect admin functionality with Supabase authentication and an `admin` role.
 - Target Vercel for the game and GitHub Pages + Jekyll for blog/docs.
@@ -227,13 +228,15 @@ Progress tracking is mandatory for transparency, resumability, and agent coordin
 
 ## 4. Phase 2 — Data Layer and Hybrid Word List Consumption
 
-**Goal**: Load length-indexed word data reliably using bundled pre-processed files, production update checks, and an admin-triggered refresh path.
+**Goal**: Load length-indexed word data reliably using bundled pre-processed files sourced from the Hugging Face dataset `ryanjosephkamp/english-openlist`, plus production update checks, a daily scheduled refresh against that dataset, and a protected admin-triggered refresh path.
 
 ### Step 2.1 — Word Data Shape and Local Bundled Assets
 
 **Build / modify**:
-- Define the expected schema for `words_length_{N}.json` files.
-- Add a minimal development-safe seed data strategy if full assets are not yet available.
+- Treat the Hugging Face dataset `https://huggingface.co/datasets/ryanjosephkamp/english-openlist` as the authoritative upstream word-list source. Specifically, consume the `latest/brrrdle/` folder, which contains exactly 34 JSON dictionaries — one per valid word length from 2 through 35 inclusive.
+- Define the expected schema for the per-length JSON dictionaries (e.g., `words_length_{N}.json` or the exact filenames provided by the dataset, to be confirmed by inspecting `latest/brrrdle/` during Step 2.1).
+- Bundle a known-good snapshot of `latest/brrrdle/` at build time, recording the upstream Hugging Face commit/revision used so future refreshes can be diffed and audited.
+- Add a minimal development-safe seed data strategy if the full assets are not yet available locally, but production builds must use the real `latest/brrrdle/` payload.
 - Ensure data supports optional definitions when present.
 
 **Key files**:
@@ -241,10 +244,12 @@ Progress tracking is mandatory for transparency, resumability, and agent coordin
 - `src/data/wordListSchema.ts`
 - `src/data/wordLists.ts`
 - `src/data/bundled/` or equivalent
+- A small metadata file recording the bundled Hugging Face revision (e.g., `src/data/bundled/source.json`)
 
 **Verification**:
 - Schema validation tests for representative lengths.
 - Confirm length 2, length 5, and length 35 loading paths.
+- Confirm the bundled snapshot contains all 34 expected length files and that its recorded source revision is reproducible.
 
 ### Step 2.2 — Length-Indexed Loader
 
@@ -264,8 +269,9 @@ Progress tracking is mandatory for transparency, resumability, and agent coordin
 ### Step 2.3 — Production Update Check
 
 **Build / modify**:
-- Add production-deploy-aware update check design that can compare bundled metadata with remote metadata.
-- Degrade gracefully when remote checks fail.
+- Add a production-deploy-aware update check that compares bundled `latest/brrrdle/` metadata (revision and per-length checksums or sizes) with the current state of `latest/brrrdle/` on Hugging Face.
+- Note that the upstream Hugging Face dataset is regenerated nightly at approximately 11 PM, so update checks should expect a fresh revision daily and surface staleness to the data layer.
+- Degrade gracefully when remote checks fail (network failure, Hugging Face downtime, malformed metadata) — bundled data must remain fully playable.
 
 **Key files**:
 - `src/data/updateCheck.ts`
@@ -274,7 +280,7 @@ Progress tracking is mandatory for transparency, resumability, and agent coordin
 
 **Verification**:
 - Tests or mocks for current, stale, failed-network, and malformed-metadata scenarios.
-- Confirm no secrets are used client-side.
+- Confirm no secrets, private tokens, or Hugging Face credentials are used client-side; the dataset is public, so anonymous access is sufficient.
 
 ### Step 2.4 — Data Caching and Failure UX Hooks
 
@@ -290,6 +296,31 @@ Progress tracking is mandatory for transparency, resumability, and agent coordin
 **Verification**:
 - Tests cover failure and fallback behavior.
 - Build and test commands pass.
+
+### Step 2.5 — Daily Scheduled Hugging Face Refresh
+
+**Build / modify**:
+- Implement a server-side scheduled job (e.g., a Vercel Cron-triggered API/function route, or equivalent for the chosen hosting setup) that runs once daily at approximately 12 AM, shortly after the upstream Hugging Face dataset's ~11 PM nightly regeneration.
+- The job must fetch the 34 length-indexed JSON dictionaries from the `latest/brrrdle/` folder of `https://huggingface.co/datasets/ryanjosephkamp/english-openlist` (lengths 2 through 35).
+- Validate each downloaded file against the schema from Step 2.1 before swapping it in.
+- Atomically replace the served set of dictionaries so a partial download or a single malformed file cannot corrupt the live word lists. Keep the previously served set available as a fallback until the new set is fully validated.
+- Record the new Hugging Face revision and per-length status in update metadata so the Step 2.3 update check stays accurate.
+- Log refresh outcomes (success/failure per length, source revision, timestamp) without exposing private data or credentials.
+- Cooperate with the protected admin manual refresh route from Phase 8, so manual and scheduled refreshes share the same fetch/validate/swap pipeline.
+- The exact timezone for "~11 PM" and "~12 AM" must be confirmed with the user before scheduling is finalized; document the chosen timezone explicitly in `docs/deployment.md` and `.env.example` (or equivalent) once selected.
+
+**Key files**:
+- Scheduled function/route under the chosen Vercel API directory (e.g., `api/cron/refresh-word-lists.ts`)
+- `src/data/refresh.ts` (or equivalent) implementing the shared fetch/validate/swap pipeline
+- `src/data/updateCheck.ts` (cooperation with metadata)
+- `vercel.json` (cron schedule configuration)
+- `docs/deployment.md` and `.env.example` for documented schedule and any non-secret config
+
+**Verification**:
+- Tests or mocks for the fetch/validate/swap pipeline covering: all 34 files succeed; one file malformed; network failure mid-refresh; Hugging Face returns an unexpected revision.
+- Confirm the atomic-swap behavior leaves a working dictionary set after every failure case.
+- Confirm that the scheduled route is protected appropriately (Vercel Cron signature/secret or equivalent) and is not invokable by anonymous clients.
+- Confirm no Hugging Face credentials are required or committed — the dataset is public.
 
 **Pause point**: Commit Phase 2, update changelog, report verification, and halt for user approval.
 
@@ -907,6 +938,9 @@ Progress tracking is mandatory for transparency, resumability, and agent coordin
 ## 15. Known Constraints and Clarifications
 
 - This plan does not approve implementation by itself; explicit user approval is required before Phase 0 begins.
+- The authoritative upstream word-list source is the Hugging Face dataset `https://huggingface.co/datasets/ryanjosephkamp/english-openlist`. Specifically, the `latest/brrrdle/` folder contains the 34 length-indexed JSON dictionaries (one per length from 2 through 35) that brrrdle consumes.
+- The upstream Hugging Face dataset is updated nightly at approximately 11 PM, and the brrrdle scheduled refresh must run at approximately 12 AM. The exact timezone for both the upstream regeneration and the brrrdle refresh must be confirmed with the user before Phase 2's scheduled job is finalized; documentation will use this confirmed timezone explicitly rather than ambiguous "11 PM / 12 AM" phrasing.
+- The Hugging Face dataset is public, so anonymous read access is sufficient; no Hugging Face credentials may be committed or shipped to the client bundle.
 - Real Supabase and deployment verification may require project credentials or dashboard access outside the local sandbox. If unavailable, the agent must document what was verified locally and what remains for the user to verify.
 - Full English OpenList assets may be large. The agent must choose a strategy that satisfies build-time bundling and performance requirements without harming daily-mode load performance.
 - No service-role secret, API key, or privileged credential may be committed.
