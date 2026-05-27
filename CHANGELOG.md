@@ -4,6 +4,11 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Fixed (Residual Vercel TypeScript build errors — 2026-05-27)
+- Fixed the residual NodeNext/Node16 TypeScript errors shown in `VERCEL-REDEPLOY-BUILD-LOGS-2026-05-26.md` and diagnosed by `DIAGNOSIS-REPORT-2026-05-26.md` by making the remaining `src/data/` barrel and module imports Vercel-compatible with explicit `.js` extensions.
+- Added `type: "json"` import attributes to bundled word-list and bundled-source JSON imports so Vercel's serverless TypeScript pass accepts the same JSON imports that the app build consumes.
+- Tightened `loadWordList.ts` length-resolution typing so the failure branch cannot be inferred as a successful result missing `wordList`.
+
 ### Fixed (Phase 12 — Updated Diagnosis Report 2026-05-26)
 - Verified that the build, lint, test, and standalone `tsc -p tsconfig.api.json --noEmit` checks all pass locally with zero TypeScript errors across the app, node, and api project references. The TypeScript build errors described in the updated diagnosis report (missing `.js` extensions, missing barrel re-exports from `src/data/index.ts`, JSON import attribute issues, `loadWordList.ts` type mismatch) are no longer reproducible from the current `main`, indicating that the residual Vercel failures originated from a stale Vercel build cache rather than from any unresolved source defect; trigger a clean Vercel rebuild against the latest commit to pick up the fix.
 - Added `src/data/practiceLengthCoverage.test.ts` to lock in the practice length contract: `loadBundledWordList` returns `ok` and a non-empty `validGuesses`/`answers` set for every length 2..35, the canonical `validateGuess` accepts a representative real bundled word at lengths 2, 5, 12, and 20, and clearly invalid strings are still rejected. This is the regression suite for the "practice mode dropdown shows only 2/5/35" and "valid words rejected as not in list" symptoms.
