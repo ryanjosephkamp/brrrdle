@@ -4,6 +4,17 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Fixed (Phase 12 — Updated Diagnosis Report 2026-05-26)
+- Verified that the build, lint, test, and standalone `tsc -p tsconfig.api.json --noEmit` checks all pass locally with zero TypeScript errors across the app, node, and api project references. The TypeScript build errors described in the updated diagnosis report (missing `.js` extensions, missing barrel re-exports from `src/data/index.ts`, JSON import attribute issues, `loadWordList.ts` type mismatch) are no longer reproducible from the current `main`, indicating that the residual Vercel failures originated from a stale Vercel build cache rather than from any unresolved source defect; trigger a clean Vercel rebuild against the latest commit to pick up the fix.
+- Added `src/data/practiceLengthCoverage.test.ts` to lock in the practice length contract: `loadBundledWordList` returns `ok` and a non-empty `validGuesses`/`answers` set for every length 2..35, the canonical `validateGuess` accepts a representative real bundled word at lengths 2, 5, 12, and 20, and clearly invalid strings are still rejected. This is the regression suite for the "practice mode dropdown shows only 2/5/35" and "valid words rejected as not in list" symptoms.
+- Confirmed that no Phase 9 debug surface remains in `src/`. The "polish ready" floating toast, the "Phase 9 polish" sidebar `Panel`, and the "Phase 9 shell notes" `Dialog` mounts were removed in the previous Phase 12 pass; the underlying `ToastRegion`, `Panel`, and `Dialog` UI primitives stay available in `src/ui/` for future gameplay use.
+- Re-verified that `@vercel/blob` is not present in the client bundle (`dist/assets/*.js`) and that the Vercel Blob–backed word-list store retains its atomic-swap and skip-when-unconfigured behavior with no regressions.
+
+### Known limitations
+- The bundled word lists for lengths 23–35 still ship deterministic synthetic placeholders rather than real English dictionary slices, because Hugging Face hosts are not reachable from the agent sandbox and a refresh against `https://huggingface.co/datasets/ryanjosephkamp/english-openlist/resolve/main/latest/brrrdle/` could not be performed locally. The selector exposes these lengths per the BRRRDLE-SPEC §3.1 practice range, but they will only contain authoritative content after the scheduled Vercel Cron route or the protected admin refresh runs with `CRON_SECRET` and `BLOB_READ_WRITE_TOKEN` configured. This limitation is recorded in `progress/PROGRESS-STEP-15.md`.
+
+## Previous Unreleased
+
 ### Fixed (Phase 12 — Diagnosis Report 2026-05-26)
 - Fixed Vercel TypeScript build errors in `api/` by adding a dedicated `tsconfig.api.json` project reference (bundler-mode resolution, `types: ["node"]`, strict flags matching the app config) so `npm run build` (`tsc -b && vite build`) now type-checks the serverless functions locally with the same strictness Vercel applies in CI.
 - Added explicit `.js` extensions to every relative import inside `api/_lib/vercelBlobStore.ts`, `api/_lib/wordListStore.ts`, `api/admin-refresh.ts`, `api/cron/refresh-word-lists.ts`, and `api/word-lists/manifest.ts`, satisfying both bundler- and NodeNext-style resolution and matching the recommendation in `DIAGNOSIS-REPORT-2026-05-26.md`.
