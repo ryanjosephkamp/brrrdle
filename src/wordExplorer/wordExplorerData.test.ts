@@ -5,6 +5,7 @@ import {
   emptyStateMessage,
   filterAndSortEntries,
   loadWordExplorerEntries,
+  loadWordExplorerEntriesFromLive,
   typeBadgeLabel,
   type WordExplorerEntry,
 } from './wordExplorerData'
@@ -45,6 +46,43 @@ describe('loadWordExplorerEntries', () => {
   it('returns an empty array for an unsupported length', () => {
     expect(loadWordExplorerEntries(0)).toEqual([])
     expect(loadWordExplorerEntries(99)).toEqual([])
+  })
+})
+
+describe('loadWordExplorerEntriesFromLive', () => {
+  it('uses a live manifest entry when available', async () => {
+    const fetchJson = async (url: string): Promise<unknown> => {
+      if (url === '/manifest') {
+        return {
+          ok: true,
+          manifest: {
+            revision: 'r1',
+            generatedAt: '2026-05-27T00:00:00Z',
+            fetchedAt: '2026-05-27T01:00:00Z',
+            source: { datasetId: 'ryanjosephkamp/english-openlist' },
+            entries: [{ length: 3, url: '/words-3.json', answers: 1, validGuesses: 2, status: 'served' }],
+          },
+        }
+      }
+      return {
+        metadata: { length: 3, source: 'live', version: 'r1', generatedAt: '2026-05-27T00:00:00Z' },
+        answers: [{ word: 'ice' }],
+        validGuesses: ['ice', 'brr'],
+      }
+    }
+
+    const result = await loadWordExplorerEntriesFromLive(3, { fetchJson, manifestUrl: '/manifest' })
+    expect(result.source).toBe('live')
+    expect(result.entries.map((entry) => entry.word)).toEqual(['brr', 'ice'])
+  })
+
+  it('falls back to bundled entries when the live manifest is unavailable', async () => {
+    const result = await loadWordExplorerEntriesFromLive(5, {
+      fetchJson: async () => ({ ok: true, manifest: null }),
+      manifestUrl: '/manifest',
+    })
+    expect(result.source).toBe('bundled')
+    expect(result.entries.length).toBeGreaterThan(0)
   })
 })
 

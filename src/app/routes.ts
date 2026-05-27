@@ -102,3 +102,13 @@ export function getRouteById(routeId: AppRouteId): AppRoute {
 export function getRoutesByGroup(group: AppRoute['navigationGroup']): readonly AppRoute[] {
   return APP_ROUTES.filter((route) => route.navigationGroup === group)
 }
+
+export function getPrimaryNavigationRoutes(isAdmin: boolean): readonly AppRoute[] {
+  return APP_ROUTES.filter((route) => {
+    if (route.id === 'admin') {
+      return isAdmin
+    }
+
+    return ['og-daily', 'go-daily', 'practice', 'word-explorer', 'feedback', 'settings'].includes(route.id)
+  })
+}

@@ -4,7 +4,7 @@
 - **Major step / phase**: Phase 13 — full execution of `ADDITIONS-2026-05-27.md` (Word Explorer, Feedback, Sound Effects, Authentication Improvements, Repository Cleanup)
 - **Implementation-plan reference**: `AGENT-IMPLEMENTATION-PLAN.md` §18 (13.0–13.6) and `ADDITIONS-2026-05-27.md`
 - **Report file**: `progress/PROGRESS-STEP-19.md`
-- **Date updated**: 2026-05-27
+- **Date updated**: 2026-05-27T22:49:09Z
 - **Status**: Completed — Awaiting user verification of Supabase / GitHub-label manual follow-up steps and PR review.
 
 ## Summary of Changes
@@ -46,6 +46,13 @@ The existing `src/` layout already groups code logically by concern: `account/`,
 ### 13.6 — Final Integration & Release Gate
 - Cross-feature smoke: with all features wired, every existing test still passes; new tests pass; daily 5-letter lock untouched; practice 2..35 unchanged; no `@vercel/blob` in client bundle; no api typecheck regression.
 
+### 13.6 follow-up hardening — 2026-05-27T22:49:09Z
+- Re-verified the Phase 13 implementation against the approved addendum and tightened several scope gaps:
+  - Primary navigation now uses the exact approved top-level order (`og`, `go`, `Practice`, `Word Explorer`, `Feedback`, `Settings`, `Admin`) and hides Admin unless the authenticated Supabase user has the admin role.
+  - Word Explorer now tries the live `/api/word-lists/manifest` path first and falls back to bundled dictionaries if the manifest or selected live length is unavailable.
+  - Password auth errors are sanitized before display instead of surfacing raw Supabase provider error strings.
+  - Feedback optional email is a free-form text field, matching the addendum's "optional email" requirement without external validation.
+
 ## Files Changed
 
 ### New
@@ -66,6 +73,7 @@ The existing `src/` layout already groups code logically by concern: `account/`,
 - `src/account/AuthPanel.tsx` (magic-link / email+password toggle, sign-in vs. create-account, show/hide password)
 - `src/account/Settings.tsx` (new auth props pass-through, Sound Effects panel)
 - `src/account/auth.ts` (`signInWithPassword`, `signUpWithPassword`, `subscribeToAuthChanges`)
+- 2026-05-27 follow-up: `src/app/routes.ts`, `src/app/App.tsx`, `src/app/routes.test.ts`, `src/wordExplorer/wordExplorerData.ts`, `src/wordExplorer/WordExplorerPanel.tsx`, `src/wordExplorer/wordExplorerData.test.ts`, `src/account/auth.ts`, `src/account/auth.test.ts`, `src/feedback/FeedbackPanel.tsx`, `CHANGELOG.md`, and this report.
 
 ### Not modified (intentional, per "no deletions" rule)
 - All existing source files outside the modifications listed above are untouched. No `git mv` was performed.
@@ -79,6 +87,9 @@ The existing `src/` layout already groups code logically by concern: `account/`,
   - `npx tsc -p tsconfig.api.json --noEmit` — clean.
   - Client-bundle leak check: `grep -R "@vercel/blob" dist/` returned **no matches** in shipped chunks (Phase 13 invariant preserved).
   - `codeql_checker` — to be run before final report (see next entry in CHANGELOG when results land).
+  - 2026-05-27 baseline follow-up before edits: `npm ci`; `npm run lint`; `npm run test` (163/163); `npm run build`; `npx tsc -p tsconfig.api.json --noEmit`; client-bundle leak check; `git diff --check` — succeeded.
+  - 2026-05-27 final follow-up verification: `npm ci`; `npm run lint`; `npm run test` (167/167); `npm run build`; `npx tsc -p tsconfig.api.json --noEmit`; client-bundle leak check (`grep -R "@vercel/blob" dist/assets/*.js`); `git diff --check` — succeeded. Vite reports the existing >500 kB chunk-size warning.
+  - `codeql_checker` on the follow-up diff — 0 alerts.
 - **Checks not run**:
   - Live Supabase end-to-end smoke for email+password sign-in/sign-up: requires the Supabase dashboard to have Email + Password auth enabled, which the agent cannot perform from the sandbox. The new auth functions are covered by unit tests against a Supabase client double.
   - Live device audio smoke: the agent sandbox has no audio device. The sound engine is covered by unit tests against an `AudioContextLike` double.

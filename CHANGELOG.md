@@ -14,6 +14,10 @@ All notable changes to `brrrdle` will be documented in this file.
 - **Tests**: 43 new unit tests (`src/lib/githubIssue.test.ts`, `src/wordExplorer/wordExplorerData.test.ts`, `src/sound/soundEngine.test.ts`, `src/account/auth.test.ts`). Total: 163 tests passing.
 
 ### Changed (ADDITIONS-2026-05-27 — Phase 13 execution)
+- Follow-up hardening aligned the primary navigation with the exact approved top-level order (`og`, `go`, `Practice`, `Word Explorer`, `Feedback`, `Settings`, `Admin`) and keeps the Admin entry hidden unless the signed-in user has the Supabase admin role.
+- Word Explorer now attempts the live `/api/word-lists/manifest` read path first and falls back to bundled dictionaries when no live manifest or length file is available, preserving the Vercel Blob / manifest → bundled JSON contract.
+- Password auth errors shown in the UI are sanitized generic messages rather than raw Supabase provider strings.
+- Feedback's optional email field is free-form text, matching the requirement that it is optional and not externally validated.
 - `src/app/App.tsx` now wraps the root in a `SoundProvider`, subscribes to Supabase auth changes via `subscribeToAuthChanges`, plays the win/loss tones when a game completes, and threads the new auth handlers and sound toggle into `Settings`.
 - `src/account/Settings.tsx` adds an optional "Sound Effects" panel and passes the password/sign-up handlers through to `AuthPanel`.
 - `src/account/auth.ts` adds `signInWithPassword`, `signUpWithPassword`, and `subscribeToAuthChanges` alongside the existing magic-link flow; the existing magic-link behavior is unchanged.

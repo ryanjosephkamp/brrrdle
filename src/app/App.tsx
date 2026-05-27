@@ -10,7 +10,7 @@ import { FeedbackPanel } from '../feedback'
 import { SoundProvider, useSound } from '../sound'
 import { GoGame } from './GoGame'
 import { OgGame } from './OgGame'
-import { APP_ROUTES, DEFAULT_ROUTE_ID, getRouteById, getRoutesByGroup, type AppRoute } from './routes'
+import { DEFAULT_ROUTE_ID, getPrimaryNavigationRoutes, getRouteById, getRoutesByGroup, type AppRoute } from './routes'
 
 function ModeCard({ route, onSelect }: { readonly route: AppRoute; readonly onSelect: (route: AppRoute) => void }) {
   return (
@@ -180,7 +180,7 @@ function AppInner() {
   const [authMessage, setAuthMessage] = useState<string | undefined>(undefined)
   const [syncStatus] = useState(() => createSyncStatus(supabaseClient ? 'idle' : 'error'))
   const activeRoute = getRouteById(activeRouteId)
-  const navigationRoutes = useMemo(() => APP_ROUTES, [])
+  const navigationRoutes = useMemo(() => getPrimaryNavigationRoutes(authState.user?.roles.includes('admin') ?? false), [authState.user?.roles])
   const handleGameComplete = useCallback((input: CompletedGameInput) => {
     setGuestProgress((currentProgress) => {
       const nextProgress = recordCompletedGame(input, currentProgress)

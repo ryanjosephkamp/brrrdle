@@ -96,7 +96,7 @@ export function FeedbackPanel() {
               className="rounded-xl border border-slate-600 bg-slate-950 px-3 py-2 text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
               onChange={(event) => setEmail(event.target.value)}
               placeholder="you@example.com"
-              type="email"
+              type="text"
               value={email}
             />
             <span className="text-xs font-normal text-slate-400">Embedded into the issue body only; never stored.</span>

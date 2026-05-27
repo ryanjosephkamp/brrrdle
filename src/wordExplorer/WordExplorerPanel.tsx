@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button, Panel } from '../ui'
 import { buildWordRequestIssueUrl } from '../lib/githubIssue'
 import {
@@ -7,10 +7,11 @@ import {
   emptyStateMessage,
   filterAndSortEntries,
   loadWordExplorerEntries,
+  loadWordExplorerEntriesFromLive,
   typeBadgeLabel,
   type SortDirection,
   type SortField,
-  type WordExplorerEntry,
+  type WordExplorerLoadResult,
 } from './wordExplorerData'
 
 function currentIsoDate(): string {
@@ -37,8 +38,23 @@ export function WordExplorerPanel() {
   const [sortField, setSortField] = useState<SortField>('word')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [copiedWord, setCopiedWord] = useState<string | undefined>(undefined)
+  const bundledEntries = useMemo(() => loadWordExplorerEntries(length), [length])
+  const [liveLoad, setLiveLoad] = useState<WordExplorerLoadResult | undefined>(undefined)
 
-  const entries = useMemo<readonly WordExplorerEntry[]>(() => loadWordExplorerEntries(length), [length])
+  useEffect(() => {
+    let isMounted = true
+    void loadWordExplorerEntriesFromLive(length).then((result) => {
+      if (isMounted) {
+        setLiveLoad(result)
+      }
+    })
+    return () => {
+      isMounted = false
+    }
+  }, [length])
+
+  const effectiveLoad = liveLoad ?? { entries: bundledEntries, source: 'bundled' as const, message: 'Checking live word list…' }
+  const entries = effectiveLoad.entries
   const filtered = useMemo(
     () => filterAndSortEntries(entries, { searchTerm, showAnswers, showValidGuesses }, { field: sortField, direction: sortDirection }),
     [entries, searchTerm, showAnswers, showValidGuesses, sortField, sortDirection],
@@ -122,7 +138,8 @@ export function WordExplorerPanel() {
           </div>
         </div>
         <p aria-live="polite" className="text-xs text-slate-400">
-          Showing {filtered.length} of {entries.length} {length}-letter word{entries.length === 1 ? '' : 's'}.
+          Showing {filtered.length} of {entries.length} {length}-letter word{entries.length === 1 ? '' : 's'} from {effectiveLoad.source === 'live' ? 'the live manifest' : 'bundled fallback data'}.
+          {effectiveLoad.message ? ` ${effectiveLoad.message}` : ''}
         </p>
       </Panel>
 

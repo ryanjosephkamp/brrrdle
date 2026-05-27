@@ -34,11 +34,14 @@ describe('signInWithPassword', () => {
     expect(result).toEqual({ ok: true })
   })
 
-  it('returns the supabase error message on failure', async () => {
+  it('returns a sanitized error message on failure', async () => {
     const spy = vi.fn().mockResolvedValue({ error: { message: 'bad creds' } })
     const client = makeClient({ signInWithPassword: spy })
     const result = await signInWithPassword(client, 'a@b.com', 'p1234567')
-    expect(result).toEqual({ message: 'bad creds', ok: false })
+    expect(result).toEqual({
+      message: 'Unable to sign in with those credentials. Check your email and password, then try again.',
+      ok: false,
+    })
   })
 })
 
@@ -55,6 +58,16 @@ describe('signUpWithPassword', () => {
     const result = await signUpWithPassword(client, 'a@b.com', 'longenough')
     expect(spy).toHaveBeenCalledWith({ email: 'a@b.com', password: 'longenough' })
     expect(result).toEqual({ ok: true })
+  })
+
+  it('returns a sanitized signup error message on failure', async () => {
+    const spy = vi.fn().mockResolvedValue({ error: { message: 'raw provider detail' } })
+    const client = makeClient({ signUp: spy })
+    const result = await signUpWithPassword(client, 'a@b.com', 'longenough')
+    expect(result).toEqual({
+      message: 'Unable to create an account right now. Check the details and try again.',
+      ok: false,
+    })
   })
 })
 
