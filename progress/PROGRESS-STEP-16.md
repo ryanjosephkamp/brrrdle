@@ -5,7 +5,7 @@
 - **Implementation-plan reference**: `AGENT-IMPLEMENTATION-PLAN.md` §17, especially Steps 12U.2, 12U.6, and 12U.7
 - **Report file**: `progress/PROGRESS-STEP-16.md`
 - **Date updated**: 2026-05-27
-- **Status**: Implementation complete — final verification in progress
+- **Status**: Completed locally — awaiting clean Vercel rebuild
 
 ## Summary of Changes
 - Made the remaining `src/data/` imports and `src/data/index.ts` barrel exports explicit-ESM compatible by adding `.js` extensions to relative TypeScript imports/exports.
@@ -37,8 +37,15 @@
 - **Checks run**:
   - Baseline before edits: `npm ci`; `npm run lint`; `npm run test`; `npm run build`; `npx tsc -p tsconfig.api.json --noEmit` — all passed.
   - Import audit for `src/data/` and `api/` — passed; no relative TypeScript import/export in those folders is missing `.js`, and JSON imports have `type: 'json'` attributes.
-  - Focused Vercel-style API NodeNext typecheck using a temporary `/tmp/brrrdle-tsconfig-api-nodenext.json` — passed.
-  - Final verification commands are recorded after completion below.
+  - `codeql_checker` — passed with 0 JavaScript alerts.
+  - Final verification: `npm ci` — passed, 0 vulnerabilities.
+  - Final verification: `npm run lint` — passed.
+  - Final verification: `npm run test` — passed, 33 files / 120 tests.
+  - Final verification: `npm run build` — passed (`tsc -b && vite build`); Vite chunk-size warning remains non-fatal and pre-existing.
+  - Final verification: `npx tsc -p tsconfig.api.json --noEmit` — passed.
+  - Final verification: focused Vercel-style API NodeNext typecheck with `/tmp/brrrdle-tsconfig-api-nodenext.json` — passed.
+  - Final verification: client-bundle leak check `! grep -R "@vercel/blob" dist/assets/*.js` — passed.
+  - Final verification: `git diff --check` — passed.
 - **Checks not run**:
   - Live Vercel deploy/build.
 - **Reason any checks were skipped**:
@@ -52,7 +59,7 @@
 - Trigger a clean Vercel rebuild against the latest commit and confirm the TypeScript errors from `VERCEL-REDEPLOY-BUILD-LOGS-2026-05-26.md` no longer appear.
 
 ## Authorization to Proceed
-- **Safe/authorized to proceed to next major step?**: Yes, after final local verification and CodeQL complete successfully.
+- **Safe/authorized to proceed to next major step?**: Yes. Final local verification and CodeQL completed successfully.
 - **Next major step**: Clean Vercel rebuild / standard release review.
 - **Exact approval needed, if any**: User approval before any production release action.
 
