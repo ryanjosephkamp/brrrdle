@@ -1133,4 +1133,188 @@ Progress tracking is mandatory for transparency, resumability, and agent coordin
 
 ---
 
+## 17. Phase 12 — Fix Build Errors, Length Selector, and Polish Artifacts (Updated Diagnosis Report 2026-05-26)
+
+**Authority**: This section supersedes Section 16 as the active fix plan for the issues called out in the updated `DIAGNOSIS-REPORT-2026-05-26.md` (the version dated 2026-05-26 with the "Phase 12 fixes were insufficient" status). It is bound by `CONSTITUTION.md` (scope fidelity, minimal change, verification-first execution, hybrid data-layer discipline, data safety, progress logging) and by `BRRRDLE-SPEC.md`. No new v1 scope is added.
+
+**Goal**: Finish the work begun in Section 16 by (a) eliminating the TypeScript build errors that the updated diagnosis report says are still reaching the Vercel build, (b) ensuring the practice length selector and the guess validator actually use the full 2–35 data layer in production rather than falling back to the small seed slice, and (c) removing every leftover Phase 9 debug surface (the "polish ready" floating box and its peers). After this section, both visible user-facing problems and the underlying build/runtime mismatch must be resolved end-to-end, locally and on Vercel.
+
+**Scope boundary**: No new game features, no economy or stats changes, no new Supabase tables, no new client-side runtime dependencies. Do not change the daily-mode word length, the Hugging Face source contract, or the persistence-layer atomic-swap semantics. Do not rewrite Phases 0–11 or the persistence layer from Phase 13.
+
+**Inputs to reconcile before editing**:
+- `DIAGNOSIS-REPORT-2026-05-26.md` (updated version) — authoritative symptom list.
+- `progress/PROGRESS-STEP-14.md` — what Section 16 actually shipped (real bundled content for lengths 2–18, deterministic synthetic placeholders for 19–35, new `tsconfig.api.json`, removed "polish ready" toast).
+- Latest Vercel build logs supplied with the updated diagnosis report — authoritative for any error that does not reproduce locally.
+- `BRRRDLE-SPEC.md` §§ on daily length, practice length range, and definitions.
+
+### Step 12U.1 — Reconcile the Updated Diagnosis Against the Current Repository
+
+**Build / modify**:
+- No code changes in this step.
+
+**Verification**:
+- Re-read the updated `DIAGNOSIS-REPORT-2026-05-26.md`, `CONSTITUTION.md` §§ 2, 5.4, 6, 8, 12, 14, `BRRRDLE-SPEC.md`, and `progress/PROGRESS-STEP-12.md`, `PROGRESS-STEP-13.md`, `PROGRESS-STEP-14.md`.
+- Run, in order, and capture the full output for the progress report:
+  - `npm ci`
+  - `npm run lint`
+  - `npm run test`
+  - `npm run build` (which runs `tsc -b && vite build` and so exercises `tsconfig.api.json` via the project references added in Section 16)
+  - Standalone `npx tsc -p tsconfig.api.json --noEmit`
+- For every error class the updated diagnosis lists (missing `.js` extensions; missing exports from `src/data/index.ts` such as `HUGGING_FACE_API_BASE`, `HUGGING_FACE_DATASET_ID`, `fetchHuggingFaceRemoteMetadata`, `refreshWordListsFromHuggingFace`; JSON import attribute issues; `loadWordList.ts` type mismatch), record whether it (a) still reproduces locally, (b) only reproduces on Vercel, or (c) is already fixed. This authoritative reproduction map drives Steps 12U.2–12U.4.
+- For every user-visible symptom (practice dropdown shows 2/5/35, "word not in list" for valid words, "polish ready" floating box), reproduce locally via `npm run dev` (or `vite preview` after a build) and record the screenshot/notes.
+- If any diagnosed error does **not** reproduce locally, gather the Vercel build log lines the user supplied, identify the exact upstream commit Vercel built, and check whether that commit predates Section 16. If so, the fix is "trigger a clean Vercel rebuild" and the only code-side work is whatever truly reproduces locally — document this clearly in the progress report.
+
+**Halt behavior**: This step does not halt; it produces the reproduction map for the rest of Section 17.
+
+### Step 12U.2 — Make the `api/` ↔ `src/data/` Boundary Robust Under Node16/NodeNext Resolution
+
+**Build / modify** (only if Step 12U.1's reproduction map shows the errors still occur):
+- For every relative import inside `api/**/*.ts` that crosses into `src/`, confirm the import path uses an explicit `.js` extension and matches the file that exists in `src/`. Add the extension where missing. Do not change `src/` → `src/` imports unless the api project actually pulls that module in.
+- For every symbol the updated diagnosis says is missing from `src/data/index.ts` (`HUGGING_FACE_API_BASE`, `HUGGING_FACE_DATASET_ID`, `HUGGING_FACE_RAW_BASE`, `fetchHuggingFaceRemoteMetadata`, `refreshWordListsFromHuggingFace`, `type RefreshSourceInfo`, plus any other symbol the api files import via the barrel), verify the barrel re-exports it. If a symbol is not actually exported from its source module, export it from that module first, then re-export from `src/data/index.ts`. Do not introduce wildcard re-exports that change public API surface.
+- If `api/` files reach into `src/data` modules via deep paths (`../src/data/refreshStore.js`, etc.) and that bypasses the barrel, leave the deep imports as-is and only verify the deep target itself exports the symbol with the expected name. Prefer deep imports for api ↔ data crossings to avoid increasing the client barrel surface.
+- For any JSON import the api project consumes (manifest JSON, bundled JSON, etc.), confirm the import syntax matches the TypeScript version pinned in `package.json`. Use `with { type: 'json' }` import attributes if and only if the pinned TS version supports them; otherwise keep the established pattern (`resolveJsonModule` + default import) used elsewhere in `src/data/`. Do not mix patterns inside the same project.
+- Fix the `loadWordList.ts` type mismatch flagged in the updated diagnosis by tightening the inferred type at the source rather than weakening callers; if the diagnosis report does not pinpoint the exact line, derive it from Step 12U.1's reproduction map.
+- Keep `tsconfig.api.json`, `tsconfig.app.json`, and `tsconfig.node.json` separately scoped. Do not relax `strict`, `noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`, or `verbatimModuleSyntax` to silence errors.
+
+**Key files** (final list driven by Step 12U.1):
+- `src/data/index.ts`
+- `src/data/huggingFaceSource.ts`
+- `src/data/refresh.ts`
+- `src/data/refreshStore.ts`
+- `src/data/loadWordList.ts`
+- `src/data/wordLists.ts` (only if JSON import pattern changes)
+- `api/admin-refresh.ts`
+- `api/cron/refresh-word-lists.ts`
+- `api/word-lists/manifest.ts`
+- `api/_lib/wordListStore.ts`
+- `api/_lib/vercelBlobStore.ts`
+- `tsconfig.api.json` (only if a setting actually has to change; document why)
+
+**Verification**:
+- `npm run build` exits 0 with zero TypeScript errors across all three tsconfigs.
+- `npx tsc -p tsconfig.api.json --noEmit` exits 0.
+- `npm run lint` exits 0.
+- `npm run test` exits 0 (no test deletions or weakenings; if a test asserts an exported symbol now exists, it stays).
+- A Vercel preview build (or, if Vercel access is unavailable, a local clean build invoked exactly as `vercel build` would) reports the same zero-error result. If Vercel cannot be exercised from the sandbox, document the limitation under CONSTITUTION §6.2 and ask the user to trigger a manual Vercel rebuild as the final verification.
+
+### Step 12U.3 — Ensure the Practice Length Selector and Guess Validator Use the Full 2–35 Range in Production
+
+**Build / modify**:
+- Audit every consumer of `BUNDLED_WORD_LIST_LENGTHS`, `getAvailableOgPracticeLengths()`, and `getAvailableGoPracticeLengths()` in `src/app/`, `src/game/`, and `src/data/`. The selector and the validator must derive their length set from `SUPPORTED_PRACTICE_WORD_LENGTHS` (2..35), filtered only by which lengths actually have a usable word list available at runtime, not by whether they were originally hand-seeded.
+- If any code path still treats `BUNDLED_WORD_LIST_LENGTHS` as the "what the user is allowed to pick" set, rewrite that code path to use the supported practice range and to gate per-length availability on `loadBundledWordList(...).ok`. Keep `BUNDLED_WORD_LIST_LENGTHS` strictly as a diagnostic value (`bundled lengths` display only).
+- Confirm that the bundled JSON for every length 2..35 (a) loads cleanly through `loadBundledWordList`, (b) returns a non-empty `validGuesses` set, and (c) returns at least one valid answer. If a length still ships with placeholder content that fails validation or produces "word not in list" for ordinary English words at that length, replace its placeholder with a real dictionary slice from the existing Hugging Face pipeline (`refreshWordListsFromHuggingFace`/local pipeline run) under `src/data/bundled/words_length_<N>.json`. Real content is preferred for every length 2..35. If a length's upstream dictionary is so large it would noticeably increase the client bundle size, switch only those lengths to length-indexed dynamic `import()` so daily mode (length 5) still loads only its file; daily-mode load characteristics must not regress (CONSTITUTION §12.4). Record the chosen strategy per length range in the progress report.
+- Where the bundled answer pool for a given length is intentionally small (e.g., very long words), make sure the validator still uses the full `validGuesses` set for that length, not just the answer pool. This avoids the "valid word rejected" symptom from the updated diagnosis even when answer pools are small.
+- Update `src/data/wordRepository.ts` and the OG/GO session selectors only as much as needed to honor the above and to keep the public `getWordRepository` contract stable. If a dynamic-import path is introduced, gate it behind an explicit async API and keep the synchronous path for daily length 5.
+
+**Key files**:
+- `src/data/wordLists.ts`
+- `src/data/loadWordList.ts`
+- `src/data/wordRepository.ts`
+- `src/data/index.ts` (only if a new helper is exported)
+- `src/data/bundled/words_length_<N>.json` for every N in 2..35 that still ships placeholder content
+- `src/app/App.tsx` (length-selector display only, not behavior)
+- `src/app/OgGame.tsx`
+- `src/app/GoGame.tsx`
+- `src/game/og/session.ts`
+- `src/game/go/session.ts`
+- `src/game/constants.ts` (only if a new derived helper is introduced)
+
+**Verification**:
+- New or updated unit tests cover:
+  - `getAvailableOgPracticeLengths()` and `getAvailableGoPracticeLengths()` each return every integer 2..35.
+  - `loadBundledWordList('practice', N).ok === true` for every N in 2..35.
+  - A representative real English word at each of lengths 2, 5, 12, 20, and 35 is accepted by `validateGuess`. Length-35 may be exempted if and only if the upstream dataset legitimately ships no 35-letter words on a given day; the test must then verify the **graceful fallback** path rather than acceptance.
+  - Daily mode remains locked to length 5 (assert at the type and the session layer).
+- `npm run test`, `npm run lint`, `npm run build` all pass.
+- Manual smoke check (documented in progress report): `npm run dev` shows the practice length dropdown listing every integer 2..35 in both `og` and `go`; submitting a known real word at lengths 2, 5, 12, 20, and 35 is accepted; submitting clearly invalid strings is still rejected; daily `og` and daily `go` still play normally with length 5.
+- Data safety: per CONSTITUTION §8.3, no unescaped HTML may be introduced from imported word/definition data. Reuse existing definition rendering helpers.
+
+### Step 12U.4 — Verify Removal of Every Phase 9 Debug Surface
+
+**Build / modify**:
+- Confirm Section 16 already removed the `shellMessages` `<ToastRegion>` mount, the "Phase 9 polish" sidebar `<Panel>`, the `LoadingState` filler, the "Review shell notes" button, and the "Phase 9 shell notes" `Dialog` from `src/app/App.tsx`. If any of these (or a peer leftover such as a "polish ready" string, a debug toast payload, or a debug-only panel) still exists anywhere under `src/`, remove only that debug surface — do not modify gameplay logic, accessibility primitives, or the underlying `ToastRegion`/`Panel`/`Dialog` components.
+- Grep the entire `src/` tree for `polish ready`, `Phase 9`, and any debug-only string flagged by the updated diagnosis. The grep result must be empty for the user-facing strings after this step.
+
+**Key files**:
+- `src/app/App.tsx`
+- Any other file the grep surfaces (expected: none)
+
+**Verification**:
+- Grep returns no matches for the debug strings above under `src/` (or under `dist/` after `npm run build`).
+- Manual smoke check confirms the floating bottom-right box no longer appears on any route.
+- Existing accessibility, focus order, and ToastRegion-based future surfaces remain intact (CONSTITUTION §12).
+
+### Step 12U.5 — Re-verify the Persistence Layer End-to-End
+
+**Build / modify**:
+- No new functionality. After Steps 12U.2–12U.4, re-exercise the existing persistence-layer wiring (`api/_lib/vercelBlobStore.ts`, `api/_lib/wordListStore.ts`, `api/cron/refresh-word-lists.ts`, `api/admin-refresh.ts`, `api/word-lists/manifest.ts`) and the client-side `refreshStore.ts` projection.
+- Confirm the factory still returns the documented `skipped` status when `BLOB_READ_WRITE_TOKEN` is absent and the documented success path when it is present (use the existing test doubles in `src/data/refreshStore.ts`). Do not invent new fixtures.
+
+**Verification**:
+- `npm run test` continues to cover the existing refresh-store and refresh-pipeline tests with no regressions and no weakened assertions.
+- Atomic swap, projection, and per-length failure tests still pass unchanged.
+- The build artifact must not bundle `@vercel/blob` into the client (`dist/assets/*.js`). Re-run the Phase 13 client-bundle leak check (`grep -R "@vercel/blob" dist/` returns no matches in shipped chunks) and record the result.
+- The public manifest endpoint shape (`{ ok, manifest }` / `{ ok: false, reason }`) and HTTP cache headers from `api/word-lists/manifest.ts` are unchanged.
+
+### Step 12U.6 — Documentation, Changelog, and Progress Artifacts
+
+**Build / modify**:
+- Add a new `[Unreleased] — Fixed` block to `CHANGELOG.md` describing:
+  - Resolution of the residual TypeScript build errors from the updated diagnosis (missing `.js` extensions across `api/`/`src/data/` boundary, missing barrel re-exports from `src/data/index.ts`, JSON import attribute alignment, `loadWordList.ts` type mismatch).
+  - Practice length selector now exposing the full 2..35 range from real (or, where real content is unavailable, gracefully-handled) bundled data, with the "word not in list" regression resolved.
+  - Removal of any remaining Phase 9 debug surface.
+  - Any documentation update required by the bundling strategy chosen in Step 12U.3 (e.g., note about dynamic-import lengths).
+- Update `docs/deployment.md` only if Step 12U.3's strategy changes operator-visible behavior (for example, if length-indexed dynamic imports change preview deployment expectations). Do not introduce documentation about features outside the diagnosis report's scope.
+- Append a new row to `progress/PROGRESS.csv` for this section using `phase_id = 15`, title `"Phase 12 — Fix Build Errors, Length Selector, and Polish Artifacts (Updated Diagnosis Report 2026-05-26)"`. Reuse the prompt-gate/next-step columns consistently with prior rows.
+- Create `progress/PROGRESS-STEP-15.md` from `progress/PROGRESS-TEMPLATE.md` summarizing what changed across Steps 12U.1–12U.6, what verification ran, known limitations (including any Vercel-only verification the agent could not perform), and whether the user is safe/authorized to proceed to a standard release review.
+- If any step cannot be completed (for example because Vercel preview access is not available), annotate the progress markdown with the missing check, the reason, and what was verified locally instead, per CONSTITUTION §6.2.
+
+**Key files**:
+- `CHANGELOG.md`
+- `progress/PROGRESS.csv`
+- `progress/PROGRESS-STEP-15.md`
+- `docs/deployment.md` (only if required)
+
+**Verification**:
+- The new CSV row matches the progress markdown summary exactly.
+- No secrets, tokens, deploy URLs containing internal identifiers, or private deployment data appear in any updated artifact (CONSTITUTION §5.4, §14).
+- Changelog entry references only user-facing or build-facing behavior changes; it does not leak repository-internal debugging detail.
+
+### Step 12U.7 — Full Verification, Security Review, and Halt
+
+**Build / modify**:
+- No new code changes in this step.
+
+**Verification**:
+- Run, in order, and record results in `progress/PROGRESS-STEP-15.md`:
+  - `npm ci`
+  - `npm run lint`
+  - `npm run test`
+  - `npm run build`
+  - `npx tsc -p tsconfig.api.json --noEmit`
+  - `git diff --check`
+  - The Phase 13 client-bundle leak check (confirm `@vercel/blob` is not in any `dist/assets/*.js`).
+- Run `codeql_checker` on the diff. Address any true-positive alert in changed lines before halting (CONSTITUTION §14). False positives may be ignored with a written justification in the progress report.
+- Manual smoke checks captured in the progress report:
+  - Home shell no longer shows the floating "polish ready" box or any Phase 9 debug surface on any route.
+  - Practice length dropdown shows every integer 2..35 in both `og` and `go`.
+  - Known real English words at lengths 2, 5, 12, 20, and 35 are accepted; clearly invalid strings are still rejected.
+  - Daily `og` and daily `go` still play normally with length 5.
+  - Post-game definitions, sharing, settings, and admin surfaces still render as before.
+- Reconfirm CONSTITUTION compliance: no out-of-scope v1 features; no removed or weakened tests; no committed secrets; no service-role exposure to the client; no unescaped HTML from imported definition data; progress artifacts updated; daily-mode performance unchanged.
+
+**Pause point**: Commit and push every change through the approved progress-reporting workflow. Provide the standard review-gate summary (what changed, what was verified, limitations, links to the updated `progress/PROGRESS.csv` row and `progress/PROGRESS-STEP-15.md`, exact approval needed) and halt for explicit user approval before any production deployment action.
+
+### Section 17 Exit Checklist
+
+- Every error class in the updated `DIAGNOSIS-REPORT-2026-05-26.md` is either resolved in code or documented as already-fixed and pending a clean Vercel rebuild, with the reproduction map preserved in `progress/PROGRESS-STEP-15.md`.
+- Every Phase 9 debug surface (the "polish ready" floating box and its peers) is gone from `src/` and from the built `dist/`.
+- Practice mode exposes every length 2..35 in `og` and `go`; guess validation uses the full bundled (or lazily-loaded) word lists at every length; daily mode remains locked to length 5.
+- The persistence layer continues to behave as in Phase 13 (atomic swap, factory skip-when-unconfigured, no `@vercel/blob` in client bundle).
+- `CHANGELOG.md`, `progress/PROGRESS.csv`, and `progress/PROGRESS-STEP-15.md` are updated and free of secrets or private deployment data.
+- `npm run lint`, `npm run test`, `npm run build`, and the standalone `api/` typecheck all pass; `codeql_checker` is run and any true-positive alert in changed lines is fixed.
+- The agent halts and waits for explicit user approval before any production release action.
+
+---
+
 **End of AGENT-IMPLEMENTATION-PLAN.md**
