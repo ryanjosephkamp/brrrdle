@@ -3,6 +3,7 @@ import {
   HUGGING_FACE_DATASET_ID,
   HUGGING_FACE_RAW_BASE,
   fetchHuggingFaceRemoteMetadata,
+  isRefreshFailure,
   refreshWordListsFromHuggingFace,
   type RefreshSourceInfo,
 } from '../src/data/index.js'
@@ -81,7 +82,7 @@ export default async function handler(request: Request): Promise<Response> {
     rawBase: HUGGING_FACE_RAW_BASE,
   })
 
-  if (!result.ok) {
+  if (isRefreshFailure(result)) {
     const failureSummary = result.failures.map((failure) => ({
       length: failure.length,
       reason: failure.reason,

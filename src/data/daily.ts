@@ -1,6 +1,6 @@
 import { DAILY_WORD_LENGTH } from '../game/constants.js'
 import type { WordEntry } from './types.js'
-import { getWordRepository } from './wordRepository.js'
+import { getWordRepository, isWordRepositoryFailure } from './wordRepository.js'
 
 export interface DailyPuzzle {
   readonly answer: string
@@ -39,7 +39,7 @@ export function selectDailyAnswer(answers: readonly WordEntry[], date = new Date
 
 export function getDailyOgPuzzle(date = new Date()): DailyPuzzle {
   const repository = getWordRepository({ mode: 'og', scope: 'daily', length: DAILY_WORD_LENGTH })
-  if (!repository.ok) {
+  if (isWordRepositoryFailure(repository)) {
     throw new Error(repository.message)
   }
 

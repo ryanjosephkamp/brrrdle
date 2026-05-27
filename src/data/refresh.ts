@@ -1,5 +1,9 @@
 import type { WordListFile } from './types.js'
-import { validateWordListFile, type SchemaIssue } from './wordListSchema.js'
+import {
+  isSchemaValidationFailure,
+  validateWordListFile,
+  type SchemaIssue,
+} from './wordListSchema.js'
 import {
   HUGGING_FACE_EXPECTED_LENGTHS,
   buildHuggingFaceFileUrl,
@@ -45,6 +49,14 @@ export interface RefreshFailure {
 }
 
 export type RefreshResult = RefreshSuccess | RefreshFailure
+
+export function isRefreshSuccess(result: RefreshResult): result is RefreshSuccess {
+  return result.ok === true
+}
+
+export function isRefreshFailure(result: RefreshResult): result is RefreshFailure {
+  return result.ok === false
+}
 
 export interface RefreshOptions {
   readonly fetchJson: JsonFetcher
@@ -110,7 +122,7 @@ async function refreshOneLength(
 
   const coerced = coercePayload(payload, length, options.source)
   const validation = validateWordListFile(coerced)
-  if (!validation.ok) {
+  if (isSchemaValidationFailure(validation)) {
     return {
       length,
       ok: false,

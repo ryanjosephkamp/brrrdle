@@ -24,6 +24,18 @@ export interface SchemaValidationFailure {
 
 export type SchemaValidationResult = SchemaValidationSuccess | SchemaValidationFailure
 
+export function isSchemaValidationSuccess(
+  result: SchemaValidationResult,
+): result is SchemaValidationSuccess {
+  return result.ok === true
+}
+
+export function isSchemaValidationFailure(
+  result: SchemaValidationResult,
+): result is SchemaValidationFailure {
+  return result.ok === false
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }

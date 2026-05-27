@@ -1,7 +1,7 @@
 import { DAILY_WORD_LENGTH, isSupportedDailyWordLength, isSupportedPracticeWordLength } from '../game/constants.js'
 import type { PlayScope } from '../game/types.js'
 import type { NormalizedWordList, WordDefinitionEntry, WordListFile } from './types.js'
-import { validateWordListFile } from './wordListSchema.js'
+import { isSchemaValidationFailure, validateWordListFile } from './wordListSchema.js'
 import { BUNDLED_WORD_LISTS } from './wordLists.js'
 
 export interface LoadWordListSuccess {
@@ -16,6 +16,18 @@ export interface LoadWordListFailure {
 }
 
 export type LoadWordListResult = LoadWordListSuccess | LoadWordListFailure
+
+export function isLoadWordListSuccess(
+  result: LoadWordListResult,
+): result is LoadWordListSuccess {
+  return result.ok === true
+}
+
+export function isLoadWordListFailure(
+  result: LoadWordListResult,
+): result is LoadWordListFailure {
+  return result.ok === false
+}
 
 interface ResolveWordListLengthSuccess {
   readonly ok: true
@@ -78,7 +90,7 @@ export function loadBundledWordList(scope: PlayScope, length: number): LoadWordL
   }
 
   const validation = validateWordListFile(bundled)
-  if (!validation.ok) {
+  if (isSchemaValidationFailure(validation)) {
     return {
       ok: false,
       reason: 'invalid-bundled-list',
