@@ -8,8 +8,8 @@ import { StatsDashboard } from '../stats'
 import { WordExplorerPanel } from '../wordExplorer'
 import { FeedbackPanel } from '../feedback'
 import { SoundProvider, useSound } from '../sound'
-import { GoGame } from './GoGame'
-import { OgGame } from './OgGame'
+import { GoGame } from './games/GoGame'
+import { OgGame } from './games/OgGame'
 import { DEFAULT_ROUTE_ID, getPrimaryNavigationRoutes, getRouteById, getRoutesByGroup, type AppRoute } from './routes'
 
 function ModeCard({ route, onSelect }: { readonly route: AppRoute; readonly onSelect: (route: AppRoute) => void }) {

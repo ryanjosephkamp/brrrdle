@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import type { GuessResult, TileState } from './types'
+import type { GuessResult, TileState } from '../types'
 
 export type KeyboardInput =
   | { readonly type: 'letter'; readonly value: string }

@@ -1,4 +1,4 @@
-import type { KeyboardInput, KeyboardLetterStates } from '../game/useKeyboardInput'
+import type { KeyboardInput, KeyboardLetterStates } from '../game/input/useKeyboardInput'
 import { classNames } from './classNames'
 
 interface KeyboardProps {

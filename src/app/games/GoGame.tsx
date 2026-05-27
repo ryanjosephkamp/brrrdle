@@ -1,33 +1,35 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { BUNDLED_WORD_LIST_LENGTHS } from '../data'
-import type { CompletedGameInput } from '../account'
-import { DefinitionPanel } from '../definitions'
+import { BUNDLED_WORD_LIST_LENGTHS } from '../../data'
+import type { CompletedGameInput } from '../../account'
+import { DefinitionPanel } from '../../definitions'
 import {
-  createDailyOgSetup,
-  createOgSession,
-  createPracticeOgSetup,
-  continueAfterLoss,
-  deleteLetter,
+  createDailyGoSetup,
+  createGoSession,
+  createPracticeGoSetup,
+  continueGoAfterLoss,
+  deleteGoLetter,
   deriveKeyboardLetterStates,
-  enterLetter,
-  getAvailableOgPracticeLengths,
-  restoreOgSession,
-  serializeOgSession,
-  submitGuess,
+  enterGoLetter,
+  getAvailableGoPracticeLengths,
+  restoreGoSession,
+  serializeGoSession,
+  setGoHardMode,
+  submitGoGuess,
   useKeyboardInput,
+  type GoSessionSetup,
+  type GoSessionState,
   type KeyboardInput,
-  type OgPuzzleSetup,
   type PuzzleSessionState,
   type TileState,
-  formatOgShare,
-} from '../game'
-import { clearDailyOgStoredSession, loadDailyOgStoredSession, saveDailyOgStoredSession } from '../lib/storage/dailyOgStorage'
-import { calculatePayToContinueCost } from '../progression'
-import { useSound } from '../sound'
-import { Button, Keyboard, Panel, ShareButton } from '../ui'
-import { classNames } from '../ui/classNames'
+  formatGoShare,
+} from '../../game'
+import { clearDailyGoStoredSession, loadDailyGoStoredSession, saveDailyGoStoredSession } from '../../game/storage/dailyGoStorage'
+import { calculatePayToContinueCost } from '../../progression'
+import { Button, Keyboard, Panel, ShareButton } from '../../ui'
+import { useSound } from '../../sound'
+import { classNames } from '../../ui/classNames'
 
-interface OgGameProps {
+interface GoGameProps {
   readonly coins: number
   readonly keyboardDisabled?: boolean
   readonly onGameComplete?: (input: CompletedGameInput) => void
@@ -45,14 +47,14 @@ const tileStateClasses: Record<GridTileState, string> = {
   present: 'border-amber-300/70 bg-amber-300/20 text-amber-50',
 }
 
-function createInitialDailySession(setup: ReturnType<typeof createDailyOgSetup>): PuzzleSessionState {
-  const stored = loadDailyOgStoredSession()
-  if (stored && stored.dateKey === setup.dateKey && stored.session.answer === setup.answer) {
-    return restoreOgSession(stored.session, setup.validGuesses)
+function createInitialDailySession(setup: ReturnType<typeof createDailyGoSetup>): GoSessionState {
+  const stored = loadDailyGoStoredSession()
+  if (stored && stored.dateKey === setup.dateKey && stored.session.puzzles[0]?.answer === setup.puzzles[0]?.answer) {
+    return restoreGoSession(stored.session, setup.validGuesses)
   }
 
-  clearDailyOgStoredSession()
-  return createOgSession(setup)
+  clearDailyGoStoredSession()
+  return createGoSession(setup)
 }
 
 function GuessGrid({ session }: { readonly session: PuzzleSessionState }) {
@@ -75,7 +77,7 @@ function GuessGrid({ session }: { readonly session: PuzzleSessionState }) {
   }), [session.currentGuess, session.guesses, session.maxAttempts, session.status, session.wordLength])
 
   return (
-    <div aria-label="Guess grid" className="space-y-2" role="grid">
+    <div aria-label="Go guess grid" className="space-y-2" role="grid">
       {rows.map((row, rowIndex) => (
         <div className={classNames('grid gap-1.5', session.lastValidation && rowIndex === session.guesses.length ? 'motion-safe:animate-[brrrdle-row-shake_180ms_ease-in-out]' : undefined)} key={rowIndex} role="row" style={{ gridTemplateColumns: `repeat(${session.wordLength}, minmax(0, 1fr))` }}>
           {row.map((tile, tileIndex) => (
@@ -108,7 +110,7 @@ function getCompletionPercentage(session: PuzzleSessionState): number {
   return Math.round((bestCorrectTiles / session.wordLength) * 100)
 }
 
-function OgGameSession({
+function GoGameSession({
   coins,
   keyboardDisabled,
   onGameComplete,
@@ -117,7 +119,6 @@ function OgGameSession({
   onSpendCoins,
   practiceLength,
   practiceLengths,
-  practiceSeed,
   scope,
   setup,
 }: {
@@ -129,17 +130,17 @@ function OgGameSession({
   readonly onSpendCoins: (amount: number) => boolean
   readonly practiceLength: number
   readonly practiceLengths: readonly number[]
-  readonly practiceSeed: number
-  readonly scope: OgGameProps['scope']
-  readonly setup: OgPuzzleSetup
+  readonly scope: GoGameProps['scope']
+  readonly setup: GoSessionSetup
 }) {
-  const [session, setSession] = useState(() => scope === 'daily' ? createInitialDailySession(setup) : createOgSession(setup))
+  const [session, setSession] = useState(() => scope === 'daily' ? createInitialDailySession(setup) : createGoSession(setup))
   const [continuationMessage, setContinuationMessage] = useState<string>()
-  const completionPercentage = getCompletionPercentage(session)
+  const currentPuzzle = session.puzzles[session.currentPuzzleIndex]
+  const completionPercentage = getCompletionPercentage(currentPuzzle)
   const continuationCost = calculatePayToContinueCost({
     completionPercentage,
-    continuationCount: session.continuationCount,
-    wordLength: session.wordLength,
+    continuationCount: currentPuzzle.continuationCount,
+    wordLength: currentPuzzle.wordLength,
   })
   const canAffordContinuation = session.status === 'lost' && coins >= continuationCost
 
@@ -148,9 +149,9 @@ function OgGameSession({
       return
     }
 
-    saveDailyOgStoredSession({
+    saveDailyGoStoredSession({
       dateKey: setup.dateKey,
-      session: serializeOgSession(session),
+      session: serializeGoSession(session),
     })
   }, [scope, session, setup.dateKey])
 
@@ -163,17 +164,21 @@ function OgGameSession({
       return
     }
 
+    const attemptsUsed = session.puzzles.reduce((total, puzzle) => total + puzzle.guesses.length, 0)
+    const maxAttempts = session.puzzles.reduce((total, puzzle) => total + puzzle.maxAttempts, 0)
+    const puzzleCount = session.status === 'won' ? session.puzzles.length : session.currentPuzzleIndex + 1
     onGameComplete?.({
-      attemptsUsed: session.guesses.length,
-      gameId: scope === 'daily' ? `og:daily:${setup.dateKey}` : `og:practice:${practiceLength}:${practiceSeed}:${setup.answer}`,
-      maxAttempts: session.maxAttempts,
-      mode: 'og',
+      attemptsUsed,
+      gameId: scope === 'daily' ? `go:daily:${setup.dateKey}` : `go:practice:${practiceLength}:${setup.puzzles.map((puzzle) => puzzle.answer).join('-')}`,
+      maxAttempts,
+      mode: 'go',
+      puzzleCount,
       scope,
       status: session.status,
-      word: session.answer,
+      word: session.status === 'won' ? session.puzzles.map((puzzle) => puzzle.answer).join(',') : session.puzzles[session.currentPuzzleIndex].answer,
       wordLength: session.wordLength,
     })
-  }, [canAffordContinuation, onGameComplete, practiceLength, practiceSeed, scope, session.answer, session.guesses.length, session.maxAttempts, session.status, session.wordLength, setup.answer, setup.dateKey])
+  }, [canAffordContinuation, onGameComplete, practiceLength, scope, session.currentPuzzleIndex, session.puzzles, session.status, session.wordLength, setup.dateKey, setup.puzzles])
 
   const sound = useSound()
   const handleInput = useCallback((input: KeyboardInput) => {
@@ -181,14 +186,14 @@ function OgGameSession({
     sound.play('keyboard-click')
     setSession((currentSession) => {
       if (input.type === 'letter') {
-        return enterLetter(currentSession, input.value)
+        return enterGoLetter(currentSession, input.value)
       }
 
       if (input.type === 'delete') {
-        return deleteLetter(currentSession)
+        return deleteGoLetter(currentSession)
       }
 
-      const nextSession = submitGuess(currentSession)
+      const nextSession = submitGoGuess(currentSession)
       if (nextSession === currentSession) {
         sound.play('invalid-guess')
       } else {
@@ -201,6 +206,8 @@ function OgGameSession({
     })
   }, [sound])
 
+  useKeyboardInput({ disabled: keyboardDisabled, onInput: handleInput })
+
   const handlePayToContinue = useCallback(() => {
     if (session.status !== 'lost') {
       return
@@ -211,39 +218,41 @@ function OgGameSession({
       return
     }
 
-    setSession((currentSession) => continueAfterLoss(currentSession))
+    setSession((currentSession) => continueGoAfterLoss(currentSession))
     setContinuationMessage(`Spent ${continuationCost} coins for one more attempt.`)
   }, [continuationCost, onSpendCoins, session.status])
 
-  useKeyboardInput({ disabled: keyboardDisabled, onInput: handleInput })
-
-  const letterStates = deriveKeyboardLetterStates(session.guesses)
+  const letterStates = deriveKeyboardLetterStates(currentPuzzle.guesses)
   const statusMessage = session.status === 'won'
-    ? 'Solved. Daily completion is preserved on refresh.'
+    ? 'Solved all five go puzzles. Daily completion is preserved on refresh.'
     : session.status === 'lost'
-      ? `Out of attempts. The answer was ${session.answer.toLocaleUpperCase('en-US')}.`
-      : `${session.maxAttempts - session.guesses.length} attempts remaining.`
+      ? `The chain ended on puzzle ${session.currentPuzzleIndex + 1}. The answer was ${currentPuzzle.answer.toLocaleUpperCase('en-US')}.`
+      : `Puzzle ${session.currentPuzzleIndex + 1} of ${session.puzzles.length}; ${currentPuzzle.maxAttempts - currentPuzzle.guesses.length} attempts remaining.`
 
   return (
-    <section className="space-y-5" aria-labelledby="og-game-title">
+    <section className="space-y-5" aria-labelledby="go-game-title">
       <div className="space-y-2">
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-ice-200)]">og {scope}</p>
-        <h2 id="og-game-title" className="text-3xl font-bold text-white">
-          {scope === 'daily' ? 'Daily og puzzle' : 'Practice og puzzle'}
+        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-ice-200)]">go {scope}</p>
+        <h2 id="go-game-title" className="text-3xl font-bold text-white">
+          {scope === 'daily' ? 'Daily go chain' : 'Practice go chain'}
         </h2>
         <p className="max-w-3xl text-base leading-7 text-slate-300">
-          Classic single-board brrrdle is active with canonical tile states, physical keyboard input, on-screen keyboard input, and optional hard mode.
+          Five linked brrrdles are active with prior answers carried forward as pre-filled rows on later puzzles.
         </p>
       </div>
 
       <Panel className="space-y-4" tone="muted">
-        <div className="grid gap-3 text-sm text-slate-300 sm:grid-cols-3">
+        <div className="grid gap-3 text-sm text-slate-300 sm:grid-cols-4">
           <div>
             <p className="font-semibold text-cyan-100">Word length</p>
             <p>{session.wordLength} letters</p>
           </div>
           <div>
-            <p className="font-semibold text-cyan-100">Puzzle status</p>
+            <p className="font-semibold text-cyan-100">Current puzzle</p>
+            <p>{session.currentPuzzleIndex + 1} of {session.puzzles.length}</p>
+          </div>
+          <div>
+            <p className="font-semibold text-cyan-100">Chain status</p>
             <p className="capitalize">{session.status}</p>
           </div>
           <div>
@@ -266,8 +275,8 @@ function OgGameSession({
                 ))}
               </select>
             </label>
-            <Button onClick={onPracticeSeedChange} variant="secondary">New practice puzzle</Button>
-            <p className="text-sm leading-6 text-slate-300">Practice uses available bundled launch seed lengths while the full data refresh pipeline is completed later.</p>
+            <Button onClick={onPracticeSeedChange} variant="secondary">New go chain</Button>
+            <p className="text-sm leading-6 text-slate-300">The selected length applies to all five practice puzzles.</p>
           </div>
         ) : null}
 
@@ -275,23 +284,39 @@ function OgGameSession({
           <input
             checked={session.hardMode}
             className="h-4 w-4 accent-cyan-300"
-            onChange={(event) => setSession((currentSession) => ({ ...currentSession, hardMode: event.target.checked, lastValidation: undefined }))}
+            onChange={(event) => setSession((currentSession) => setGoHardMode(currentSession, event.target.checked))}
             type="checkbox"
           />
           Hard mode
         </label>
 
-        <GuessGrid session={session} />
+        <div className="grid gap-2 sm:grid-cols-5" aria-label="Go puzzle progress">
+          {session.puzzles.map((puzzle, index) => (
+            <div
+              className={classNames(
+                'rounded-2xl border p-3 text-sm',
+                index === session.currentPuzzleIndex ? 'border-cyan-200/70 bg-cyan-300/10 text-cyan-50' : 'border-slate-700 bg-slate-950/50 text-slate-300',
+              )}
+              key={`${puzzle.answer}-${index}`}
+            >
+              <p className="font-bold">Puzzle {index + 1}</p>
+              <p className="capitalize">{puzzle.status}</p>
+              {index < session.currentPuzzleIndex ? <p>{puzzle.answer.toLocaleUpperCase('en-US')}</p> : null}
+            </div>
+          ))}
+        </div>
+
+        <GuessGrid session={currentPuzzle} />
 
         <div aria-live="polite" className="rounded-2xl border border-slate-700 bg-slate-950/70 p-3 text-sm leading-6 text-slate-200" role="status">
           <p>{statusMessage}</p>
-          {session.lastValidation ? <p className="mt-1 font-semibold text-amber-100">{session.lastValidation.message}</p> : null}
+          {currentPuzzle.lastValidation ? <p className="mt-1 font-semibold text-amber-100">{currentPuzzle.lastValidation.message}</p> : null}
         </div>
 
         {session.status === 'lost' ? (
           <div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm leading-6 text-amber-50">
             <p className="font-bold">Pay to Continue</p>
-            <p>Spend {continuationCost} coins for one more attempt. Current balance: {coins} coins.</p>
+            <p>Spend {continuationCost} coins for one more attempt on puzzle {session.currentPuzzleIndex + 1}. Current balance: {coins} coins.</p>
             <Button disabled={!canAffordContinuation} onClick={handlePayToContinue} variant="secondary">
               {canAffordContinuation ? `Pay ${continuationCost} coins to continue` : `Need ${continuationCost} coins to continue`}
             </Button>
@@ -306,12 +331,12 @@ function OgGameSession({
 
         {session.status !== 'playing' ? (
           <ShareButton
-            label="Share og result"
-            text={formatOgShare({
+            label="Share go result"
+            text={formatGoShare({
+              currentPuzzleIndex: session.currentPuzzleIndex,
               dateKey: setup.dateKey,
-              guesses: session.guesses,
-              maxAttempts: session.maxAttempts,
-              mode: 'og',
+              mode: 'go',
+              puzzles: session.puzzles,
               scope,
               status: session.status,
             })}
@@ -320,28 +345,28 @@ function OgGameSession({
 
         <DefinitionPanel
           enabled={session.status !== 'playing'}
-          mode="og"
+          mode="go"
           scope={scope}
-          word={session.answer}
-          wordLength={session.wordLength}
+          word={currentPuzzle.answer}
+          wordLength={currentPuzzle.wordLength}
         />
       </Panel>
     </section>
   )
 }
 
-export function OgGame({ coins, keyboardDisabled = false, onGameComplete, onSpendCoins, scope }: OgGameProps) {
-  const practiceLengths = useMemo(() => getAvailableOgPracticeLengths(), [])
+export function GoGame({ coins, keyboardDisabled = false, onGameComplete, onSpendCoins, scope }: GoGameProps) {
+  const practiceLengths = useMemo(() => getAvailableGoPracticeLengths(), [])
   const [practiceLength, setPracticeLength] = useState(5)
   const [practiceSeed, setPracticeSeed] = useState(0)
   const setup = useMemo(
-    () => scope === 'daily' ? createDailyOgSetup() : createPracticeOgSetup(practiceLength, practiceSeed),
+    () => scope === 'daily' ? createDailyGoSetup() : createPracticeGoSetup(practiceLength, practiceSeed),
     [practiceLength, practiceSeed, scope],
   )
   const sessionKey = scope === 'daily' ? `${scope}-${setup.dateKey}` : `${scope}-${practiceLength}-${practiceSeed}`
 
   return (
-    <OgGameSession
+    <GoGameSession
       key={sessionKey}
       coins={coins}
       keyboardDisabled={keyboardDisabled}
@@ -351,7 +376,6 @@ export function OgGame({ coins, keyboardDisabled = false, onGameComplete, onSpen
       onSpendCoins={onSpendCoins}
       practiceLength={practiceLength}
       practiceLengths={practiceLengths}
-      practiceSeed={practiceSeed}
       scope={scope}
       setup={setup}
     />

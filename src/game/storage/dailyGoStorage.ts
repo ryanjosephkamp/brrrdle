@@ -1,4 +1,4 @@
-import type { SerializedGoSession } from '../../game/go/session'
+import type { SerializedGoSession } from '../go/session'
 import type { KeyValueStorage } from './dailyOgStorage'
 
 export interface DailyGoStoredSession {
