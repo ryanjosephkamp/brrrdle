@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getGuessResult } from './tileStates'
+import { getGuessResult } from '../tileStates'
 import { deriveKeyboardLetterStates, normalizeKeyboardKey } from './useKeyboardInput'
 
 describe('normalizeKeyboardKey', () => {

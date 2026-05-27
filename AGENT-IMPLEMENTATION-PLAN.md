@@ -1,9 +1,9 @@
 # AGENT-IMPLEMENTATION-PLAN.md
 
 **Project**: brrrdle  
-**Plan Version**: 1.2
-**Date**: 2026-05-26  
-**Status**: Draft for user review — amended with Hugging Face word-list source integration
+**Plan Version**: 1.3
+**Date**: 2026-05-27
+**Status**: Draft for user review — amended with Hugging Face word-list source integration; further amended on 2026-05-27 with the `ADDITIONS-2026-05-27.md` addendum (see §18).
 **Authority**: Must follow `CONSTITUTION.md`, `BRRRDLE-SPEC.md`, and the approved v2.6 plan in `BRRRDLE-OVERVIEW.md`.
 
 ---
@@ -1313,6 +1313,354 @@ Progress tracking is mandatory for transparency, resumability, and agent coordin
 - The persistence layer continues to behave as in Phase 13 (atomic swap, factory skip-when-unconfigured, no `@vercel/blob` in client bundle).
 - `CHANGELOG.md`, `progress/PROGRESS.csv`, and `progress/PROGRESS-STEP-15.md` are updated and free of secrets or private deployment data.
 - `npm run lint`, `npm run test`, `npm run build`, and the standalone `api/` typecheck all pass; `codeql_checker` is run and any true-positive alert in changed lines is fixed.
+- The agent halts and waits for explicit user approval before any production release action.
+
+---
+
+## 18. Phase 13 — Plan Addendum (ADDITIONS-2026-05-27): Word Explorer, Feedback Tab, Sound Effects, Authentication Improvements, and Repository Cleanup
+
+**Plan Version**: 1.3 (addendum)
+**Date**: 2026-05-27
+**Status**: Draft for user review — implementation must NOT begin until the user explicitly approves this addendum.
+**Authority**: This addendum is bound by `CONSTITUTION.md` (v3.1), `BRRRDLE-SPEC.md`, `BRRRDLE-OVERVIEW.md`, prior sections of this plan, and `ADDITIONS-2026-05-27.md`.
+
+### 18.1 Scope, Source of Truth, and Operating Rules
+
+This addendum covers the five new work streams declared in `ADDITIONS-2026-05-27.md`:
+
+1. **Word Explorer Tab** (new public tab).
+2. **Feedback Tab** (new public tab).
+3. **Sound Effects** (new optional in-game audio with Settings toggle).
+4. **Authentication Improvements** (email + password alongside existing magic link, durable session, reliable admin role detection).
+5. **Repository Cleanup & Re-organization** (safe, non-deleting reorganization with import-path updates).
+
+Binding rules for this addendum:
+
+- `ADDITIONS-2026-05-27.md` is the source of truth for behavior; this section is the source of truth for ordering, verification, and pause points.
+- No code changes are executed by writing this addendum. Implementation begins only after explicit user approval.
+- No files may be deleted, renamed in a lossy way, or have existing functionality removed at any phase below. Moves are allowed (Step 18.3) but every move must be accompanied by import-path updates so behavior is preserved.
+- All new tabs (Word Explorer, Feedback) must be visible to everyone, including guests (per `ADDITIONS-2026-05-27.md` §"Implementation Constraints").
+- Daily `og` and daily `go` remain fixed at 5 letters (CONSTITUTION §3, BRRRDLE-SPEC §3.1). Nothing in this addendum may change that.
+- Every step ends with verification and an explicit halt-for-approval gate, per CONSTITUTION §5.3 and §6, and per the Standard Phase Exit Checklist in §1.3 of this plan.
+- `progress/PROGRESS.csv` and a new `progress/PROGRESS-STEP-N.md` report must be created/updated for every step below before halting. `CHANGELOG.md` must receive a corresponding `[Unreleased]` entry at every step that ships user-visible or build-visible change.
+- No secrets, tokens, deploy URLs containing internal identifiers, or private deployment data may appear in any artifact (CONSTITUTION §5.4, §14).
+- All new code paths must pass `npm run lint`, `npm run test`, `npm run build`, and `npx tsc -p tsconfig.api.json --noEmit` (where api/ is touched), and `codeql_checker` must be run after each step and any true-positive alert in changed lines fixed before halting (CONSTITUTION §14).
+- Network calls that the sandbox cannot reach (e.g., Hugging Face, Supabase production, Vercel deploy hooks) must be recorded as documented limitations per CONSTITUTION §6.2; they must not be silently skipped.
+
+### 18.2 Phase 13.0 — Pre-flight, Baseline, and Risk Map
+
+**Goal**: Lock the current `main` as a known-good baseline before any addendum work begins, and produce a written risk map.
+
+**Build / modify**: No source changes. Produce only progress artifacts.
+
+**Activities**:
+- Read `progress/PROGRESS.csv` and the most recent `progress/PROGRESS-STEP-N.md` to confirm no in-flight blockers remain from Phase 12 follow-ons.
+- Confirm `CONSTITUTION.md`, `BRRRDLE-SPEC.md`, `BRRRDLE-OVERVIEW.md`, this plan, and `ADDITIONS-2026-05-27.md` are aligned (no conflicts with daily 5-letter lock, practice 2–35, definitions ordering, admin role gate).
+- Produce an internal risk map of:
+  - Files most likely to move during Step 18.3 (cleanup).
+  - Modules consumed by `api/` (server) so any cleanup move preserves serverless build behavior and the standalone `tsconfig.api.json` typecheck.
+  - All places that currently read Supabase session/role (for the auth improvements step).
+  - Places that already wire navigation order (for the new tabs).
+- Record the risk map and the chosen execution order (the order in §18.1 list above) in `progress/PROGRESS-STEP-18.md`.
+
+**Key files**:
+- `progress/PROGRESS.csv` (append a new row for `phase_id = 18`, title `"Phase 13.0 — Plan Addendum Pre-flight & Risk Map (ADDITIONS-2026-05-27)"`).
+- `progress/PROGRESS-STEP-18.md` (new, from `progress/PROGRESS-TEMPLATE.md`).
+- `CHANGELOG.md` (`[Unreleased] — Documentation` entry noting that the addendum and risk map were produced and that implementation has not yet started).
+
+**Verification**:
+- `npm ci`
+- `npm run lint`
+- `npm run test`
+- `npm run build`
+- `npx tsc -p tsconfig.api.json --noEmit`
+- `git diff --check`
+- Recorded confirmation that no test was weakened or removed (CONSTITUTION §6.3).
+
+**Pause point**: Commit/push via the approved progress-reporting workflow. Halt for explicit user approval of the addendum and the risk map before beginning Step 18.3 (Repository Cleanup).
+
+### 18.3 Phase 13.1 — Repository Cleanup & Re-organization (Safe, Non-Destructive)
+
+**Goal**: Re-organize `src/` (and adjacent assets) into a cleaner, more logical layout, without deleting anything and without changing behavior. This step is executed **first** so that all subsequent feature work in this addendum lands on the cleaned layout.
+
+**Constitutional guardrails** (CONSTITUTION §3, §6.3, §14):
+- No file may be deleted.
+- No file may be renamed in a way that drops its content.
+- No test may be removed, skipped, or weakened.
+- Daily 5-letter lock and practice 2–35 contract must remain intact.
+- Server-side `api/` build behavior, the `tsconfig.api.json` standalone typecheck, and the "no `@vercel/blob` in client bundle" invariant (Phase 13 of this plan) must remain intact.
+
+**Build / modify** (executed in clearly separated sub-commits so review is feasible):
+
+- **18.3.1 Audit & Move Map (no moves yet).** Produce a concrete move map listing each source path and its proposed new path, grouped by logical concern (e.g., gameplay engine, data layer, UI primitives, account/auth, admin, PWA, stats/progression, definitions, app shell). The move map is committed as part of `progress/PROGRESS-STEP-19.md` so the user can approve it before any file actually moves. The map must:
+  - Preserve all module boundaries currently relied on by `api/` and by `tsconfig.api.json`.
+  - Preserve the existing barrel re-exports from `src/data/index.ts`, `src/ui/index.ts`, `src/account/index.ts`, and `src/admin/index.ts`.
+  - Avoid moving JSON word-list assets unless absolutely required; if moved, the build-time JSON import attributes and the bundled-source path documented in the data layer must be updated atomically.
+- **18.3.2 Execute moves in small, reviewable groups.** Each group is a separate commit. For each group:
+  - Move files with `git mv` (history-preserving).
+  - Update every import path that references the moved file, including TypeScript path aliases (if any are introduced).
+  - Update any `__tests__` paths and Vitest configuration that depends on file location.
+  - Re-export from existing barrel files so external consumers (including `api/`, `src/App.tsx`, `src/main.tsx`) do not need to change.
+- **18.3.3 Update tooling references.** If any move changes paths used by:
+  - `vite.config.ts`, `tsconfig*.json`, `eslint.config.js`, `vercel.json`, `public/brrrdle-sw.js`, `docs/`, `progress/`, or any GitHub Actions workflow,
+  - those references must be updated in the same commit as the move and listed in the corresponding `progress/PROGRESS-STEP-N.md`.
+
+**Key files** (representative; exact list is enumerated by 18.3.1):
+- `src/**`
+- `api/**` (only import paths if needed; no behavior change)
+- `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `tsconfig.api.json`
+- `vite.config.ts`
+- `eslint.config.js`
+- `vercel.json`
+- `docs/**` (only if a path referenced from docs moves)
+
+**Verification** (run after every sub-commit, recorded in `progress/PROGRESS-STEP-19.md`):
+- `npm ci`
+- `npm run lint`
+- `npm run test` (full suite, expect identical count and identical pass set; no test may be added or removed in this step except where the test itself moves)
+- `npm run build`
+- `npx tsc -p tsconfig.api.json --noEmit`
+- Client-bundle leak check: `grep -R "@vercel/blob" dist/` returns no matches in shipped chunks (Phase 13 invariant).
+- `git diff --check`
+- `codeql_checker` on the cumulative diff at end of step.
+
+**Manual follow-up steps the user may need to perform** (documented in `progress/PROGRESS-STEP-19.md` and in `CHANGELOG.md`):
+- **Vercel**: If `vercel.json` rewrites, the `api/` entry-points, or the cron route path change because of a move, the user must redeploy and re-verify that the Vercel Cron schedule and `BLOB_READ_WRITE_TOKEN` / `CRON_SECRET` environment variables still bind to the correct routes. If no `api/` path changed, no Vercel reconfiguration is required and this must be stated explicitly.
+- **Supabase**: If the Supabase client module path changes (currently `src/account/supabaseClient.ts`), the user does **not** need to reconfigure Supabase project settings — only the local `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` envs continue to apply. This must be stated explicitly so the user is not misled.
+- **GitHub Pages / Jekyll docs**: If any `docs/` file moves, confirm the `_config.yml` `permalink` strategy and any internal cross-links still resolve.
+- **GitHub Actions**: If a workflow path expression depends on a moved directory, the workflow file must be updated in the same commit; otherwise, no Actions reconfiguration is required.
+
+**Progress tracking**:
+- Append `phase_id = 19`, title `"Phase 13.1 — Repository Cleanup & Re-organization (ADDITIONS-2026-05-27)"` to `progress/PROGRESS.csv`.
+- Create `progress/PROGRESS-STEP-19.md` with the move map, per-group commit list, verification results, and the explicit manual-follow-up list above.
+- Add a `CHANGELOG.md` `[Unreleased] — Changed` entry summarizing only the reorganization at a behavior-preserving level (no new features).
+
+**Pause point**: Commit/push via the approved workflow. Halt for explicit user approval before beginning Step 18.4.
+
+### 18.4 Phase 13.2 — Word Explorer Tab
+
+**Goal**: Add a new public top-level tab that shows the exact word lists the game is currently using, with live filtering, sortable columns, copy buttons, and a pre-filled "Request word" GitHub Issue path.
+
+**Build / modify**:
+
+- **18.4.1 Data hook.** Add a hook that returns, for a chosen length `N` in 2..35, the combined deduplicated union of `answers` ∪ `validGuesses`, tagged with `Type = "Answer"` and/or `Type = "Valid Guess"` (a word that appears in both is tagged as both, per the requirement that the two checkboxes are combinable). The hook must reuse the existing data layer (the same loader used by gameplay) so it inherits the Vercel Blob / manifest → bundled JSON fallback chain. It must not introduce a new fetch path or duplicate the loader.
+- **18.4.2 UI.** Add a new route `word-explorer` with:
+  - Length selector (default = 5; range = 2..35 inclusive, intersected with `BUNDLED_WORD_LIST_LENGTHS` and any extra lengths the live manifest exposes).
+  - Live search box (case-insensitive, exact and prefix-aware; filters incrementally as the user types).
+  - Two checkboxes — "Show Answers" and "Show Valid Guesses" — both checked by default and combinable.
+  - Sortable column headers ("Word", "Type"). Sort must be deterministic and reversible.
+  - Per-row copy-to-clipboard button using the existing UI primitive style (`src/ui/Button.tsx`) and the standard browser clipboard API with a focus-safe fallback.
+  - Responsive layout: on small screens the table collapses into a single-column card list (use existing Tailwind utilities; do not introduce a new responsive framework).
+  - Empty state: `"{searchTerm}" is not in the current {length}-letter word list.` plus a "Request this word" button.
+- **18.4.3 "Request this word" link.** Build a URL to GitHub's pre-filled new-issue endpoint for `ryanjosephkamp/brrrdle` with:
+  - Title: `Word request: "{word}" (length {N})`
+  - Labels: `word-request`
+  - Body: contains the requested word, the selected length, the current date (ISO-8601, generated client-side), a note that the request came from the in-game Word Explorer, and a "Why this word?" optional section with a polite prompt.
+  - All URL parameters must be percent-encoded.
+  - The link opens in a new tab (`target="_blank"`, `rel="noopener noreferrer"`).
+- **18.4.4 Navigation.** Update `src/app/routes.ts` (or its post-cleanup equivalent path from Step 18.3) so the navigation order is exactly: og | go | Practice | **Word Explorer** | **Feedback** | Settings | Admin. The Admin entry must remain hidden for non-admins (CONSTITUTION §8.2).
+- **18.4.5 Accessibility & motion.** Keyboard-navigable controls, visible focus rings, ARIA labels on the copy buttons, and respect for `prefers-reduced-motion` (CONSTITUTION §12).
+- **18.4.6 Tests.**
+  - Unit tests for the combine/dedupe/tag logic at length 5 and at least one short (2 or 3) and one long (≥20) length.
+  - Unit tests for the GitHub Issue URL builder, including encoding of words with quotes, apostrophes, and Unicode (where applicable to the bundled set).
+  - Unit tests for the empty-state copy and the route ordering.
+
+**Curation note (read-only for this repo)**: The answers curation algorithm in `ADDITIONS-2026-05-27.md` §1 Data Source ("Quality score = 0.45×frequency + 0.30×positional + 0.15×vowel-balance + 0.10×uniqueness", dynamic target size, deterministic seed `42 + length`) is owned by the upstream `english-openlist` preprocessing repo, **not** by this repo. The brrrdle app only **consumes** the resulting JSONs and the `metadata` block they contain. This step must document — in the progress report — that no curation algorithm is being implemented inside `brrrdle` and that the metadata block is surfaced verbatim if the live manifest contains it.
+
+**Key files** (paths reflect post-cleanup layout; exact names finalized in Step 18.3):
+- New: route file for `WordExplorer`, page component, table component, length selector wrapping the existing primitive (if any), GitHub Issue URL helper, hook.
+- Updated: `src/app/routes.ts` (navigation order, route entry), `src/app/App.tsx` (route wiring).
+- Updated: barrel `index.ts` files as needed.
+
+**Verification**:
+- `npm run lint`
+- `npm run test`
+- `npm run build`
+- Client-bundle leak check unchanged.
+- Manual smoke checks, recorded in the progress report:
+  - Word Explorer tab is visible while signed-out and while signed-in.
+  - Default load is length 5, both checkboxes on, sorted alphabetically.
+  - Length 2 and length 35 each show the expected data shape (real or synthetic-placeholder as documented in CHANGELOG, per §17 of this plan).
+  - Search filters live and matches are case-insensitive.
+  - Sort toggles both directions on both columns.
+  - Copy button writes the word to clipboard and announces success without leaking focus.
+  - Empty state surfaces the exact `"{searchTerm}" is not in the current {length}-letter word list.` message and the Request button opens a correctly pre-filled GitHub Issue URL (verified by inspecting the URL without actually submitting an issue from the sandbox).
+- `codeql_checker` run; any true-positive alert in changed lines fixed.
+
+**Manual follow-up steps**: None expected for Vercel/Supabase. If the GitHub repo `word-request` label does not yet exist on `ryanjosephkamp/brrrdle`, the user must create it once (documented in the progress report).
+
+**Progress tracking**: Append `phase_id = 20`, title `"Phase 13.2 — Word Explorer Tab (ADDITIONS-2026-05-27)"` to `progress/PROGRESS.csv`. Create `progress/PROGRESS-STEP-20.md`. Add a `CHANGELOG.md` `[Unreleased] — Added` entry.
+
+**Pause point**: Halt for explicit user approval before beginning Step 18.5.
+
+### 18.5 Phase 13.3 — Feedback Tab
+
+**Goal**: Add a new public top-level tab that lets any visitor file a structured feedback item as a pre-filled GitHub Issue.
+
+**Build / modify**:
+
+- New route `feedback`, added to `src/app/routes.ts` between Word Explorer and Settings, preserving the order in Step 18.4.4.
+- A simple, accessible form with:
+  - **Category** dropdown: `Bug Report` | `Feature Request` | `Other`.
+  - **Description** (required, plain text, character ceiling enforced and clearly displayed).
+  - **Optional details** (multi-line text).
+  - **Optional email** (free-form; not validated against an external service; documented as optional and never required).
+  - A "Submit" button that constructs a pre-filled GitHub Issue URL for `ryanjosephkamp/brrrdle`:
+    - Title: derived from category + short summary.
+    - Labels: `feedback` (plus a category-derived label when straightforward: `bug`, `enhancement`, or none).
+    - Body: includes category, description, optional details, optional email, the current date, and a note that the report came from the in-game Feedback tab.
+    - URL parameters percent-encoded; link opens in a new tab with `noopener noreferrer`.
+- Form must be keyboard-accessible, focus-managed, and respect `prefers-reduced-motion`.
+- No server-side endpoint, no client-side email transport, and no PII storage. The optional email is only embedded into the issue body the user reviews before submitting on github.com.
+
+**Tests**:
+- Unit tests for the issue-URL builder, including each category and presence/absence of each optional field.
+- Unit tests for required-field validation (description cannot be empty/whitespace).
+- Snapshot or DOM tests that confirm the form is keyboard-traversable in the documented order.
+
+**Verification**:
+- `npm run lint`
+- `npm run test`
+- `npm run build`
+- Manual smoke checks:
+  - Feedback tab is visible while signed-out and while signed-in.
+  - Each category produces a distinct, correctly-labeled pre-filled URL.
+  - Empty description blocks submission with a visible, accessible error.
+- `codeql_checker` run; any true-positive alert in changed lines fixed.
+
+**Manual follow-up steps**: If the `feedback` (and optionally `bug`, `enhancement`) labels do not yet exist on `ryanjosephkamp/brrrdle`, the user must create them once. Documented in the progress report.
+
+**Progress tracking**: Append `phase_id = 21`, title `"Phase 13.3 — Feedback Tab (ADDITIONS-2026-05-27)"`. Create `progress/PROGRESS-STEP-21.md`. Add a `CHANGELOG.md` `[Unreleased] — Added` entry.
+
+**Pause point**: Halt for explicit user approval before beginning Step 18.6.
+
+### 18.6 Phase 13.4 — Sound Effects
+
+**Goal**: Add a minimal, pleasant, fully-toggleable set of sound effects.
+
+**Build / modify**:
+
+- A small sound-effect engine, isolated behind a single module, that exposes named events:
+  - `tile-flip`
+  - `correct-guess`
+  - `game-over-win`
+  - `game-over-loss`
+  - `keyboard-click`
+  - `invalid-guess`
+- Implementation must use the **Web Audio API** by default (no media autoplay), with optional small assets in `public/sounds/` if pre-rendered samples are needed. If samples are added, they must be small (<= a few KB each), license-clean, and listed with their provenance in the progress report and CHANGELOG.
+- Wire the engine into the existing game flow at the minimum surface area required:
+  - `tile-flip` and `keyboard-click` in the keyboard/input layer.
+  - `correct-guess`, `invalid-guess`, `game-over-win`, `game-over-loss` in the `og` and `go` session orchestrators.
+- Add a **"Sound Effects"** toggle to Settings, **On by default**, persisted via the same local persistence used by other user preferences (no new storage mechanism). The toggle must be honored synchronously by the engine — when off, the engine is a no-op and constructs no `AudioContext`.
+- Respect `prefers-reduced-motion` if the platform also signals reduced audio (do not couple silently to motion; document the chosen behavior in the progress report).
+- The engine must not throw on environments without Web Audio (older browsers, SSR-style preview); it must degrade to a no-op.
+
+**Tests**:
+- Unit tests verifying the engine no-ops when the toggle is off.
+- Unit tests verifying event names and dispatch ordering (mock the `AudioContext` boundary; do not assert on audible output).
+- Unit tests for Settings persistence of the toggle.
+
+**Verification**:
+- `npm run lint`
+- `npm run test`
+- `npm run build`
+- Manual smoke checks (on a device with audio):
+  - Each of the six events plays at a reasonable volume.
+  - Toggling off silences every event immediately.
+  - The toggle survives a page reload.
+- `codeql_checker` run; any true-positive alert in changed lines fixed.
+
+**Manual follow-up steps**: None for Vercel/Supabase. If new asset files are added under `public/sounds/`, the user must confirm they are committed and that the PWA service worker (`public/brrrdle-sw.js`) cache list includes them or that they are loaded lazily; the chosen behavior is documented in the progress report.
+
+**Progress tracking**: Append `phase_id = 22`, title `"Phase 13.4 — Sound Effects (ADDITIONS-2026-05-27)"`. Create `progress/PROGRESS-STEP-22.md`. Add a `CHANGELOG.md` `[Unreleased] — Added` entry.
+
+**Pause point**: Halt for explicit user approval before beginning Step 18.7.
+
+### 18.7 Phase 13.5 — Authentication Improvements
+
+**Goal**: Add email + password sign-in alongside the existing magic link flow, persist sessions reliably, and ensure the Admin tab renders fully for users whose Supabase `raw_app_meta_data.role` is `"admin"`.
+
+**Build / modify**:
+
+- **18.7.1 Email + password support in `AuthPanel`.** Add a tabbed or toggle UI inside the existing `AuthPanel` (post-cleanup path) so the user can choose:
+  - **Magic link** (existing behavior, unchanged).
+  - **Email + password** (new): sign-in and sign-up sub-flows using `supabase.auth.signInWithPassword` and `supabase.auth.signUp`, with clear, accessible error reporting (no raw Supabase error strings shown unfiltered to the user).
+- **18.7.2 Session persistence.** Confirm and, where needed, configure the Supabase client (`src/account/supabaseClient.ts`, post-cleanup path) so sessions persist across reloads via the default `persistSession: true` / `autoRefreshToken: true` settings, and so the app subscribes to `onAuthStateChange` exactly once. Do not change the env var names (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) and do not introduce any service-role usage on the client (CONSTITUTION §14).
+- **18.7.3 Admin role detection.** Confirm and, where needed, fix the front-end to derive admin status from `session.user.app_metadata.role === "admin"` (which maps to Supabase's `raw_app_meta_data.role`). The Admin tab must render with the manual refresh controls already implemented in Phase 8 / Phase 12 work whenever this condition holds. Non-admin users must continue to see the Admin tab hidden.
+- **18.7.4 UX & accessibility.** The auth UI must be keyboard-navigable, focus-managed, screen-reader-labeled, and must not autofocus past the first input. Password inputs must use `type="password"` and an optional show/hide toggle; no plaintext logging of passwords or tokens anywhere (CONSTITUTION §14).
+- **18.7.5 Backwards compatibility.** Existing magic-link users must not be required to set a password. The two flows must coexist; choosing one must not disable the other for the same email.
+
+**Tests**:
+- Unit tests for the new sign-in/sign-up handlers using Supabase client doubles (no live network calls in tests).
+- Unit tests for admin detection: a session with `app_metadata.role === "admin"` exposes the Admin tab; a session without it does not; an absent session does not.
+- Unit tests that confirm session persistence is enabled (assertion against the constructed client options).
+- A regression test that confirms the magic-link path still works through its existing seam.
+
+**Verification**:
+- `npm run lint`
+- `npm run test`
+- `npm run build`
+- `npx tsc -p tsconfig.api.json --noEmit` (in case any shared type touches the API side)
+- Manual smoke checks (recorded in the progress report; live Supabase access required for some):
+  - Magic link still works.
+  - Email + password sign-up + sign-in works against a Supabase project with password auth enabled.
+  - Reload of the page preserves the session.
+  - A user whose Supabase `raw_app_meta_data.role` is `"admin"` sees the Admin tab with refresh controls.
+  - A non-admin user does not see the Admin tab.
+- Static secret-pattern review on changed lines.
+- `codeql_checker` run; any true-positive alert in changed lines fixed.
+
+**Manual follow-up steps**:
+- **Supabase (required)**: The user must enable **Email + Password** authentication in the Supabase project's Auth providers settings if it is not already enabled. The user must verify that the project's email templates (confirmation, password reset) are configured. These steps cannot be performed by the agent.
+- **Supabase (required for admin verification)**: The user must confirm that at least one user has `raw_app_meta_data.role = "admin"` set via the Supabase dashboard or admin API for end-to-end admin verification.
+- **Vercel**: No env var changes are expected. If the user previously set any auth-related env vars, this step does not require modifying them; this must be stated explicitly in the progress report.
+- **Documentation**: Update `docs/supabase.md` only if user-facing setup instructions for password auth are needed; otherwise leave docs unchanged.
+
+**Progress tracking**: Append `phase_id = 23`, title `"Phase 13.5 — Authentication Improvements (ADDITIONS-2026-05-27)"`. Create `progress/PROGRESS-STEP-23.md`. Add a `CHANGELOG.md` `[Unreleased] — Changed` and `Added` entries.
+
+**Pause point**: Halt for explicit user approval before beginning Step 18.8.
+
+### 18.8 Phase 13.6 — Final Integration, Cross-Feature Verification, and Release Gate
+
+**Goal**: Confirm that the cleanup, the two new tabs, sound effects, and the auth improvements coexist with each other and with the existing game features without regression.
+
+**Build / modify**: No new functionality. Only fixes for any defect the cross-feature verification surfaces, and final progress/CHANGELOG bookkeeping.
+
+**Verification**:
+- `npm ci`
+- `npm run lint`
+- `npm run test`
+- `npm run build`
+- `npx tsc -p tsconfig.api.json --noEmit`
+- Client-bundle leak check (no `@vercel/blob` in `dist/assets/*.js`).
+- `git diff --check`
+- Cross-feature manual smoke checks:
+  - Daily `og` and daily `go` still play normally with length 5 (the daily lock is intact).
+  - Practice mode still exposes lengths 2..35 with the same content guarantees documented in CHANGELOG §17 limitations.
+  - Word Explorer tab loads and behaves correctly while signed-out, while signed-in as a non-admin, and while signed-in as an admin.
+  - Feedback tab loads and behaves correctly in all three states.
+  - Sound effects toggle survives reloads and applies immediately.
+  - Sign-in with magic link, sign-in with email + password, session persistence, and admin tab visibility all behave as designed.
+  - Sharing, definitions, settings, stats, and the existing admin refresh controls behave unchanged.
+- `codeql_checker` run on the cumulative diff for the addendum; any true-positive alert in changed lines fixed.
+
+**Manual follow-up steps (final consolidation)**: Re-list, in the final progress report, every Vercel / Supabase / GitHub-Pages / GitHub-Actions / GitHub-label step the user is required to perform, with checkmarks for those that were completed during the steps above and explicit "user must do" markers for those that remain.
+
+**Progress tracking**: Append `phase_id = 24`, title `"Phase 13.6 — Final Integration & Release Gate (ADDITIONS-2026-05-27)"`. Create `progress/PROGRESS-STEP-24.md`. Add a `CHANGELOG.md` consolidating entry.
+
+**Pause point**: Commit/push via the approved workflow. Halt for explicit user approval before any production deployment action.
+
+### 18.9 Phase 13 Exit Checklist
+
+- Every requirement in `ADDITIONS-2026-05-27.md` (§1 Word Explorer, §2 Feedback, §3 Sound Effects, §4 Authentication, §5 Cleanup) is implemented or explicitly documented as user-action-required.
+- Daily `og` and daily `go` remain locked to 5 letters; practice still exposes 2..35.
+- No file was deleted; no test was removed, skipped, or weakened.
+- No secrets, service-role keys, or private deployment data appear in any artifact.
+- No `@vercel/blob` import is present in the client bundle.
+- `npm run lint`, `npm run test`, `npm run build`, and the standalone `tsconfig.api.json` typecheck all pass.
+- `codeql_checker` was run after every step and every true-positive alert in changed lines is fixed.
+- `progress/PROGRESS.csv`, all new `progress/PROGRESS-STEP-N.md` reports, and `CHANGELOG.md` are updated and free of sensitive data.
+- All manual follow-up steps (Supabase password-auth enablement, label creation on `ryanjosephkamp/brrrdle`, optional Vercel reconfiguration only if any move actually touched a Vercel-bound path) are listed in the final progress report.
 - The agent halts and waits for explicit user approval before any production release action.
 
 ---

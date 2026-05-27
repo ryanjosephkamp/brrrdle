@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { createBrrrdleSupabaseClient, createSyncStatus, getCurrentAuthState, loadGuestProgress, recordCompletedGame, resetGuestProgress, saveGuestProgress, sendMagicLink, Settings, signOut, type AuthState, type CompletedGameInput } from '../account'
+import { createBrrrdleSupabaseClient, createSyncStatus, getCurrentAuthState, loadGuestProgress, recordCompletedGame, resetGuestProgress, saveGuestProgress, sendMagicLink, Settings, signInWithPassword, signOut, signUpWithPassword, subscribeToAuthChanges, type AuthState, type CompletedGameInput } from '../account'
 import { BUNDLED_WORD_LIST_LENGTHS } from '../data'
 import { DAILY_WORD_LENGTH, MAX_PRACTICE_WORD_LENGTH, MIN_PRACTICE_WORD_LENGTH } from '../game/constants'
 import { Button, Layout, Navigation, Panel } from '../ui'
 import { AdminPanel } from '../admin'
 import { StatsDashboard } from '../stats'
-import { GoGame } from './GoGame'
-import { OgGame } from './OgGame'
-import { APP_ROUTES, DEFAULT_ROUTE_ID, getRouteById, getRoutesByGroup, type AppRoute } from './routes'
+import { WordExplorerPanel } from '../wordExplorer'
+import { FeedbackPanel } from '../feedback'
+import { SoundProvider, useSound } from '../sound'
+import { GoGame } from './games/GoGame'
+import { OgGame } from './games/OgGame'
+import { DEFAULT_ROUTE_ID, getPrimaryNavigationRoutes, getRouteById, getRoutesByGroup, type AppRoute } from './routes'
 
 function ModeCard({ route, onSelect }: { readonly route: AppRoute; readonly onSelect: (route: AppRoute) => void }) {
   return (
@@ -59,22 +62,32 @@ function RoutePanel({
   guestProgress,
   onGameComplete,
   authState,
+  authMessage,
   onResetProgress,
   onSelectRoute,
   onSendMagicLink,
+  onSignInWithPassword,
+  onSignUpWithPassword,
   onSpendCoins,
   onSignOut,
+  soundEnabled,
+  onToggleSound,
   syncStatus,
 }: {
   readonly authState: AuthState
+  readonly authMessage?: string
   readonly guestProgress: ReturnType<typeof loadGuestProgress>
   readonly keyboardDisabled?: boolean
   readonly onGameComplete: (input: CompletedGameInput) => void
   readonly onResetProgress: () => void
   readonly onSendMagicLink: (email: string) => void
+  readonly onSignInWithPassword: (email: string, password: string) => void
+  readonly onSignUpWithPassword: (email: string, password: string) => void
   readonly onSignOut: () => void
   readonly route: AppRoute
   readonly onSelectRoute: (routeId: AppRoute['id']) => void
+  readonly soundEnabled: boolean
+  readonly onToggleSound: (enabled: boolean) => void
   readonly syncStatus: ReturnType<typeof createSyncStatus>
   readonly onSpendCoins: (amount: number) => boolean
 }) {
@@ -102,12 +115,34 @@ function RoutePanel({
     return <PracticeGameSwitcher coins={guestProgress.progression.coins} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onSpendCoins={onSpendCoins} />
   }
 
+  if (route.id === 'word-explorer') {
+    return <WordExplorerPanel />
+  }
+
+  if (route.id === 'feedback') {
+    return <FeedbackPanel />
+  }
+
   if (route.id === 'stats') {
     return <StatsDashboard stats={guestProgress.stats} />
   }
 
   if (route.id === 'settings') {
-    return <Settings authState={authState} guestProgress={guestProgress} onResetProgress={onResetProgress} onSendMagicLink={onSendMagicLink} onSignOut={onSignOut} syncStatus={syncStatus} />
+    return (
+      <Settings
+        authMessage={authMessage}
+        authState={authState}
+        guestProgress={guestProgress}
+        onResetProgress={onResetProgress}
+        onSendMagicLink={onSendMagicLink}
+        onSignInWithPassword={onSignInWithPassword}
+        onSignOut={onSignOut}
+        onSignUpWithPassword={onSignUpWithPassword}
+        onToggleSound={onToggleSound}
+        soundEnabled={soundEnabled}
+        syncStatus={syncStatus}
+      />
+    )
   }
 
   if (route.id === 'admin') {
@@ -129,13 +164,23 @@ function RoutePanel({
 }
 
 function App() {
+  return (
+    <SoundProvider>
+      <AppInner />
+    </SoundProvider>
+  )
+}
+
+function AppInner() {
+  const sound = useSound()
   const [activeRouteId, setActiveRouteId] = useState(DEFAULT_ROUTE_ID)
   const [guestProgress, setGuestProgress] = useState(() => loadGuestProgress())
   const supabaseClient = useMemo(() => createBrrrdleSupabaseClient(), [])
   const [authState, setAuthState] = useState<AuthState>(() => supabaseClient ? { status: 'anonymous' } : { status: 'unconfigured' })
+  const [authMessage, setAuthMessage] = useState<string | undefined>(undefined)
   const [syncStatus] = useState(() => createSyncStatus(supabaseClient ? 'idle' : 'error'))
   const activeRoute = getRouteById(activeRouteId)
-  const navigationRoutes = useMemo(() => APP_ROUTES, [])
+  const navigationRoutes = useMemo(() => getPrimaryNavigationRoutes(authState.user?.roles.includes('admin') ?? false), [authState.user?.roles])
   const handleGameComplete = useCallback((input: CompletedGameInput) => {
     setGuestProgress((currentProgress) => {
       const nextProgress = recordCompletedGame(input, currentProgress)
@@ -144,7 +189,12 @@ function App() {
       }
       return nextProgress
     })
-  }, [])
+    if (input.status === 'won') {
+      sound.play('game-over-win')
+    } else if (input.status === 'lost') {
+      sound.play('game-over-loss')
+    }
+  }, [sound])
   const handleResetProgress = useCallback(() => {
     setGuestProgress(resetGuestProgress())
   }, [])
@@ -169,7 +219,34 @@ function App() {
       return
     }
 
-    void sendMagicLink(supabaseClient, email)
+    setAuthMessage(undefined)
+    void sendMagicLink(supabaseClient, email).then((result) => {
+      setAuthMessage(result.ok ? 'Magic link sent. Check your email.' : result.message)
+    })
+  }, [supabaseClient])
+  const handleSignInWithPassword = useCallback((email: string, password: string) => {
+    if (!supabaseClient) {
+      return
+    }
+    setAuthMessage(undefined)
+    void signInWithPassword(supabaseClient, email, password).then((result) => {
+      if (!result.ok) {
+        setAuthMessage(result.message)
+      }
+    })
+  }, [supabaseClient])
+  const handleSignUpWithPassword = useCallback((email: string, password: string) => {
+    if (!supabaseClient) {
+      return
+    }
+    setAuthMessage(undefined)
+    void signUpWithPassword(supabaseClient, email, password).then((result) => {
+      if (!result.ok) {
+        setAuthMessage(result.message)
+      } else {
+        setAuthMessage('Check your email to confirm your account, if email confirmation is enabled.')
+      }
+    })
   }, [supabaseClient])
   const handleSignOut = useCallback(() => {
     if (!supabaseClient) {
@@ -186,9 +263,15 @@ function App() {
         setAuthState(nextAuthState)
       }
     })
+    const subscription = subscribeToAuthChanges(supabaseClient, (nextAuthState) => {
+      if (isMounted) {
+        setAuthState(nextAuthState)
+      }
+    })
 
     return () => {
       isMounted = false
+      subscription.unsubscribe()
     }
   }, [supabaseClient])
 
@@ -224,7 +307,23 @@ function App() {
         </section>
 
         <section className="grid gap-4">
-          <RoutePanel authState={authState} guestProgress={guestProgress} onGameComplete={handleGameComplete} onResetProgress={handleResetProgress} onSelectRoute={setActiveRouteId} onSendMagicLink={handleSendMagicLink} onSpendCoins={handleSpendCoins} onSignOut={handleSignOut} route={activeRoute} syncStatus={syncStatus} />
+          <RoutePanel
+            authMessage={authMessage}
+            authState={authState}
+            guestProgress={guestProgress}
+            onGameComplete={handleGameComplete}
+            onResetProgress={handleResetProgress}
+            onSelectRoute={setActiveRouteId}
+            onSendMagicLink={handleSendMagicLink}
+            onSignInWithPassword={handleSignInWithPassword}
+            onSignOut={handleSignOut}
+            onSignUpWithPassword={handleSignUpWithPassword}
+            onSpendCoins={handleSpendCoins}
+            onToggleSound={sound.setEnabled}
+            route={activeRoute}
+            soundEnabled={sound.enabled}
+            syncStatus={syncStatus}
+          />
         </section>
       </div>
     </Layout>

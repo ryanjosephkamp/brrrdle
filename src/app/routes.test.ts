@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { APP_ROUTES, DEFAULT_ROUTE_ID, getRouteById, getRoutesByGroup } from './routes'
+import { APP_ROUTES, DEFAULT_ROUTE_ID, getPrimaryNavigationRoutes, getRouteById, getRoutesByGroup } from './routes'
 
 describe('APP_ROUTES', () => {
   it('defines unique route ids with a home default', () => {
@@ -16,6 +16,26 @@ describe('APP_ROUTES', () => {
 
   it('includes minimal play and support navigation groups', () => {
     expect(getRoutesByGroup('play').map((route) => route.id)).toEqual(['home', 'og-daily', 'go-daily', 'practice'])
-    expect(getRoutesByGroup('support').map((route) => route.id)).toEqual(['definitions', 'stats', 'settings', 'admin'])
+    expect(getRoutesByGroup('support').map((route) => route.id)).toEqual(['word-explorer', 'feedback', 'definitions', 'stats', 'settings', 'admin'])
+  })
+
+  it('keeps the primary navigation in the ADDITIONS-2026-05-27 order and hides admin for non-admins', () => {
+    expect(getPrimaryNavigationRoutes(false).map((route) => route.id)).toEqual([
+      'og-daily',
+      'go-daily',
+      'practice',
+      'word-explorer',
+      'feedback',
+      'settings',
+    ])
+    expect(getPrimaryNavigationRoutes(true).map((route) => route.id)).toEqual([
+      'og-daily',
+      'go-daily',
+      'practice',
+      'word-explorer',
+      'feedback',
+      'settings',
+      'admin',
+    ])
   })
 })

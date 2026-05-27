@@ -1,6 +1,6 @@
 import type { GameMode, PlayScope } from '../game/types'
 
-export type AppRouteId = 'home' | 'og-daily' | 'go-daily' | 'practice' | 'definitions' | 'stats' | 'settings' | 'admin'
+export type AppRouteId = 'home' | 'og-daily' | 'go-daily' | 'practice' | 'word-explorer' | 'feedback' | 'definitions' | 'stats' | 'settings' | 'admin'
 
 export interface AppRoute {
   readonly id: AppRouteId
@@ -50,6 +50,20 @@ export const APP_ROUTES = [
     scope: 'practice',
   },
   {
+    id: 'word-explorer',
+    label: 'Word Explorer',
+    shortLabel: 'Words',
+    description: 'Browse and search the exact words brrrdle is using.',
+    navigationGroup: 'support',
+  },
+  {
+    id: 'feedback',
+    label: 'Feedback',
+    shortLabel: 'Feedback',
+    description: 'Send a pre-filled bug report, feature request, or note.',
+    navigationGroup: 'support',
+  },
+  {
     id: 'definitions',
     label: 'Definitions',
     shortLabel: 'Defs',
@@ -87,4 +101,14 @@ export function getRouteById(routeId: AppRouteId): AppRoute {
 
 export function getRoutesByGroup(group: AppRoute['navigationGroup']): readonly AppRoute[] {
   return APP_ROUTES.filter((route) => route.navigationGroup === group)
+}
+
+export function getPrimaryNavigationRoutes(isAdmin: boolean): readonly AppRoute[] {
+  return APP_ROUTES.filter((route) => {
+    if (route.id === 'admin') {
+      return isAdmin
+    }
+
+    return ['og-daily', 'go-daily', 'practice', 'word-explorer', 'feedback', 'settings'].includes(route.id)
+  })
 }

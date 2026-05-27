@@ -1,3 +1,3 @@
-# app
+# App shell
 
-Phase 0 placeholder for the approved implementation plan. Feature-specific code will be added in the relevant future phase.
+This folder contains the React application shell, route metadata, and top-level route composition. Playable game route panels live in `src/app/games/` so shell/navigation code stays separate from game-specific UI wiring.

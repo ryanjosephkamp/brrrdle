@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { BUNDLED_WORD_LIST_LENGTHS } from '../data'
-import type { CompletedGameInput } from '../account'
-import { DefinitionPanel } from '../definitions'
+import { BUNDLED_WORD_LIST_LENGTHS } from '../../data'
+import type { CompletedGameInput } from '../../account'
+import { DefinitionPanel } from '../../definitions'
 import {
   createDailyGoSetup,
   createGoSession,
@@ -22,11 +22,12 @@ import {
   type PuzzleSessionState,
   type TileState,
   formatGoShare,
-} from '../game'
-import { clearDailyGoStoredSession, loadDailyGoStoredSession, saveDailyGoStoredSession } from '../lib/storage/dailyGoStorage'
-import { calculatePayToContinueCost } from '../progression'
-import { Button, Keyboard, Panel, ShareButton } from '../ui'
-import { classNames } from '../ui/classNames'
+} from '../../game'
+import { clearDailyGoStoredSession, loadDailyGoStoredSession, saveDailyGoStoredSession } from '../../game/storage/dailyGoStorage'
+import { calculatePayToContinueCost } from '../../progression'
+import { Button, Keyboard, Panel, ShareButton } from '../../ui'
+import { useSound } from '../../sound'
+import { classNames } from '../../ui/classNames'
 
 interface GoGameProps {
   readonly coins: number
@@ -179,8 +180,10 @@ function GoGameSession({
     })
   }, [canAffordContinuation, onGameComplete, practiceLength, scope, session.currentPuzzleIndex, session.puzzles, session.status, session.wordLength, setup.dateKey, setup.puzzles])
 
+  const sound = useSound()
   const handleInput = useCallback((input: KeyboardInput) => {
     setContinuationMessage(undefined)
+    sound.play('keyboard-click')
     setSession((currentSession) => {
       if (input.type === 'letter') {
         return enterGoLetter(currentSession, input.value)
@@ -190,9 +193,18 @@ function GoGameSession({
         return deleteGoLetter(currentSession)
       }
 
-      return submitGoGuess(currentSession)
+      const nextSession = submitGoGuess(currentSession)
+      if (nextSession === currentSession) {
+        sound.play('invalid-guess')
+      } else {
+        sound.play('tile-flip')
+        if (nextSession.status === 'won') {
+          sound.play('correct-guess')
+        }
+      }
+      return nextSession
     })
-  }, [])
+  }, [sound])
 
   useKeyboardInput({ disabled: keyboardDisabled, onInput: handleInput })
 

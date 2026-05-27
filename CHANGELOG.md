@@ -4,6 +4,42 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Added (ADDITIONS-2026-05-27 — Phase 13 execution)
+- **Word Explorer tab** (`src/wordExplorer/`): new public route with length selector (default 5, range 2–35), live case-insensitive search, two combinable type checkboxes ("Show Answers" / "Show Valid Guesses"), sortable Word/Type columns, per-row copy-to-clipboard button, responsive single-column card layout on small screens, empty-state with `"<term>" is not in the current <N>-letter word list.` message and a "Request this word" button that opens a pre-filled GitHub Issue (`word-request` label) in a new tab.
+- **Feedback tab** (`src/feedback/`): new public route with a category dropdown (Bug Report / Feature Request / Other), required description (2,000-char limit), optional details and optional email fields, and a submit button that opens a pre-filled GitHub Issue (`feedback` plus category-derived labels) in a new tab. Nothing is sent automatically; the user reviews the issue on github.com before submitting.
+- **Sound Effects** (`src/sound/`): minimal, dependency-free Web Audio engine with six events (`tile-flip`, `correct-guess`, `game-over-win`, `game-over-loss`, `keyboard-click`, `invalid-guess`), Settings toggle (On by default, persisted to `localStorage` under `brrrdle:sound-effects-enabled`), full no-op when toggled off, graceful no-op when Web Audio is unavailable. Wired into the og and go game flows for keyboard clicks, tile flips, invalid guesses, correct guesses, and win/loss tones.
+- **Authentication improvements** (`src/account/`): `AuthPanel` now offers a magic-link / email + password toggle, with sub-modes for sign-in and create-account, a show/hide-password toggle, password length validation (≥ 8 chars), and an accessible error/info message line. `App.tsx` now subscribes to Supabase `onAuthStateChange` so the UI reflects session changes from any tab. Admin detection continues to use `app_metadata.role === "admin"` (which maps to Supabase `raw_app_meta_data.role`) or the existing `app_metadata.roles` array.
+- **GitHub Issue helper** (`src/lib/githubIssue.ts`): shared, percent-encoded URL builders for both Word Explorer word-requests and the Feedback tab.
+- **Routes**: `src/app/routes.ts` adds `word-explorer` and `feedback` between Practice and Definitions/Stats/Settings/Admin per ADDITIONS-2026-05-27.md §1 navigation order. No existing route was removed.
+- **Tests**: 43 new unit tests (`src/lib/githubIssue.test.ts`, `src/wordExplorer/wordExplorerData.test.ts`, `src/sound/soundEngine.test.ts`, `src/account/auth.test.ts`). Total: 163 tests passing.
+
+### Changed (ADDITIONS-2026-05-27 — Phase 13 execution)
+- **Repository organization follow-up**: moved playable game route panels into `src/app/games/`, physical keyboard gameplay helpers into `src/game/input/`, and daily in-progress session storage into `src/game/storage/`; added README files for the new folders and refreshed the root repository tree. This is behavior-preserving and does not change Vercel routes, Supabase configuration, GitHub Actions, the daily 5-letter lock, or practice 2–35 support.
+- Follow-up hardening aligned the primary navigation with the exact approved top-level order (`og`, `go`, `Practice`, `Word Explorer`, `Feedback`, `Settings`, `Admin`) and keeps the Admin entry hidden unless the signed-in user has the Supabase admin role.
+- Word Explorer now attempts the live `/api/word-lists/manifest` read path first and falls back to bundled dictionaries when no live manifest or length file is available, preserving the Vercel Blob / manifest → bundled JSON contract.
+- Password auth errors shown in the UI are sanitized generic messages rather than raw Supabase provider strings.
+- Feedback's optional email field is free-form text, matching the requirement that it is optional and not externally validated.
+- `src/app/App.tsx` now wraps the root in a `SoundProvider`, subscribes to Supabase auth changes via `subscribeToAuthChanges`, plays the win/loss tones when a game completes, and threads the new auth handlers and sound toggle into `Settings`.
+- `src/account/Settings.tsx` adds an optional "Sound Effects" panel and passes the password/sign-up handlers through to `AuthPanel`.
+- `src/account/auth.ts` adds `signInWithPassword`, `signUpWithPassword`, and `subscribeToAuthChanges` alongside the existing magic-link flow; the existing magic-link behavior is unchanged.
+- `src/app/games/OgGame.tsx` and `src/app/games/GoGame.tsx` consume the sound engine to emit `keyboard-click`, `tile-flip`, `invalid-guess`, and `correct-guess` events at the minimum surface area required by ADDITIONS-2026-05-27.md §3.
+
+### Documentation (Plan Addendum — ADDITIONS-2026-05-27)
+- Drafted a new Section 18 ("Phase 13 — Plan Addendum (ADDITIONS-2026-05-27)") at the end of `AGENT-IMPLEMENTATION-PLAN.md` covering the Word Explorer tab, Feedback tab, Sound Effects, Authentication Improvements (email + password alongside magic link, durable session, admin role detection from `raw_app_meta_data.role === "admin"`), and a safe, non-destructive Repository Cleanup & Re-organization. The addendum is broken into clear phases (13.0 Pre-flight & Risk Map, 13.1 Cleanup, 13.2 Word Explorer, 13.3 Feedback, 13.4 Sound Effects, 13.5 Authentication, 13.6 Final Integration) with per-step verification commands, explicit manual follow-up notes (Supabase password-auth enablement, GitHub label creation, conditional Vercel reconfiguration), and a halt-for-approval gate after every step.
+- Bumped the implementation plan header to version 1.3 to record the addendum.
+- Appended a new `phase_id = 18` row to `progress/PROGRESS.csv` noting that the addendum is drafted and awaiting explicit user approval; no implementation work has begun.
+- Added `progress/PROGRESS-STEP-18.md` summarizing the addendum, the required user actions, and the next major step (Phase 13.0).
+
+### Known limitations (ADDITIONS-2026-05-27 — Phase 13 execution)
+- **Repository Cleanup (Phase 13.1)** was executed conservatively. The existing `src/` layout already groups code by concern (`game/`, `ui/`, `account/`, `admin/`, `data/`, `definitions/`, `app/`, `lib/`, `pwa/`, `stats/`, `types/`, `test/`); the new feature modules (`src/wordExplorer/`, `src/feedback/`, `src/sound/`) were added as new sibling directories under that same convention. No existing files were moved, renamed, or deleted, so no Vercel/Supabase/GitHub Actions reconfiguration is required. A larger structural reorganization can be performed in a follow-up plan addendum if desired.
+- **Sound Effects** uses synthesized Web Audio tones only; no asset files were added under `public/sounds/`, so the PWA service worker cache list does not need to change.
+- **Authentication** changes are end-to-end-verifiable only against a Supabase project with **Email + Password** auth enabled in the Auth providers settings; the agent sandbox cannot complete that step (see "User action required" below).
+
+### User action required (ADDITIONS-2026-05-27 — Phase 13 execution)
+- **Supabase**: enable the **Email + Password** provider in the project's Authentication settings; configure password-reset / confirmation email templates as desired. At least one user must have `raw_app_meta_data.role = "admin"` for end-to-end admin verification.
+- **GitHub labels**: create `word-request`, `feedback`, `bug`, and `enhancement` labels on `ryanjosephkamp/brrrdle` if they do not already exist (the pre-filled issues request these labels).
+- **Vercel**: no env-var or routing change is required; no `api/` path or `vercel.json` entry was modified in this phase.
+
 ### Fixed (Residual Vercel discriminated-union TypeScript narrowing — 2026-05-27)
 - Fixed the new Vercel TypeScript narrowing errors reported after `VERCEL-REDEPLOY-BUILD-LOGS-2026-05-26.md` and `DIAGNOSIS-REPORT-2026-05-26.md` by adding explicit type guards for `RefreshResult`, `SchemaValidationResult`, `LoadWordListResult`, and `WordRepositoryResult`, then using them at the failure-only field access sites in the data layer and refresh API routes.
 

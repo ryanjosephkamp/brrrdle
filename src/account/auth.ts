@@ -22,6 +22,12 @@ function getRoles(user: User): readonly string[] {
   return typeof singleRole === 'string' ? [singleRole] : []
 }
 
+function authFailureMessage(action: 'sign-in' | 'sign-up'): string {
+  return action === 'sign-in'
+    ? 'Unable to sign in with those credentials. Check your email and password, then try again.'
+    : 'Unable to create an account right now. Check the details and try again.'
+}
+
 export function summarizeUser(user: User): AuthUserSummary {
   return {
     email: user.email ?? undefined,
@@ -47,6 +53,60 @@ export async function sendMagicLink(client: BrrrdleSupabaseClient, email: string
   const normalizedEmail = email.trim().toLocaleLowerCase('en-US')
   const { error } = await client.auth.signInWithOtp({ email: normalizedEmail })
   return error ? { message: error.message, ok: false } : { ok: true }
+}
+
+export async function signInWithPassword(
+  client: BrrrdleSupabaseClient,
+  email: string,
+  password: string,
+): Promise<{ readonly ok: true } | { readonly message: string; readonly ok: false }> {
+  const normalizedEmail = email.trim().toLocaleLowerCase('en-US')
+  if (!normalizedEmail || !password) {
+    return { message: 'Email and password are required.', ok: false }
+  }
+  const { error } = await client.auth.signInWithPassword({ email: normalizedEmail, password })
+  return error ? { message: authFailureMessage('sign-in'), ok: false } : { ok: true }
+}
+
+export async function signUpWithPassword(
+  client: BrrrdleSupabaseClient,
+  email: string,
+  password: string,
+): Promise<{ readonly ok: true } | { readonly message: string; readonly ok: false }> {
+  const normalizedEmail = email.trim().toLocaleLowerCase('en-US')
+  if (!normalizedEmail || !password) {
+    return { message: 'Email and password are required.', ok: false }
+  }
+  if (password.length < 8) {
+    return { message: 'Password must be at least 8 characters.', ok: false }
+  }
+  const { error } = await client.auth.signUp({ email: normalizedEmail, password })
+  return error ? { message: authFailureMessage('sign-up'), ok: false } : { ok: true }
+}
+
+export type AuthChangeListener = (state: AuthState) => void
+
+export interface AuthSubscription {
+  readonly unsubscribe: () => void
+}
+
+export function subscribeToAuthChanges(
+  client: BrrrdleSupabaseClient | undefined,
+  listener: AuthChangeListener,
+): AuthSubscription {
+  if (!client) {
+    return { unsubscribe: () => undefined }
+  }
+
+  const { data } = client.auth.onAuthStateChange((_event, session) => {
+    if (!session?.user) {
+      listener({ status: 'anonymous' })
+      return
+    }
+    listener({ status: 'authenticated', user: summarizeUser(session.user) })
+  })
+
+  return { unsubscribe: () => data.subscription.unsubscribe() }
 }
 
 export async function signOut(client: BrrrdleSupabaseClient): Promise<{ readonly ok: true } | { readonly message: string; readonly ok: false }> {

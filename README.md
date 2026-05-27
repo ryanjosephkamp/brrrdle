@@ -6,12 +6,13 @@ The implementation is governed by `CONSTITUTION.md`, `BRRRDLE-SPEC.md`, `BRRRDLE
 
 ## Current status
 
-Phase 11 is complete and the repository is prepared for v1 production release review. Implemented launch scope includes:
+Phase 13 addendum work is implemented on top of the v1 launch scope and the repository is prepared for production release review. Implemented launch scope includes:
 
 - React 19 + TypeScript + Vite + Tailwind CSS v4 app shell.
 - Daily `og` and `go` modes fixed at 5 letters for launch.
 - Practice gameplay using available launch seed lengths in the approved 2–35 range.
 - Hard Mode, keyboard input, definitions, local guest persistence, progression/statistics, Pay-to-Continue, optional Supabase account sync, protected admin-route foundations, sharing, and PWA shell caching.
+- Word Explorer and Feedback tabs, email + password auth support alongside magic links, and toggleable sound effects.
 - GitHub Pages + Jekyll docs in `docs/`.
 
 Production deployment must wait for explicit release approval after PR review. Do not merge the release PR or trigger Vercel production deployment without that approval.
@@ -62,3 +63,47 @@ The protected admin refresh endpoint is `POST /api/admin-refresh`. It requires a
 - Blog/docs: GitHub Pages + Jekyll from `docs/`.
 
 See `docs/deployment.md` for deployment and verification checklists, including environment variable warnings, PWA asset checks, and production smoke checks.
+
+## Repository organization
+
+```text
+brrrdle/
+├── api/                              # Vercel serverless functions and server-only helpers
+│   ├── _lib/                         # Vercel Blob word-list persistence adapters
+│   ├── cron/                         # Scheduled word-list refresh endpoint
+│   └── word-lists/                   # Public word-list manifest endpoint
+├── docs/                             # GitHub Pages / Jekyll documentation site
+├── progress/                         # Phase progress CSV, template, and step reports
+├── public/                           # Static PWA assets, icons, manifest, and service worker
+├── src/                              # React application and shared TypeScript modules
+│   ├── account/                      # Supabase auth, guest storage, sync, and settings UI
+│   ├── admin/                        # Admin authorization helpers and admin panel
+│   ├── app/                          # App shell, routes, navigation composition
+│   │   └── games/                    # Playable og/go route panel components
+│   ├── data/                         # Word-list loading, validation, refresh, cache, daily selection
+│   │   └── bundled/                  # Bundled fallback word-list JSON files for lengths 2–35
+│   ├── definitions/                  # Post-game definition lookup and rendering
+│   ├── feedback/                     # Feedback tab UI
+│   ├── game/                         # UI-independent game engine and gameplay helpers
+│   │   ├── go/                       # Go-mode session state logic
+│   │   ├── input/                    # Physical keyboard normalization and input hook
+│   │   ├── og/                       # Og-mode session state logic
+│   │   └── storage/                  # Daily in-progress game session local-storage helpers
+│   ├── lib/                          # Cross-feature utilities that are not game-specific
+│   ├── progression/                  # XP, levels, coins, consumables, and Pay-to-Continue
+│   ├── pwa/                          # Service worker registration
+│   ├── sound/                        # Toggleable Web Audio sound effects
+│   ├── stats/                        # Statistics model and dashboard UI
+│   ├── test/                         # Shared test helpers and testing documentation
+│   ├── types/                        # Shared ambient/type-only project area
+│   ├── ui/                           # Reusable UI primitives and layout controls
+│   └── wordExplorer/                 # Word Explorer data helpers and tab UI
+├── supabase/                         # Supabase migrations and setup assets
+├── .env.example                      # Placeholder environment variable documentation
+├── eslint.config.js                  # ESLint configuration
+├── index.html                        # Vite HTML entry point
+├── package.json                      # npm scripts and dependency manifest
+├── tsconfig*.json                    # TypeScript project references and compiler configs
+├── vercel.json                       # Vercel build and cron configuration
+└── vite.config.ts                    # Vite + React + Tailwind configuration
+```

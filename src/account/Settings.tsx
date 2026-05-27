@@ -8,19 +8,46 @@ import { Button, Panel } from '../ui'
 
 interface SettingsProps {
   readonly authState: AuthState
+  readonly authMessage?: string
   readonly guestProgress: GuestProgressState
   readonly onResetProgress: () => void
   readonly onSendMagicLink?: (email: string) => void
+  readonly onSignInWithPassword?: (email: string, password: string) => void
+  readonly onSignUpWithPassword?: (email: string, password: string) => void
   readonly onSignOut?: () => void
+  readonly soundEnabled?: boolean
+  readonly onToggleSound?: (enabled: boolean) => void
   readonly syncStatus: SyncStatusState
 }
 
-export function Settings({ authState, guestProgress, onResetProgress, onSendMagicLink, onSignOut, syncStatus }: SettingsProps) {
+export function Settings({ authState, authMessage, guestProgress, onResetProgress, onSendMagicLink, onSignInWithPassword, onSignUpWithPassword, onSignOut, soundEnabled, onToggleSound, syncStatus }: SettingsProps) {
   return (
     <section className="space-y-4" aria-labelledby="settings-title">
       <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-ice-200)]">account and persistence</p>
       <h2 id="settings-title" className="text-3xl font-bold text-white">Settings</h2>
-      <AuthPanel authEmail={authState.user?.email} authStatus={authState.status} onSendMagicLink={onSendMagicLink} onSignOut={onSignOut} />
+      <AuthPanel
+        authEmail={authState.user?.email}
+        authMessage={authMessage}
+        authStatus={authState.status}
+        onSendMagicLink={onSendMagicLink}
+        onSignInWithPassword={onSignInWithPassword}
+        onSignOut={onSignOut}
+        onSignUpWithPassword={onSignUpWithPassword}
+      />
+      {onToggleSound ? (
+        <Panel className="space-y-3 text-sm leading-6 text-slate-300" tone="muted">
+          <h3 className="text-xl font-bold text-white">Sound Effects</h3>
+          <label className="flex items-center gap-3 text-slate-100">
+            <input
+              checked={Boolean(soundEnabled)}
+              onChange={(event) => onToggleSound(event.target.checked)}
+              type="checkbox"
+            />
+            <span>Play tile flips, key clicks, win/loss tones, and invalid-guess feedback.</span>
+          </label>
+          <p className="text-xs text-slate-400">On by default. Toggle off to silence every sound immediately.</p>
+        </Panel>
+      ) : null}
       <Panel className="space-y-3 text-sm leading-6 text-slate-300" tone="muted">
         <h3 className="text-xl font-bold text-white">Cloud sync</h3>
         <p>{syncStatus.message}</p>

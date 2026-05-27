@@ -1,3 +1,3 @@
-# game
+# Game engine and gameplay helpers
 
-Phase 0 placeholder for the approved implementation plan. Feature-specific code will be added in the relevant future phase.
+This folder contains UI-independent gameplay logic shared by `og`, `go`, practice, and daily modes. Keep canonical tile-state, validation, hard-mode, session, sharing, input, and daily session-storage logic here so UI surfaces consume the same rules.

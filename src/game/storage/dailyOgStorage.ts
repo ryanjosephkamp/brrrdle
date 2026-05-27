@@ -1,4 +1,4 @@
-import type { SerializedOgSession } from '../../game/og/session'
+import type { SerializedOgSession } from '../og/session'
 
 export interface DailyOgStoredSession {
   readonly dateKey: string
