@@ -38,7 +38,15 @@
   - Pre-doc validation after code edits: `npm run build` — passed.
   - Pre-doc validation after code edits: `npx tsc -p tsconfig.api.json --noEmit` — passed.
   - Pre-doc validation after code edits: focused Vercel-style NodeNext typecheck with `/tmp/brrrdle-tsconfig-nodenext.json` — passed.
-  - Final verification and CodeQL are recorded in the final task status after this report is committed.
+  - Final verification: `npm ci` — passed, 0 vulnerabilities.
+  - Final verification: `npm run lint` — passed.
+  - Final verification: `npm run test` — passed, 33 files / 120 tests.
+  - Final verification: `npm run build` — passed.
+  - Final verification: `npx tsc -p tsconfig.api.json --noEmit` — passed.
+  - Final verification: focused Vercel-style NodeNext typecheck with `/tmp/brrrdle-tsconfig-nodenext.json` — passed.
+  - Final verification: client-bundle leak check `! grep -R "@vercel/blob" dist/assets/*.js` — passed.
+  - Final verification: `git diff --check` — passed.
+  - Security review: `codeql_checker` — passed with 0 JavaScript alerts.
 - **Checks not run**:
   - Live Vercel deploy/build.
 - **Reason any checks were skipped**:
