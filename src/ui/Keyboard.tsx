@@ -20,6 +20,7 @@ function KeyboardButton({
   children,
   className,
   disabled,
+  isAction = false,
   onClick,
   state = 'unknown',
   title,
@@ -27,6 +28,7 @@ function KeyboardButton({
   readonly children: string
   readonly className?: string
   readonly disabled?: boolean
+  readonly isAction?: boolean
   readonly onClick: () => void
   readonly state?: keyof typeof stateClasses
   readonly title: string
@@ -35,12 +37,21 @@ function KeyboardButton({
     <button
       aria-label={title}
       className={classNames(
-        'min-h-11 rounded-xl border px-2 text-sm font-bold uppercase shadow-lg shadow-slate-950/20 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-12 sm:px-3',
+        'flex items-center justify-center rounded-xl border font-bold uppercase shadow-lg shadow-slate-950/20 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] motion-safe:active:scale-95 disabled:cursor-not-allowed disabled:opacity-50',
         stateClasses[state],
         className,
       )}
       disabled={disabled}
       onClick={onClick}
+      style={{
+        minHeight: 'var(--brrrdle-key-min)',
+        minWidth: isAction
+          ? 'clamp(2.75rem, 13cqi, 4.5rem)'
+          : 'clamp(1.75rem, 8.5cqi, var(--brrrdle-key-max))',
+        paddingInline: isAction ? '0.5rem' : '0.25rem',
+        fontSize: isAction ? 'var(--brrrdle-key-action-font)' : 'var(--brrrdle-key-font)',
+        touchAction: 'manipulation',
+      }}
       type="button"
     >
       {children}
@@ -50,11 +61,14 @@ function KeyboardButton({
 
 export function Keyboard({ disabled = false, letterStates = {}, onInput }: KeyboardProps) {
   return (
-    <section aria-label="Keyboard" className="space-y-2">
+    <section
+      aria-label="Keyboard"
+      className="@container mx-auto w-full max-w-2xl space-y-1.5 rounded-xl bg-slate-900/0 max-md:sticky max-md:bottom-0 max-md:z-10 max-md:bg-slate-900/70 max-md:px-2 max-md:py-2 max-md:backdrop-blur-sm sm:space-y-2"
+    >
       {keyboardRows.map((row, rowIndex) => (
-        <div className="flex justify-center gap-1.5 sm:gap-2" key={row}>
+        <div className="flex justify-center gap-1 sm:gap-1.5" key={row}>
           {rowIndex === 2 ? (
-            <KeyboardButton className="px-3 text-xs sm:px-4" disabled={disabled} onClick={() => onInput({ type: 'submit' })} title="Submit guess">
+            <KeyboardButton disabled={disabled} isAction onClick={() => onInput({ type: 'submit' })} title="Submit guess">
               Enter
             </KeyboardButton>
           ) : null}
@@ -70,7 +84,7 @@ export function Keyboard({ disabled = false, letterStates = {}, onInput }: Keybo
             </KeyboardButton>
           ))}
           {rowIndex === 2 ? (
-            <KeyboardButton className="px-3 text-xs sm:px-4" disabled={disabled} onClick={() => onInput({ type: 'delete' })} title="Delete letter">
+            <KeyboardButton disabled={disabled} isAction onClick={() => onInput({ type: 'delete' })} title="Delete letter">
               Del
             </KeyboardButton>
           ) : null}

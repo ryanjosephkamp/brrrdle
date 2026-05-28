@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { createBrrrdleSupabaseClient, createSyncStatus, getCurrentAuthState, loadGuestProgress, recordCompletedGame, resetGuestProgress, saveGuestProgress, sendMagicLink, Settings, signInWithPassword, signOut, signUpWithPassword, subscribeToAuthChanges, type AuthState, type CompletedGameInput } from '../account'
+import { AccountBadge, AuthModal, ProfilePanel, classifyAuthError, createBrrrdleSupabaseClient, createSyncStatus, getCurrentAuthState, loadGuestProgress, recordCompletedGame, sendPasswordResetEmail, resetGuestProgress, saveGuestProgress, sendMagicLink, Settings, signInWithPassword, signOut, signUpWithPassword, subscribeToAuthChanges, updateProfile, type AuthState, type CompletedGameInput, type ProfileAccentColor } from '../account'
 import { BUNDLED_WORD_LIST_LENGTHS } from '../data'
 import { DAILY_WORD_LENGTH, MAX_PRACTICE_WORD_LENGTH, MIN_PRACTICE_WORD_LENGTH } from '../game/constants'
 import { Button, Layout, Navigation, Panel } from '../ui'
@@ -70,6 +70,8 @@ function RoutePanel({
   onSignUpWithPassword,
   onSpendCoins,
   onSignOut,
+  onOpenAuthModal,
+  onOpenProfilePanel,
   soundEnabled,
   onToggleSound,
   supabaseClient,
@@ -85,6 +87,8 @@ function RoutePanel({
   readonly onSignInWithPassword: (email: string, password: string) => void
   readonly onSignUpWithPassword: (email: string, password: string) => void
   readonly onSignOut: () => void
+  readonly onOpenAuthModal: () => void
+  readonly onOpenProfilePanel: () => void
   readonly route: AppRoute
   readonly onSelectRoute: (routeId: AppRoute['id']) => void
   readonly soundEnabled: boolean
@@ -135,6 +139,8 @@ function RoutePanel({
         authMessage={authMessage}
         authState={authState}
         guestProgress={guestProgress}
+        onOpenAuthModal={onOpenAuthModal}
+        onOpenProfilePanel={onOpenProfilePanel}
         onResetProgress={onResetProgress}
         onSendMagicLink={onSendMagicLink}
         onSignInWithPassword={onSignInWithPassword}
@@ -180,6 +186,11 @@ function AppInner() {
   const supabaseClient = useMemo(() => createBrrrdleSupabaseClient(), [])
   const [authState, setAuthState] = useState<AuthState>(() => supabaseClient ? { status: 'anonymous' } : { status: 'unconfigured' })
   const [authMessage, setAuthMessage] = useState<string | undefined>(undefined)
+  const [authBusy, setAuthBusy] = useState(false)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [profilePanelOpen, setProfilePanelOpen] = useState(false)
+  const [profileMessage, setProfileMessage] = useState<string | undefined>(undefined)
+  const [profileBusy, setProfileBusy] = useState(false)
   const [syncStatus] = useState(() => createSyncStatus(supabaseClient ? 'idle' : 'error'))
   const activeRoute = getRouteById(activeRouteId)
   const navigationRoutes = useMemo(() => getPrimaryNavigationRoutes(authState.user?.roles.includes('admin') ?? false), [authState.user?.roles])
@@ -220,10 +231,11 @@ function AppInner() {
     if (!supabaseClient || !email.trim()) {
       return
     }
-
     setAuthMessage(undefined)
+    setAuthBusy(true)
     void sendMagicLink(supabaseClient, email).then((result) => {
-      setAuthMessage(result.ok ? 'Magic link sent. Check your email.' : result.message)
+      setAuthBusy(false)
+      setAuthMessage(result.ok ? 'Magic link sent. Check your email.' : classifyAuthError({ message: result.message }, 'magic-link'))
     })
   }, [supabaseClient])
   const handleSignInWithPassword = useCallback((email: string, password: string) => {
@@ -231,7 +243,9 @@ function AppInner() {
       return
     }
     setAuthMessage(undefined)
+    setAuthBusy(true)
     void signInWithPassword(supabaseClient, email, password).then((result) => {
+      setAuthBusy(false)
       if (!result.ok) {
         setAuthMessage(result.message)
       }
@@ -242,11 +256,28 @@ function AppInner() {
       return
     }
     setAuthMessage(undefined)
+    setAuthBusy(true)
     void signUpWithPassword(supabaseClient, email, password).then((result) => {
+      setAuthBusy(false)
       if (!result.ok) {
         setAuthMessage(result.message)
       } else {
         setAuthMessage('Check your email to confirm your account, if email confirmation is enabled.')
+      }
+    })
+  }, [supabaseClient])
+  const handleRequestPasswordReset = useCallback((email: string) => {
+    if (!supabaseClient) {
+      return
+    }
+    setAuthMessage(undefined)
+    setAuthBusy(true)
+    void sendPasswordResetEmail(supabaseClient, email).then((result) => {
+      setAuthBusy(false)
+      if (!result.ok) {
+        setAuthMessage(result.message)
+      } else {
+        setAuthMessage('Check your email for a reset link.')
       }
     })
   }, [supabaseClient])
@@ -255,7 +286,40 @@ function AppInner() {
       return
     }
 
+    setProfilePanelOpen(false)
     void signOut(supabaseClient).then(() => setAuthState({ status: 'anonymous' }))
+  }, [supabaseClient])
+  const handleOpenAuthModal = useCallback(() => {
+    setAuthMessage(undefined)
+    setAuthModalOpen(true)
+  }, [])
+  const handleCloseAuthModal = useCallback(() => {
+    setAuthModalOpen(false)
+  }, [])
+  const handleOpenProfilePanel = useCallback(() => {
+    setProfileMessage(undefined)
+    setProfilePanelOpen(true)
+  }, [])
+  const handleCloseProfilePanel = useCallback(() => {
+    setProfilePanelOpen(false)
+  }, [])
+  const handleSaveProfile = useCallback(async (input: { readonly displayName?: string; readonly accentColor?: ProfileAccentColor; readonly avatarUrl?: string }) => {
+    if (!supabaseClient) {
+      return
+    }
+    setProfileMessage(undefined)
+    setProfileBusy(true)
+    const result = await updateProfile(supabaseClient, input)
+    setProfileBusy(false)
+    if (!result.ok) {
+      setProfileMessage(result.message)
+      return
+    }
+    setProfileMessage('Profile saved.')
+    // Re-derive AuthState so the new metadata flows to AccountBadge immediately.
+    const fresh = await getCurrentAuthState(supabaseClient)
+    setAuthState(fresh)
+    setProfilePanelOpen(false)
   }, [supabaseClient])
 
   useEffect(() => {
@@ -281,7 +345,12 @@ function AppInner() {
     <Layout
       description="An accessible, mobile-first shell for daily modes, practice, definitions, settings, stats, and future admin controls."
       eyebrow="brrrdle"
-      navigation={<Navigation activeRouteId={activeRoute.id} onNavigate={setActiveRouteId} routes={navigationRoutes} />}
+      navigation={(
+        <div className="flex flex-col gap-3 lg:items-end">
+          <AccountBadge authState={authState} onOpenAuthModal={handleOpenAuthModal} onOpenProfile={handleOpenProfilePanel} />
+          <Navigation activeRouteId={activeRoute.id} onNavigate={setActiveRouteId} routes={navigationRoutes} />
+        </div>
+      )}
       title="Choose your puzzle path."
     >
       <div className="space-y-6">
@@ -314,6 +383,8 @@ function AppInner() {
             authState={authState}
             guestProgress={guestProgress}
             onGameComplete={handleGameComplete}
+            onOpenAuthModal={handleOpenAuthModal}
+            onOpenProfilePanel={handleOpenProfilePanel}
             onResetProgress={handleResetProgress}
             onSelectRoute={setActiveRouteId}
             onSendMagicLink={handleSendMagicLink}
@@ -329,6 +400,29 @@ function AppInner() {
           />
         </section>
       </div>
+
+      <AuthModal
+        authenticated={authState.status === 'authenticated'}
+        authMessage={authMessage}
+        busy={authBusy}
+        isOpen={authModalOpen}
+        onClose={handleCloseAuthModal}
+        onRequestPasswordReset={handleRequestPasswordReset}
+        onSendMagicLink={handleSendMagicLink}
+        onSignInWithPassword={handleSignInWithPassword}
+        onSignUpWithPassword={handleSignUpWithPassword}
+      />
+
+      <ProfilePanel
+        authState={authState}
+        busy={profileBusy}
+        isOpen={profilePanelOpen}
+        onClose={handleCloseProfilePanel}
+        onSave={handleSaveProfile}
+        onSignOut={handleSignOut}
+        statusMessage={profileMessage}
+        supabaseClient={supabaseClient}
+      />
     </Layout>
   )
 }

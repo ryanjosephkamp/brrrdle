@@ -1,3 +1,16 @@
+/**
+ * @module huggingFaceSource
+ *
+ * @deprecated as the default gameplay loading path since Phase 17
+ * (LOCAL-WORD-LISTS-SPEC-2026-05-28). The runtime Hugging Face fetch is
+ * **no longer** the default source for gameplay word lists; that role now
+ * belongs to the local source in `src/latest/` (see `localWordLists.ts` and
+ * `wordLists.ts`). This module continues to compile, ships in the bundle,
+ * and remains reachable from the `/api/admin-refresh` admin route as an
+ * **optional override**. All existing tests in `huggingFaceSource.test.ts`
+ * remain green; no logic was changed in Phase 17.3 — only this JSDoc banner
+ * was added.
+ */
 import {
   MAX_PRACTICE_WORD_LENGTH,
   MIN_PRACTICE_WORD_LENGTH,

@@ -171,6 +171,7 @@ export function validateWordListFile(value: unknown): SchemaValidationResult {
         source: metadata.source as string,
         version: metadata.version as string,
         generatedAt: metadata.generatedAt as string,
+        ...(isRecord(metadata.curation) ? { curation: metadata.curation } : {}),
       },
       answers,
       validGuesses,

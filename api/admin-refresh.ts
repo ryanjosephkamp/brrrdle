@@ -1,3 +1,18 @@
+/**
+ * @module api/admin-refresh
+ *
+ * Admin-triggered Hugging Face refresh route.
+ *
+ * Since Phase 17 (LOCAL-WORD-LISTS-SPEC-2026-05-28), gameplay reads the local
+ * authoritative word-list source at `src/latest/` via
+ * `src/data/localWordLists.ts` by default; this admin route is no longer the
+ * gameplay default but remains available as an **optional override**:
+ * a successful refresh merges the new dataset into `refreshStore`, and the
+ * data layer continues to prefer the local source unless an admin has
+ * explicitly swapped a length in-session. Phase 14 admin authorization and
+ * the existing request/response contract are unchanged. No logic was changed
+ * in Phase 17.3 — only this JSDoc banner was added.
+ */
 import {
   HUGGING_FACE_API_BASE,
   HUGGING_FACE_DATASET_ID,

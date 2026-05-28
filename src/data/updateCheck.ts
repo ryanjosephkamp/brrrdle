@@ -1,3 +1,13 @@
+/**
+ * @module updateCheck
+ *
+ * @deprecated as the default gameplay loading path since Phase 17
+ * (LOCAL-WORD-LISTS-SPEC-2026-05-28). The Hugging Face remote-version
+ * comparison is no longer consulted by gameplay by default; gameplay reads
+ * the local source at `src/latest/` via `localWordLists.ts`. This module
+ * remains compiled, tested, and reachable from the admin/cron flow as part
+ * of the **optional override** path. No logic was changed in Phase 17.3.
+ */
 import type { RemoteWordListMetadata } from './types.js'
 
 export interface UpdateCheckCurrent {

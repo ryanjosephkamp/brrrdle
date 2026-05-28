@@ -1,3 +1,14 @@
+/**
+ * @module refresh
+ *
+ * @deprecated as the default gameplay loading path since Phase 17
+ * (LOCAL-WORD-LISTS-SPEC-2026-05-28). The atomic refresh pipeline that
+ * fetches the Hugging Face dataset and rebuilds the in-memory word-list
+ * snapshot is no longer the gameplay default; gameplay reads `src/latest/`
+ * via `localWordLists.ts`. This module remains compiled, tested, and
+ * reachable from `/api/admin-refresh` and the Vercel Cron job as an
+ * **optional admin-triggered override**. No logic was changed in Phase 17.3.
+ */
 import type { WordListFile } from './types.js'
 import {
   isSchemaValidationFailure,

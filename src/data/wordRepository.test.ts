@@ -20,7 +20,12 @@ describe('wordRepository', () => {
 
   it('loads practice answers and guesses for supported seeded lengths', () => {
     expect(getAnswerCandidates({ mode: 'go', scope: 'practice', length: 2 }).map((entry) => entry.word)).toContain('go')
-    expect(getValidGuesses({ mode: 'go', scope: 'practice', length: 35 }).has('abcdefghijklmnopqrstuvwxyzabcdefghi')).toBe(true)
+    // Phase 17.2: length-35 valid-guesses now come from the local source at
+    // src/latest/words_length_35.json (real 35-letter chemistry/biology terms),
+    // replacing the Phase 12 deterministic synthetic placeholder. The intent
+    // of this assertion (verify length-35 validGuesses contains a known
+    // 35-letter token) is preserved with a real word from the local list.
+    expect(getValidGuesses({ mode: 'go', scope: 'practice', length: 35 }).has('carboxymethylhydroxyethylcelluloses')).toBe(true)
   })
 
   it('returns populated collections for every supported practice length', () => {

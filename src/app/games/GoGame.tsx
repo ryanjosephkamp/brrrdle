@@ -77,20 +77,29 @@ function GuessGrid({ session }: { readonly session: PuzzleSessionState }) {
   }), [session.currentGuess, session.guesses, session.maxAttempts, session.status, session.wordLength])
 
   return (
-    <div aria-label="Go guess grid" className="space-y-2" role="grid">
+    <div aria-label="Go guess grid" className="@container space-y-1.5 sm:space-y-2" role="grid">
       {rows.map((row, rowIndex) => (
-        <div className={classNames('grid gap-1.5', session.lastValidation && rowIndex === session.guesses.length ? 'motion-safe:animate-[brrrdle-row-shake_180ms_ease-in-out]' : undefined)} key={rowIndex} role="row" style={{ gridTemplateColumns: `repeat(${session.wordLength}, minmax(0, 1fr))` }}>
+        <div
+          className={classNames('mx-auto grid gap-1 sm:gap-1.5', session.lastValidation && rowIndex === session.guesses.length ? 'motion-safe:animate-[brrrdle-row-shake_180ms_ease-in-out]' : undefined)}
+          key={rowIndex}
+          role="row"
+          style={{
+            gridTemplateColumns: `repeat(${session.wordLength}, minmax(0, 1fr))`,
+            maxWidth: `calc(var(--brrrdle-tile-max) * ${session.wordLength} + 0.375rem * ${session.wordLength - 1})`,
+          }}
+        >
           {row.map((tile, tileIndex) => (
             <div
               aria-label={`Row ${rowIndex + 1}, tile ${tileIndex + 1}${tile.letter ? `, ${tile.letter}` : ''}`}
               className={classNames(
-                'flex aspect-square min-h-8 items-center justify-center rounded-xl border text-sm font-black uppercase shadow-inner shadow-slate-950/20 sm:min-h-10 sm:text-base',
+                '@container flex aspect-square items-center justify-center rounded-xl border font-black uppercase shadow-inner shadow-slate-950/20',
                 tileStateClasses[tile.state],
                 tile.state === 'current' ? 'motion-safe:animate-[brrrdle-tile-pop_180ms_ease-out]' : undefined,
                 tile.isSubmitted ? 'motion-safe:animate-[brrrdle-tile-reveal_360ms_ease-out]' : undefined,
               )}
               key={`${rowIndex}-${tileIndex}`}
               role="gridcell"
+              style={{ fontSize: 'clamp(0.625rem, 50cqi, 1.75rem)' }}
             >
               {tile.letter}
             </div>

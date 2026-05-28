@@ -9,6 +9,27 @@
   --color-ice-200: #a5f3fc;
   --color-ice-300: #67e8f9;
   --color-focus-ring: #bae6fd;
+
+  /*
+   * Phase 16 — Mobile & Tablet Responsiveness design tokens.
+   *
+   * Tile and key sizes are expressed as clamps. The fluid middle uses container
+   * inline-size units (cqi) so sizing follows the actual panel/section width,
+   * not the raw viewport. When clamp(... cqi ...) resolves outside a CSS
+   * container, browsers treat cqi as 1% of the small viewport inline size,
+   * which is a sensible fallback and keeps pre-Phase-16 visuals intact.
+   */
+  --brrrdle-tile-min: 2rem;          /* 32px floor — preserves prior min-h-8 */
+  --brrrdle-tile-max: 4.25rem;       /* 68px ceiling — prevents iPad ballooning */
+  --brrrdle-tile-size: clamp(var(--brrrdle-tile-min), 14cqi, var(--brrrdle-tile-max));
+  --brrrdle-tile-font: clamp(0.875rem, 6.5cqi, 1.625rem);
+
+  --brrrdle-key-min: 2.25rem;        /* 36px floor — ≥ Apple HIG touch target */
+  --brrrdle-key-max: 3.75rem;        /* 60px ceiling — keeps tablets balanced */
+  --brrrdle-key-size: clamp(var(--brrrdle-key-min), 9cqi, var(--brrrdle-key-max));
+  --brrrdle-key-font: clamp(0.75rem, 4.25cqi, 1.05rem);
+  --brrrdle-key-action-font: clamp(0.625rem, 3.5cqi, 0.95rem);
+
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-synthesis: none;

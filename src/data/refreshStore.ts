@@ -1,3 +1,14 @@
+/**
+ * @module refreshStore
+ *
+ * @deprecated as the default gameplay loading path since Phase 17
+ * (LOCAL-WORD-LISTS-SPEC-2026-05-28). The in-memory refresh store that holds
+ * the most recent Hugging Face snapshot is no longer consulted by gameplay
+ * by default; gameplay reads the local source at `src/latest/` via
+ * `localWordLists.ts`. The refresh store remains compiled, tested, and
+ * available as an **optional override** when triggered by `/api/admin-refresh`.
+ * No logic was changed in Phase 17.3.
+ */
 import type { WordListFile } from './types.js'
 import type { RefreshSuccess } from './refresh.js'
 

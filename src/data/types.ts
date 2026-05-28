@@ -16,6 +16,14 @@ export interface WordListMetadata {
   readonly source: string
   readonly version: string
   readonly generatedAt: string
+  /**
+   * Additive, optional curation block surfaced by the Phase 17 local word-list
+   * source at `src/latest/words_length_N.json` (per
+   * `LOCAL-WORD-LISTS-SPEC-2026-05-28.md`). Existing consumers may ignore it.
+   * Carries provenance fields such as `method`, `seed`, `target_sample_size`,
+   * `curation_date`, and `note` for the curated `answers` subset.
+   */
+  readonly curation?: Readonly<Record<string, unknown>>
 }
 
 export interface WordListFile {
