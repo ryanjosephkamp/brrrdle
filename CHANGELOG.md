@@ -4,6 +4,9 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Changed (Phase 16 — Mobile & Tablet Responsiveness Improvements)
+- **`src/app/games/OgGame.tsx` and `src/app/games/GoGame.tsx`** — guess grid is now responsive: outer wrapper declares a Tailwind v4 `@container`, each row is centred with `mx-auto` and capped at `calc(var(--brrrdle-tile-max) * wordLength + 0.375rem * (wordLength - 1))` so 5-letter daily rows stop ballooning on iPad portrait/wider while 35-letter practice rows still occupy full width on phones. Row gap is `gap-1 sm:gap-1.5`. Each tile is its own `@container` with `aspect-square` and inline `font-size: clamp(0.625rem, 50cqi, 1.75rem)`, so glyphs always render at ~50 % of tile width across phones, tablets, and desktop. Grid semantics (`role="grid"/"row"/"gridcell"`, `aria-label`s, animations, per-state color classes) and the 5-letter daily / 2..35 practice invariants are preserved byte-identically.
+
 ### Added (Phase 16 — Mobile & Tablet Responsiveness Improvements)
 - **`index.html`** — `viewport` meta now carries `viewport-fit=cover` so iOS standalone PWA respects `env(safe-area-inset-*)`.
 - **`src/index.css`** — Phase 16 responsive design tokens on `:root`: `--brrrdle-tile-min/max/size/font` and `--brrrdle-key-min/max/size/font/-action-font`. All are `clamp()`-based with container-inline-size (`cqi`) fluid middles so tile and key sizing follow the actual section width rather than the raw viewport.
