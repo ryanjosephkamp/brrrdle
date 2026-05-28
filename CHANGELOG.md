@@ -4,6 +4,14 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Verified (Phase 17.4 — Release-gate verification & bundle-leak check, LOCAL-WORD-LISTS-SPEC-2026-05-28)
+- Full §22.5 release-gate verification executed against the Phase 17.1–17.3 change set on `copilot/brrrdle-auth-improvements-review`.
+  - `npm ci`, `npm run lint`, `npm run test` (266/266), `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, and `git diff --check` — all clean.
+  - Main gameplay chunk shrank from 1,265,046 bytes at HEAD to **550,700 bytes (−56.46 %)**; per-length JSON code-split into 34 dedicated chunks via `vite.config.ts` `manualChunks`.
+  - Client-bundle leak grep: no `@vercel/blob` anywhere in `dist/`. Single `huggingface.co` occurrence in main chunk is pre-existing (not a regression) and reflects the `HUGGING_FACE_API_BASE`/`HUGGING_FACE_RAW_BASE` constants kept reachable for the admin override per §22.6. The string `service-role` appears once in main chunk as UI hint text ("The browser never receives service-role credentials …"), **not** a leaked credential.
+  - §22.5 §3 *total*-payload growth (+356 %) and §22.5 §5 main-chunk HF occurrence are documented in `progress/PROGRESS-STEP-31.md` and `progress/PROGRESS-STEP-33.md` as deviations resolved in favour of §22.6 non-negotiable invariants (sync data-layer public API; no file deletion; no test removal/skip/weakening). The §22.5 §3 escape hatch would have required converting `loadBundledWordList`/`getWordRepository`/etc. to async, which §22.6 explicitly forbids.
+  - CodeQL invocation timed out and per the tool's own instruction must not be re-run; Phase 17.1–17.3 changes introduce no new control flow with user inputs, no new network sinks, no new dynamic execution, and no new credential handling. Risk surface judged low.
+
 ### Deprecated (Phase 17.3 — Hugging Face runtime fetch is no longer the gameplay default, LOCAL-WORD-LISTS-SPEC-2026-05-28)
 - Added module-level `@deprecated` JSDoc banners (no logic change) to `src/data/huggingFaceSource.ts`, `src/data/refresh.ts`, `src/data/refreshStore.ts`, `src/data/updateCheck.ts`, and `api/admin-refresh.ts`. The runtime Hugging Face fetch and refresh pipeline remain compiled, tested, and reachable from `/api/admin-refresh` and the Vercel Cron job as an **optional admin-triggered override**, but gameplay reads `src/latest/` by default per Phase 17.2. Phase 14 admin authorization and the existing request/response contract are unchanged.
 
