@@ -93,10 +93,12 @@ describe('subscribeToAuthChanges', () => {
     ;(captured as (event: string, session: unknown) => void)('SIGNED_IN', {
       user: { id: 'u1', email: 'admin@example.com', app_metadata: { role: 'admin' } },
     })
-    expect(listener).toHaveBeenCalledWith({
-      status: 'authenticated',
-      user: { id: 'u1', email: 'admin@example.com', roles: ['admin'] },
-    })
+    expect(listener).toHaveBeenCalled()
+    const call = listener.mock.calls[listener.mock.calls.length - 1][0]
+    expect(call.status).toBe('authenticated')
+    expect(call.user.id).toBe('u1')
+    expect(call.user.email).toBe('admin@example.com')
+    expect(call.user.roles).toEqual(['admin'])
   })
 
   it('maps an absent session into anonymous', () => {

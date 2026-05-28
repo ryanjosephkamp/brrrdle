@@ -71,3 +71,33 @@ Admin verification checklist:
 7. Confirm a second user cannot read the first user's `progress_snapshots`, `game_history`, or `settings` rows.
 8. Assign an admin role through a secure server-side path, then confirm the admin route unlocks only for that user.
 9. Confirm `/api/admin-refresh` rejects missing auth, non-admin auth, and non-POST requests.
+
+## Optional: avatar uploads (Phase 15)
+
+Phase 15 (AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27) adds an optional avatar
+upload affordance in the new Profile panel. By default brrrdle renders
+deterministic initials on a colored gradient, which requires no Supabase
+Storage configuration. To enable image uploads:
+
+1. In the Supabase dashboard, create a **public** Storage bucket named
+   `avatars`.
+2. Add an RLS policy that allows each authenticated user to insert/update
+   only paths under their own `auth.uid()/`. For example:
+
+   ```sql
+   create policy "Avatars are publicly readable"
+     on storage.objects for select
+     using ( bucket_id = 'avatars' );
+
+   create policy "Users can manage their own avatar"
+     on storage.objects for all
+     using ( bucket_id = 'avatars' and (auth.uid())::text = (storage.foldername(name))[1] )
+     with check ( bucket_id = 'avatars' and (auth.uid())::text = (storage.foldername(name))[1] );
+   ```
+
+3. brrrdle probes for the bucket at runtime. If the probe fails (no
+   bucket, RLS denied), the upload UI is silently hidden and the
+   initials avatar is used everywhere — nothing else breaks.
+
+Uploads are limited to PNG, JPEG, or WebP under 200 KB and are stored
+under `avatars/<user-id>/avatar.<ext>` via `supabase.storage.from('avatars').upload(...)`.

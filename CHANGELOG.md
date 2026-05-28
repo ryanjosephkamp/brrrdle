@@ -4,6 +4,37 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Added (Phase 15 — AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27 authentication & profile UX redesign)
+- **`src/account/profile.ts`** — pure profile helpers: `deriveInitials`, `normalizeDisplayName`, `validateAccentColor`, `validateAvatarUrl`, `pickInitialsGradient`, and `deriveProfileFromUser`. Allow-listed accent colors and a 200 KB hard cap for data-URL avatar fallbacks. No Supabase client, no React, no I/O — fully unit-testable.
+- **`src/account/AuthModal.tsx`** — new single Auth dialog built on the existing `Dialog` primitive: two tabs (Magic Link / Email + Password), a sub-mode radio group for Sign in vs Create account, and **a single primary submit button whose label and action follow the active sub-mode**. Forgot Password is a three-step inline flow (form → send → confirmation). Auto-closes on successful authentication. Errors come exclusively through `classifyAuthError`.
+- **`src/account/AccountBadge.tsx`** — global signed-in / Guest indicator rendered inside the existing `Layout` header on every route. Shows avatar (image if uploaded, otherwise initials on a deterministic gradient) + display name / email when signed in; "Guest · Sign in to sync" pill when anonymous; "Guest · sync unavailable" quiet hint when Supabase is unconfigured. Mobile-first (avatar-only under `sm`, full label at and above `sm`).
+- **`src/account/ProfilePanel.tsx`** — new `Dialog`-based profile editor for display name (≤ 50 chars), allow-listed accent color, optional Supabase Storage avatar upload (PNG/JPEG/WebP under 200 KB) gated on a runtime probe of an `avatars` bucket. Falls back gracefully to the initials avatar when no bucket is present; **never throws to the caller**.
+- **Auth helper surface in `src/account/auth.ts`** (additive):
+  - `classifyAuthError(error, action)` returns one of a closed set of safe, user-facing strings ("Email or password is incorrect.", "That email is already registered. Try signing in instead.", "Please confirm your email before signing in.", "Too many attempts — please wait a minute and try again.", "Network unavailable — please try again.", "That email address does not look valid.", and per-action defaults). No raw Supabase error strings ever reach the UI.
+  - `sendPasswordResetEmail(client, email)` wraps `supabase.auth.resetPasswordForEmail` with `window.location.origin` as the `redirectTo` when available; returns a sanitized success/failure envelope.
+  - `updateProfile(client, { displayName?, accentColor?, avatarUrl? })` wraps `supabase.auth.updateUser({ data })`. Validates inputs via `profile.ts`; rejects unsafe avatar URLs (no `javascript:`, no `http:`, no oversized data URLs); supports clearing display name with the empty string.
+  - `hasAvatarStorage(client)` + `uploadAvatar(client, { contentType, data, userId })` — runtime Storage probe and user-scoped upload to `avatars/{userId}/avatar.{ext}` with sanitized id. Never surfaces raw provider errors.
+  - `AuthUserSummary.profile` now carries the derived `{ accentColor, avatarUrl, displayName, email, gradient, initials, label }` so the badge and panel render without re-deriving on every mount.
+- **`src/app/App.tsx`** wires the new modal/profile state, threads `onOpenAuthModal` / `onOpenProfilePanel` through `RoutePanel` to Settings, renders `AccountBadge` in the header (inside the existing `navigation` slot), and renders `AuthModal` + `ProfilePanel` at the layout root. `handleSendMagicLink` now routes its failure path through `classifyAuthError`. After a successful `updateProfile`, `getCurrentAuthState` is re-read so `AccountBadge` reflects the new metadata immediately.
+- **`src/account/Settings.tsx`** adds "Sign in / Create account" (anonymous) and "Manage profile" (authenticated) buttons that open the new modals. The existing inline `AuthPanel` continues to render on Settings as a fallback. **No file is removed; no test is weakened.**
+- **62 new unit tests** across `src/account/profile.test.ts` (21), `src/account/authHelpers.test.ts` (27), `src/account/AuthModal.test.tsx` (6), `src/account/AccountBadge.test.tsx` (4), and `src/account/ProfilePanel.test.tsx` (4). Component tests use `react-dom/server`'s `renderToStaticMarkup` (no new DOM testing dependency added). **Total: 256 tests passing.**
+
+### Fixed (Phase 15 — AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27)
+- **Duplicate "Create account" buttons on mobile** in `src/account/AuthPanel.tsx`: the Email + Password sub-mode toggle is now a real `role="radiogroup"` with `aria-checked` radios, distinct from a single primary submit button whose label follows the active sub-mode. The visual duplicate-CTA pattern is gone on every viewport, while the existing `AuthPanel` API and all wired handlers remain unchanged.
+- **Generic "Unable to create an account right now" error** now routed through `classifyAuthError`, which maps known Supabase error patterns (rate limit, network failure, already-registered, unconfirmed email, invalid credentials, weak password, invalid email) to specific, friendly messages.
+- **No global signed-in / Guest indicator** before Phase 15 — `AccountBadge` is now rendered on every route (Home, og daily, go daily, Practice, Word Explorer, Feedback, Stats, Settings, Admin).
+
+### Documentation (Phase 15)
+- Appended Section 20 (Phase 15) plan addendum to `AGENT-IMPLEMENTATION-PLAN.md`.
+- `docs/supabase.md`: appended an additive note on enabling the optional `avatars` Storage bucket for image avatars (initials-avatar path requires no setup).
+- Added `progress/PROGRESS-STEP-22.md` and appended `phase_id = 22` row to `progress/PROGRESS.csv`.
+
+### User action required (Phase 15)
+- **Supabase**: confirm the Email + Password provider is enabled (carried over from Phase 13.5) and that the password-reset email template is configured.
+- **Supabase (optional, for image avatars)**: create a public Storage bucket named `avatars` with RLS that allows each authenticated user to read/write only paths under `auth.uid()/*`. Without this bucket, brrrdle silently falls back to the initials avatar.
+- **Supabase**: continue to maintain `raw_app_meta_data.role = "admin"` for admin users (carried over from Phase 14).
+- **Vercel**: no env var changes; `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are still the only required client-side variables.
+
 ### Fixed (Phase 14 — DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27 admin tab regression)
 - **Admin tab now renders actionable manual-refresh controls** for users whose Supabase account has the admin role. The existing descriptive paragraphs are preserved verbatim and are now joined by a "Refresh now" button, an `aria-live="polite"` `role="status"` region, and a structured read-out of `revision`, `generatedAt`, `fetchedAt`, length count, and `persistence.status`. The button is disabled while a request is in flight and after a success until the operator explicitly re-arms, preventing accidental double-refresh. Source: `src/admin/ManualRefreshControls.tsx`, `src/admin/AdminPanel.tsx`.
 - **Hardened admin-role detection** in `src/account/auth.ts::getRoles` to accept admin from any of `app_metadata.roles[]`, `app_metadata.role`, `raw_app_meta_data.roles[]`, or `raw_app_meta_data.role`, deduplicated. The function still returns `readonly string[]`, never throws on missing/`null` shapes, and continues to feed `summarizeUser → AuthUserSummary.roles` as the single source the UI consults. A new pure helper `isAdminUser(user)` returns `true` iff any of those four sources resolves to `"admin"`.

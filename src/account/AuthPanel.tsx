@@ -117,18 +117,22 @@ export function AuthPanel({
             </div>
           </label>
 
-          <div className="flex flex-wrap gap-2">
+          <div role="radiogroup" aria-label="Password sub-mode" className="flex flex-wrap gap-2">
             <Button
+              aria-checked={passwordMode === 'sign-in'}
               isActive={passwordMode === 'sign-in'}
               onClick={() => setPasswordMode('sign-in')}
+              role="radio"
               size="sm"
               variant="secondary"
             >
               Sign in
             </Button>
             <Button
+              aria-checked={passwordMode === 'sign-up'}
               isActive={passwordMode === 'sign-up'}
               onClick={() => setPasswordMode('sign-up')}
+              role="radio"
               size="sm"
               variant="secondary"
             >
@@ -146,7 +150,7 @@ export function AuthPanel({
             }}
             variant="primary"
           >
-            {passwordMode === 'sign-in' ? 'Sign in with password' : 'Create account'}
+            {passwordMode === 'sign-in' ? 'Sign in' : 'Create account'}
           </Button>
           <p className="text-xs text-slate-400">
             Passwords must be at least 8 characters. Email + password auth must be enabled in the Supabase project.

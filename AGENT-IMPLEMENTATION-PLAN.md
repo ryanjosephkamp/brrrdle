@@ -1853,4 +1853,55 @@ These steps must be listed verbatim in `progress/PROGRESS-STEP-20.md` and in the
 
 ---
 
+## 20. Phase 15 — Plan Addendum (AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27): Authentication & Profile UX Redesign
+
+**Plan Version**: 1.5 (addendum). Bound by `AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27.md`, `CONSTITUTION.md` v3.1, `BRRRDLE-SPEC.md`, and the prior plan.
+
+### 20.1 Scope, Source of Truth, and Operating Rules
+
+- **Source of truth**: `AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27.md`. Every creative decision is documented here.
+- **Non-negotiable preserved invariants**: Daily 5-letter lock and practice 2..35; Admin gating and `/api/admin-refresh` server contract; Word Explorer, Feedback, Sound Effects, sharing, definitions, stats, guest persistence, Pay-to-Continue, sync stub, danger-zone confirmations; no file deletion; no test removal/skip/weakening; no new env var names; no service-role on client; no `@vercel/blob` in client bundle; magic-link and password flows coexist.
+- **Architecture (creative)**: Profile data stored in `auth.users.user_metadata` via `supabase.auth.updateUser({ data })`. Avatars default to deterministic initials-on-gradient; image upload is gated on a runtime probe of an `avatars` Supabase Storage bucket.
+
+### 20.2 Phase 15.0 — Pre-flight & Baseline (executed)
+Re-confirmed baseline (194/194 tests, lint+build clean). Reproduction map confirmed every Current Problem in the spec is reproducible at HEAD.
+
+### 20.3 Phase 15.1 — Auth Helper Surface Expansion (executed)
+- `src/account/profile.ts`: pure helpers `deriveInitials`, `normalizeDisplayName`, `validateAccentColor`, `validateAvatarUrl`, `pickInitialsGradient`, `deriveProfileFromUser`.
+- `src/account/auth.ts` additive helpers: `classifyAuthError`, `sendPasswordResetEmail` (renamed from spec's `requestPasswordReset` to avoid colliding with the pre-existing unused `dangerZone.requestPasswordReset`), `updateProfile`, `hasAvatarStorage`, `uploadAvatar`. `AuthUserSummary.profile` derived in `summarizeUser`.
+
+### 20.4 Phase 15.2 — `AuthModal` (executed)
+- `src/account/AuthModal.tsx`: Dialog with Magic Link / Email + Password tabs, `role="radiogroup"` sub-mode toggle, single primary CTA, inline Forgot Password flow, `aria-live` status, sanitized errors via `classifyAuthError`, auto-close on `authenticated=true`.
+
+### 20.5 Phase 15.3 — Global `AccountBadge` (executed)
+- `src/account/AccountBadge.tsx`: anonymous → Guest pill opening `AuthModal`; unconfigured → quiet "Guest · sync unavailable"; authenticated → avatar + label opening `ProfilePanel`. Mobile-first responsive (avatar-only under `sm`).
+
+### 20.6 Phase 15.4 — `ProfilePanel` (executed)
+- `src/account/ProfilePanel.tsx`: display name (≤ 50), accent color radiogroup, optional avatar upload gated on `hasAvatarStorage`. Save → `updateProfile`. Falls back to initials avatar when no bucket exists.
+
+### 20.7 Phase 15.5 — Wiring (executed)
+- `src/app/App.tsx` adds modal/profile state, renders `AccountBadge` in `Layout` navigation, renders `AuthModal` + `ProfilePanel` at layout root, re-derives `AuthState` after successful save.
+- `src/account/Settings.tsx` adds Sign in / Manage profile buttons; existing `AuthPanel` preserved (no deletion). Duplicate-CTA bug fixed in `AuthPanel` via radiogroup + single primary CTA.
+- `src/app/routes.ts` unchanged; profile is a dialog, not a route.
+
+### 20.8 Phase 15.6 — Final Integration & Release Gate (executed)
+- Lint, test (256/256), build, API typecheck, leak check all green.
+- CodeQL run on changed lines; no true-positive alerts.
+- CHANGELOG, PROGRESS.csv, PROGRESS-STEP-22.md, docs/supabase.md additive note all updated.
+
+### 20.9 Phase 15 Exit Checklist
+- Every spec requirement (§1, §3.1–§3.5, §4, §5) is implemented or explicitly documented as user-action-required.
+- No duplicate primary CTAs in any sign-in/sign-up surface on any viewport.
+- Global signed-in / Guest indicator present on every route.
+- No raw Supabase error strings reach the UI; all flow through `classifyAuthError`.
+- Forgot Password flow works end-to-end against a properly configured Supabase project.
+- Profile persists via `auth.users.user_metadata`; optional avatar upload gated on Storage bucket and never breaks the experience when absent.
+- Daily 5-letter lock, practice 2..35, Admin gating, `/api/admin-refresh`, and all Phase 13/14 invariants preserved.
+- No file/test deletion; no service-role on client; no `@vercel/blob` in client bundle; no new env var names.
+- `npm run lint`, `npm run test`, `npm run build`, and `npx tsc -p tsconfig.api.json --noEmit` all pass.
+- `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-22.md`, and `CHANGELOG.md` updated and free of sensitive data.
+- Halt before any production release action.
+
+---
+
 **End of AGENT-IMPLEMENTATION-PLAN.md**

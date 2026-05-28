@@ -15,16 +15,46 @@ interface SettingsProps {
   readonly onSignInWithPassword?: (email: string, password: string) => void
   readonly onSignUpWithPassword?: (email: string, password: string) => void
   readonly onSignOut?: () => void
+  readonly onOpenAuthModal?: () => void
+  readonly onOpenProfilePanel?: () => void
   readonly soundEnabled?: boolean
   readonly onToggleSound?: (enabled: boolean) => void
   readonly syncStatus: SyncStatusState
 }
 
-export function Settings({ authState, authMessage, guestProgress, onResetProgress, onSendMagicLink, onSignInWithPassword, onSignUpWithPassword, onSignOut, soundEnabled, onToggleSound, syncStatus }: SettingsProps) {
+export function Settings({
+  authState,
+  authMessage,
+  guestProgress,
+  onResetProgress,
+  onSendMagicLink,
+  onSignInWithPassword,
+  onSignUpWithPassword,
+  onSignOut,
+  onOpenAuthModal,
+  onOpenProfilePanel,
+  soundEnabled,
+  onToggleSound,
+  syncStatus,
+}: SettingsProps) {
   return (
     <section className="space-y-4" aria-labelledby="settings-title">
       <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-ice-200)]">account and persistence</p>
       <h2 id="settings-title" className="text-3xl font-bold text-white">Settings</h2>
+      {authState.status === 'anonymous' && onOpenAuthModal ? (
+        <Panel className="space-y-2 text-sm leading-6 text-slate-300" tone="muted">
+          <h3 className="text-xl font-bold text-white">Sign in to brrrdle</h3>
+          <p>Open a clean dialog with Magic Link, Email + Password, and Forgot Password.</p>
+          <Button onClick={onOpenAuthModal} variant="primary">Sign in / Create account</Button>
+        </Panel>
+      ) : null}
+      {authState.status === 'authenticated' && onOpenProfilePanel ? (
+        <Panel className="space-y-2 text-sm leading-6 text-slate-300" tone="muted">
+          <h3 className="text-xl font-bold text-white">Manage profile</h3>
+          <p>Customize your display name, accent color, and avatar.</p>
+          <Button onClick={onOpenProfilePanel} variant="primary">Manage profile</Button>
+        </Panel>
+      ) : null}
       <AuthPanel
         authEmail={authState.user?.email}
         authMessage={authMessage}
