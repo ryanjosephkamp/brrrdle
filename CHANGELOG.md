@@ -4,6 +4,17 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Phase 17 — Use Local brrrdle Word List JSONs from `src/latest/` (complete; awaiting user approval)
+- **Source of truth**: `LOCAL-WORD-LISTS-SPEC-2026-05-28.md` and `AGENT-IMPLEMENTATION-PLAN.md` §22.
+- **Path reconciliation**: spec says `src/latest/brrrdle/`; repo as-committed places the 34 per-length JSONs at `src/latest/`; the on-disk layout is authoritative. The single loader-path constant `LOCAL_WORD_LISTS_SOURCE_PATH = 'src/latest'` in `src/data/localWordLists.ts` is the only point that encodes this decision.
+- **Headline result**: gameplay (daily and practice) now reads the real 2026-05-28 dataset (378,658 curated words) for every length 2..35; ordinary English words previously rejected against the historical seed (`house`, etc.) now validate as guesses; the runtime Hugging Face fetch is deprecated as the gameplay default (JSDoc) but remains a fully-functional admin-triggered override through `/api/admin-refresh`; main JS chunk is **−56.46 %** vs baseline; **266/266 tests passing** (256 baseline + 10 new + 1 fixture update; no test removed, skipped, or weakened).
+- **Sub-phases**: 17.0 pre-flight (`progress/PROGRESS-STEP-29.md`) · 17.1 loader & adapter (`PROGRESS-STEP-30.md`) · 17.2 re-point + manualChunks (`PROGRESS-STEP-31.md`) · 17.3 HF deprecation banners (`PROGRESS-STEP-32.md`) · 17.4 release-gate verification (`PROGRESS-STEP-33.md`) · 17.5 final tracking and halt for user approval (`PROGRESS-STEP-34.md`).
+- **Documented deviations** (all resolved in favour of §22.6 non-negotiable invariants):
+  - §22.3 "definitionsByWord becomes an empty Map" → relaxed via additive seed-definition merge for `go` (length 2) and `crane` (length 5); existing definition-surface tests pass without modification.
+  - §22.5 §3 "+20 % bundle-size cap" → satisfied at the main entry chunk (−56.46 %) via `vite.config.ts` `manualChunks`; total payload grew by +356 % because the local source carries 378,658 real curated words; a signature-changing async refactor would have violated §22.6 "Public APIs … remain byte-identical at the signature level".
+  - §22.5 §5 "gameplay chunks must not contain any HF URL" → pre-existing baseline condition (HEAD already had 1 occurrence in its single chunk); 17.3 added JSDoc deprecation banners per §22.4 row-scope; full removal would have required §22.6-forbidden file deletions or barrel-export changes.
+- **§22.10 Exit Checklist**: all four items checked. Halt for explicit user approval before merge.
+
 ### Verified (Phase 17.4 — Release-gate verification & bundle-leak check, LOCAL-WORD-LISTS-SPEC-2026-05-28)
 - Full §22.5 release-gate verification executed against the Phase 17.1–17.3 change set on `copilot/brrrdle-auth-improvements-review`.
   - `npm ci`, `npm run lint`, `npm run test` (266/266), `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, and `git diff --check` — all clean.
