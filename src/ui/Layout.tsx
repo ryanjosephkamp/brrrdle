@@ -11,7 +11,7 @@ interface LayoutProps {
 
 export function Layout({ eyebrow, title, description, navigation, children }: LayoutProps) {
   return (
-    <div className="min-h-svh bg-[radial-gradient(circle_at_top_left,var(--color-aurora-glow),transparent_30rem),linear-gradient(180deg,var(--color-polar-night),var(--color-deep-ice))] px-4 py-6 text-slate-100 sm:px-6 lg:px-8">
+    <div className="min-h-svh min-h-dvh bg-[radial-gradient(circle_at_top_left,var(--color-aurora-glow),transparent_30rem),linear-gradient(180deg,var(--color-polar-night),var(--color-deep-ice))] px-[max(1rem,env(safe-area-inset-left))] py-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
         <Panel as="header" className="p-6 sm:p-8" tone="accent">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">

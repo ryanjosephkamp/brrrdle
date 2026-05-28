@@ -4,6 +4,11 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Added (Phase 16 — Mobile & Tablet Responsiveness Improvements)
+- **`index.html`** — `viewport` meta now carries `viewport-fit=cover` so iOS standalone PWA respects `env(safe-area-inset-*)`.
+- **`src/index.css`** — Phase 16 responsive design tokens on `:root`: `--brrrdle-tile-min/max/size/font` and `--brrrdle-key-min/max/size/font/-action-font`. All are `clamp()`-based with container-inline-size (`cqi`) fluid middles so tile and key sizing follow the actual section width rather than the raw viewport.
+- **`src/ui/Layout.tsx`** — app shell switched to `min-h-svh min-h-dvh` with safe-area padding (`px-[max(1rem,env(safe-area-inset-left))] py-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 lg:px-8`) for notched-device polish without altering header/main composition.
+
 ### Added (Phase 15 — AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27 authentication & profile UX redesign)
 - **`src/account/profile.ts`** — pure profile helpers: `deriveInitials`, `normalizeDisplayName`, `validateAccentColor`, `validateAvatarUrl`, `pickInitialsGradient`, and `deriveProfileFromUser`. Allow-listed accent colors and a 200 KB hard cap for data-URL avatar fallbacks. No Supabase client, no React, no I/O — fully unit-testable.
 - **`src/account/AuthModal.tsx`** — new single Auth dialog built on the existing `Dialog` primitive: two tabs (Magic Link / Email + Password), a sub-mode radio group for Sign in vs Create account, and **a single primary submit button whose label and action follow the active sub-mode**. Forgot Password is a three-step inline flow (form → send → confirmation). Auto-closes on successful authentication. Errors come exclusively through `classifyAuthError`.
