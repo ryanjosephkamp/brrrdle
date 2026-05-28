@@ -4,6 +4,28 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Fixed (Phase 14 — DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27 admin tab regression)
+- **Admin tab now renders actionable manual-refresh controls** for users whose Supabase account has the admin role. The existing descriptive paragraphs are preserved verbatim and are now joined by a "Refresh now" button, an `aria-live="polite"` `role="status"` region, and a structured read-out of `revision`, `generatedAt`, `fetchedAt`, length count, and `persistence.status`. The button is disabled while a request is in flight and after a success until the operator explicitly re-arms, preventing accidental double-refresh. Source: `src/admin/ManualRefreshControls.tsx`, `src/admin/AdminPanel.tsx`.
+- **Hardened admin-role detection** in `src/account/auth.ts::getRoles` to accept admin from any of `app_metadata.roles[]`, `app_metadata.role`, `raw_app_meta_data.roles[]`, or `raw_app_meta_data.role`, deduplicated. The function still returns `readonly string[]`, never throws on missing/`null` shapes, and continues to feed `summarizeUser → AuthUserSummary.roles` as the single source the UI consults. A new pure helper `isAdminUser(user)` returns `true` iff any of those four sources resolves to `"admin"`.
+- **Forced fresh session after sign-in / sign-up so the Admin tab updates immediately.** `signInWithPassword` and `signUpWithPassword` now invoke a private best-effort `refreshSession()` after a successful Supabase call (a thrown refresh is swallowed; the user is not signed out and the bearer token is never logged). `subscribeToAuthChanges` now opportunistically re-derives the listener payload via `getCurrentAuthState(client)` on `SIGNED_IN` / `TOKEN_REFRESHED` / `USER_UPDATED` events, debounced to one in-flight refresh at a time. Both auth flows (magic link and email + password) flow through the same listener, so no flow-specific code was added. Source: `src/account/auth.ts`.
+
+### Added (Phase 14 — DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27 admin tab regression)
+- `src/admin/manualRefresh.ts` — pure client helper `requestAdminRefresh({ supabase, fetchImpl?, endpoint? })` that POSTs to `/api/admin-refresh` with `Authorization: Bearer <access_token>` and `accept: application/json` (no body), parses the JSON response, and returns a discriminated union (`{ ok: true, … }` on HTTP 202, otherwise `{ ok: false, reason: 'missing-session' | 'unauthorized' | 'forbidden' | 'server-error' | 'network-error', status?, message?, stage? }`). The bearer token is never logged, never persisted, and never included in the returned payload.
+- `src/admin/ManualRefreshControls.tsx` — accessible UI component that calls `requestAdminRefresh` via prop-injected Supabase client (testable with a client double).
+- `src/admin/index.ts` re-exports the new module and component.
+- `src/app/App.tsx` threads the existing `supabaseClient` memo through `RoutePanel` to `AdminPanel`. No new effects, state, or callbacks were required.
+- 27 new unit tests across `src/account/auth.test.ts`, `src/admin/authorization.test.ts`, `src/admin/manualRefresh.test.ts`, and `src/admin/ManualRefreshControls.test.tsx`. Total: 194 tests passing, 0 removed or weakened. Component-render tests use `react-dom/server`'s `renderToStaticMarkup` so no new DOM testing dependency was added.
+
+### Documentation (Phase 14 — DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27 admin tab regression)
+- Added `progress/PROGRESS-STEP-20.md` (Phase 14.0 pre-flight & reproduction map) and `progress/PROGRESS-STEP-21.md` (Phase 14.1 implementation & verification).
+- Appended `phase_id = 20` and `phase_id = 21` rows to `progress/PROGRESS.csv`.
+
+### User action required (Phase 14)
+- **Supabase**: confirm at least one user has `raw_app_meta_data.role = "admin"` set in the dashboard or via the admin API; confirm the Email + Password provider remains enabled (carried over from Phase 13).
+- **Vercel**: **no action required**; `SUPABASE_URL` and `SUPABASE_ANON_KEY` (or their `VITE_`-prefixed counterparts) must continue to be set so `/api/admin-refresh` can validate the bearer token.
+- **GitHub Actions / Pages / labels**: **no action required**.
+- **Browser session hygiene** (recommended once after deploy): existing admin users should sign out and back in once so the locally cached JWT is replaced and the `raw_app_meta_data` claim minted before the deploy is immediately re-read.
+
 ### Added (ADDITIONS-2026-05-27 — Phase 13 execution)
 - **Word Explorer tab** (`src/wordExplorer/`): new public route with length selector (default 5, range 2–35), live case-insensitive search, two combinable type checkboxes ("Show Answers" / "Show Valid Guesses"), sortable Word/Type columns, per-row copy-to-clipboard button, responsive single-column card layout on small screens, empty-state with `"<term>" is not in the current <N>-letter word list.` message and a "Request this word" button that opens a pre-filled GitHub Issue (`word-request` label) in a new tab.
 - **Feedback tab** (`src/feedback/`): new public route with a category dropdown (Bug Report / Feature Request / Other), required description (2,000-char limit), optional details and optional email fields, and a submit button that opens a pre-filled GitHub Issue (`feedback` plus category-derived labels) in a new tab. Nothing is sent automatically; the user reviews the issue on github.com before submitting.

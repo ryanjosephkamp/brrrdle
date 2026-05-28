@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
+  isAdminUser,
   signInWithPassword,
   signUpWithPassword,
   subscribeToAuthChanges,
+  summarizeUser,
   getCurrentAuthState,
 } from './auth'
 import type { BrrrdleSupabaseClient } from './supabaseClient'
@@ -14,6 +16,7 @@ function makeClient(overrides: Record<string, unknown> = {}): BrrrdleSupabaseCli
       signUp: vi.fn().mockResolvedValue({ error: null }),
       onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }),
       getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
+      refreshSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
       ...overrides,
     },
   } as unknown as BrrrdleSupabaseClient
@@ -121,5 +124,146 @@ describe('getCurrentAuthState admin role', () => {
     const state = await getCurrentAuthState(client)
     expect(state.status).toBe('authenticated')
     expect(state.user?.roles).toContain('admin')
+  })
+})
+
+describe('isAdminUser / summarizeUser role-source coverage', () => {
+  function user(extras: Record<string, unknown>): Parameters<typeof isAdminUser>[0] {
+    return { id: 'u', email: 'a@b.com', app_metadata: {}, ...extras } as Parameters<typeof isAdminUser>[0]
+  }
+
+  it('accepts admin from app_metadata.roles[]', () => {
+    const u = user({ app_metadata: { roles: ['admin', 'support'] } })
+    expect(isAdminUser(u)).toBe(true)
+    expect(summarizeUser(u).roles).toEqual(['admin', 'support'])
+  })
+
+  it('accepts admin from singular app_metadata.role only', () => {
+    const u = user({ app_metadata: { role: 'admin' } })
+    expect(isAdminUser(u)).toBe(true)
+    expect(summarizeUser(u).roles).toEqual(['admin'])
+  })
+
+  it('accepts admin from raw_app_meta_data.roles[] only', () => {
+    const u = user({ raw_app_meta_data: { roles: ['admin'] } })
+    expect(isAdminUser(u)).toBe(true)
+    expect(summarizeUser(u).roles).toContain('admin')
+  })
+
+  it('accepts admin from raw_app_meta_data.role only', () => {
+    const u = user({ raw_app_meta_data: { role: 'admin' } })
+    expect(isAdminUser(u)).toBe(true)
+    expect(summarizeUser(u).roles).toContain('admin')
+  })
+
+  it('combines app_metadata.role and raw_app_meta_data.roles without duplicates', () => {
+    const u = user({ app_metadata: { role: 'admin' }, raw_app_meta_data: { roles: ['admin', 'support'] } })
+    expect(summarizeUser(u).roles).toEqual(['admin', 'support'])
+  })
+
+  it('returns no roles when no source resolves to a string', () => {
+    const u = user({ app_metadata: { role: 42 }, raw_app_meta_data: { role: null } })
+    expect(isAdminUser(u)).toBe(false)
+    expect(summarizeUser(u).roles).toEqual([])
+  })
+
+  it('does not throw on missing app_metadata fields', () => {
+    const u = { id: 'x', app_metadata: undefined } as unknown as Parameters<typeof isAdminUser>[0]
+    expect(() => isAdminUser(u)).not.toThrow()
+    expect(summarizeUser(u).roles).toEqual([])
+  })
+})
+
+describe('refreshSession on sign-in / sign-up', () => {
+  it('invokes refreshSession after a successful signInWithPassword', async () => {
+    const refreshSession = vi.fn().mockResolvedValue({ data: { session: null }, error: null })
+    const client = makeClient({ refreshSession })
+    const result = await signInWithPassword(client, 'a@b.com', 'longenough')
+    expect(result).toEqual({ ok: true })
+    expect(refreshSession).toHaveBeenCalledTimes(1)
+  })
+
+  it('does NOT invoke refreshSession when signInWithPassword fails', async () => {
+    const refreshSession = vi.fn().mockResolvedValue({ data: { session: null }, error: null })
+    const client = makeClient({
+      signInWithPassword: vi.fn().mockResolvedValue({ error: { message: 'bad creds' } }),
+      refreshSession,
+    })
+    const result = await signInWithPassword(client, 'a@b.com', 'longenough')
+    expect('ok' in result && result.ok).toBe(false)
+    expect(refreshSession).not.toHaveBeenCalled()
+  })
+
+  it('invokes refreshSession after a successful signUpWithPassword', async () => {
+    const refreshSession = vi.fn().mockResolvedValue({ data: { session: null }, error: null })
+    const client = makeClient({ refreshSession })
+    const result = await signUpWithPassword(client, 'a@b.com', 'longenough')
+    expect(result).toEqual({ ok: true })
+    expect(refreshSession).toHaveBeenCalledTimes(1)
+  })
+
+  it('does NOT invoke refreshSession when signUpWithPassword fails', async () => {
+    const refreshSession = vi.fn().mockResolvedValue({ data: { session: null }, error: null })
+    const client = makeClient({
+      signUp: vi.fn().mockResolvedValue({ error: { message: 'rejected' } }),
+      refreshSession,
+    })
+    const result = await signUpWithPassword(client, 'a@b.com', 'longenough')
+    expect('ok' in result && result.ok).toBe(false)
+    expect(refreshSession).not.toHaveBeenCalled()
+  })
+
+  it('swallows refreshSession failures and still returns ok: true', async () => {
+    const refreshSession = vi.fn().mockRejectedValue(new Error('refresh blew up'))
+    const client = makeClient({ refreshSession })
+    const result = await signInWithPassword(client, 'a@b.com', 'longenough')
+    expect(result).toEqual({ ok: true })
+    expect(refreshSession).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('subscribeToAuthChanges role refresh on SIGNED_IN / TOKEN_REFRESHED / USER_UPDATED', () => {
+  it('re-derives the listener state via getUser on SIGNED_IN', async () => {
+    let captured: ((event: string, session: unknown) => void) | undefined
+    const subscribe = vi.fn((cb: typeof captured) => {
+      captured = cb
+      return { data: { subscription: { unsubscribe: vi.fn() } } }
+    })
+    const getUser = vi.fn().mockResolvedValue({
+      data: { user: { id: 'u1', email: 'admin@example.com', app_metadata: { role: 'admin' } } },
+      error: null,
+    })
+    const listener = vi.fn()
+    const client = makeClient({ onAuthStateChange: subscribe, getUser })
+
+    subscribeToAuthChanges(client, listener)
+    expect(captured).toBeTypeOf('function')
+
+    captured!('SIGNED_IN', {
+      user: { id: 'u1', email: 'admin@example.com', app_metadata: {} },
+    })
+    // Allow the async re-derive microtask to flush.
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(getUser).toHaveBeenCalled()
+    // The second listener call must reflect the refreshed admin role.
+    const lastCall = listener.mock.calls[listener.mock.calls.length - 1][0]
+    expect(lastCall.user?.roles).toContain('admin')
+  })
+
+  it('does not re-derive state on unrelated events (e.g. SIGNED_OUT)', async () => {
+    let captured: ((event: string, session: unknown) => void) | undefined
+    const subscribe = vi.fn((cb: typeof captured) => {
+      captured = cb
+      return { data: { subscription: { unsubscribe: vi.fn() } } }
+    })
+    const getUser = vi.fn().mockResolvedValue({ data: { user: null }, error: null })
+    const listener = vi.fn()
+    const client = makeClient({ onAuthStateChange: subscribe, getUser })
+
+    subscribeToAuthChanges(client, listener)
+    captured!('SIGNED_OUT', null)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(getUser).not.toHaveBeenCalled()
   })
 })

@@ -72,6 +72,7 @@ function RoutePanel({
   onSignOut,
   soundEnabled,
   onToggleSound,
+  supabaseClient,
   syncStatus,
 }: {
   readonly authState: AuthState
@@ -88,6 +89,7 @@ function RoutePanel({
   readonly onSelectRoute: (routeId: AppRoute['id']) => void
   readonly soundEnabled: boolean
   readonly onToggleSound: (enabled: boolean) => void
+  readonly supabaseClient: ReturnType<typeof createBrrrdleSupabaseClient>
   readonly syncStatus: ReturnType<typeof createSyncStatus>
   readonly onSpendCoins: (amount: number) => boolean
 }) {
@@ -146,7 +148,7 @@ function RoutePanel({
   }
 
   if (route.id === 'admin') {
-    return <AdminPanel authState={authState} />
+    return <AdminPanel authState={authState} supabaseClient={supabaseClient} />
   }
 
   return (
@@ -322,6 +324,7 @@ function AppInner() {
             onToggleSound={sound.setEnabled}
             route={activeRoute}
             soundEnabled={sound.enabled}
+            supabaseClient={supabaseClient}
             syncStatus={syncStatus}
           />
         </section>

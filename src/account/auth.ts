@@ -12,14 +12,59 @@ export interface AuthState {
   readonly user?: AuthUserSummary
 }
 
+function readRawAppMetaData(user: User): Record<string, unknown> | undefined {
+  const candidate = (user as unknown as { readonly raw_app_meta_data?: unknown }).raw_app_meta_data
+  return candidate && typeof candidate === 'object' ? (candidate as Record<string, unknown>) : undefined
+}
+
+function pickStringArray(value: unknown): readonly string[] | undefined {
+  return Array.isArray(value) && value.every((entry) => typeof entry === 'string')
+    ? (value as readonly string[])
+    : undefined
+}
+
+function pickString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
+}
+
 function getRoles(user: User): readonly string[] {
-  const metadataRoles = user.app_metadata.roles
-  if (Array.isArray(metadataRoles) && metadataRoles.every((role) => typeof role === 'string')) {
-    return metadataRoles
+  const collected: string[] = []
+  const seen = new Set<string>()
+  const push = (value: string) => {
+    if (!seen.has(value)) {
+      seen.add(value)
+      collected.push(value)
+    }
   }
 
-  const singleRole = user.app_metadata.role
-  return typeof singleRole === 'string' ? [singleRole] : []
+  const appMetadataRoles = pickStringArray(user.app_metadata?.roles)
+  if (appMetadataRoles) {
+    appMetadataRoles.forEach(push)
+  } else {
+    const appMetadataRole = pickString(user.app_metadata?.role)
+    if (appMetadataRole) {
+      push(appMetadataRole)
+    }
+  }
+
+  const rawAppMetaData = readRawAppMetaData(user)
+  if (rawAppMetaData) {
+    const rawRoles = pickStringArray(rawAppMetaData.roles)
+    if (rawRoles) {
+      rawRoles.forEach(push)
+    } else {
+      const rawRole = pickString(rawAppMetaData.role)
+      if (rawRole) {
+        push(rawRole)
+      }
+    }
+  }
+
+  return collected
+}
+
+export function isAdminUser(user: User): boolean {
+  return getRoles(user).includes('admin')
 }
 
 function authFailureMessage(action: 'sign-in' | 'sign-up'): string {
@@ -65,7 +110,11 @@ export async function signInWithPassword(
     return { message: 'Email and password are required.', ok: false }
   }
   const { error } = await client.auth.signInWithPassword({ email: normalizedEmail, password })
-  return error ? { message: authFailureMessage('sign-in'), ok: false } : { ok: true }
+  if (error) {
+    return { message: authFailureMessage('sign-in'), ok: false }
+  }
+  await refreshSessionBestEffort(client)
+  return { ok: true }
 }
 
 export async function signUpWithPassword(
@@ -81,7 +130,19 @@ export async function signUpWithPassword(
     return { message: 'Password must be at least 8 characters.', ok: false }
   }
   const { error } = await client.auth.signUp({ email: normalizedEmail, password })
-  return error ? { message: authFailureMessage('sign-up'), ok: false } : { ok: true }
+  if (error) {
+    return { message: authFailureMessage('sign-up'), ok: false }
+  }
+  await refreshSessionBestEffort(client)
+  return { ok: true }
+}
+
+async function refreshSessionBestEffort(client: BrrrdleSupabaseClient): Promise<void> {
+  try {
+    await client.auth.refreshSession()
+  } catch {
+    // Intentionally swallowed: a failed refresh must not surface as a sign-in failure or sign the user out.
+  }
 }
 
 export type AuthChangeListener = (state: AuthState) => void
@@ -89,6 +150,8 @@ export type AuthChangeListener = (state: AuthState) => void
 export interface AuthSubscription {
   readonly unsubscribe: () => void
 }
+
+const ROLE_REFRESHING_EVENTS = new Set(['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED'])
 
 export function subscribeToAuthChanges(
   client: BrrrdleSupabaseClient | undefined,
@@ -98,12 +161,31 @@ export function subscribeToAuthChanges(
     return { unsubscribe: () => undefined }
   }
 
-  const { data } = client.auth.onAuthStateChange((_event, session) => {
+  let pendingRefresh: Promise<void> | undefined
+
+  const { data } = client.auth.onAuthStateChange((event, session) => {
     if (!session?.user) {
       listener({ status: 'anonymous' })
       return
     }
     listener({ status: 'authenticated', user: summarizeUser(session.user) })
+
+    if (!ROLE_REFRESHING_EVENTS.has(event) || pendingRefresh) {
+      return
+    }
+
+    pendingRefresh = (async () => {
+      try {
+        const fresh = await getCurrentAuthState(client)
+        if (fresh.status === 'authenticated') {
+          listener(fresh)
+        }
+      } catch {
+        // Best-effort refresh: never surface to the UI; never log tokens.
+      } finally {
+        pendingRefresh = undefined
+      }
+    })()
   })
 
   return { unsubscribe: () => data.subscription.unsubscribe() }
