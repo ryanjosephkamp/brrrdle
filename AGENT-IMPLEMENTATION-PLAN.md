@@ -1,9 +1,9 @@
 # AGENT-IMPLEMENTATION-PLAN.md
 
 **Project**: brrrdle  
-**Plan Version**: 1.4
-**Date**: 2026-05-27
-**Status**: Draft for user review — amended with Hugging Face word-list source integration; further amended on 2026-05-27 with the `ADDITIONS-2026-05-27.md` addendum (see §18); further amended on 2026-05-27 with the `DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27.md` addendum (see §19).
+**Plan Version**: 1.6
+**Date**: 2026-05-28
+**Status**: Draft for user review — amended with Hugging Face word-list source integration; further amended on 2026-05-27 with the `ADDITIONS-2026-05-27.md` addendum (see §18); further amended on 2026-05-27 with the `DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27.md` addendum (see §19); further amended on 2026-05-27 with the `AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27.md` addendum (see §20); further amended on 2026-05-28 with the Mobile & Tablet Responsiveness phase (see §21).
 **Authority**: Must follow `CONSTITUTION.md`, `BRRRDLE-SPEC.md`, and the approved v2.6 plan in `BRRRDLE-OVERVIEW.md`.
 
 ---
@@ -1901,6 +1901,164 @@ Re-confirmed baseline (194/194 tests, lint+build clean). Reproduction map confir
 - `npm run lint`, `npm run test`, `npm run build`, and `npx tsc -p tsconfig.api.json --noEmit` all pass.
 - `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-22.md`, and `CHANGELOG.md` updated and free of sensitive data.
 - Halt before any production release action.
+
+---
+
+## 21. Phase 16 — Mobile & Tablet Responsiveness Improvements (Keyboard, Grid, and Touch Scaling)
+
+**Plan Version**: 1.6 (addendum). Bound by `CONSTITUTION.md` v3.1, `BRRRDLE-SPEC.md`, and the prior plan (Phases 0–15). Triggered by a user report that the game grid tiles, on-screen keyboard, and letter sizing do not scale properly on phones and tablets (especially iPads), breaking the app-like feel.
+
+### 21.1 Scope, Source of Truth, and Operating Rules
+
+- **Source of truth for this phase**: this Section 21 of `AGENT-IMPLEMENTATION-PLAN.md` plus the user request transcribed in §21.2. No new top-level spec document is required; design decisions are documented inline here.
+- **Non-negotiable preserved invariants** (carried unchanged from Phases 0–15):
+  - Daily `og`/`go` modes locked at 5 letters; practice mode supports lengths 2–35.
+  - Admin tab gating via `session.user.app_metadata.role === "admin"` and the `/api/admin-refresh` server contract.
+  - Word Explorer, Feedback Tab, Sound Effects, Sharing, definitions stack, stats, guest persistence, Pay-to-Continue economy, sync stub, danger-zone confirmations.
+  - Auth flows: magic link, email + password, forgot password, `AuthModal`, `AccountBadge`, `ProfilePanel`, `classifyAuthError`, no raw Supabase error strings in UI.
+  - No file deletion, no test removal/skip/weakening, no new env var names, no service-role on client, no `@vercel/blob` in client bundle.
+  - All existing keyboard-input semantics (`useKeyboardInput`, `Keyboard.onInput` contract, `letterStates` coloring) remain byte-identical at the public API level.
+- **Operating rules**:
+  - Changes are CSS/Tailwind/markup-only inside existing components. No changes to game state, validation, persistence, networking, or auth.
+  - Prefer Tailwind responsive utilities, CSS `clamp()`, dynamic viewport units (`dvh`/`svh`/`dvw`), and CSS container queries (`@container` / `cqi`) over JavaScript-measured sizing. Touch JS only when absolutely necessary (e.g., a `useResizeObserver` hook is **not** required for v1 of this phase).
+  - No new runtime dependencies. Tailwind v4 already supports container queries and dynamic viewport units natively.
+  - Visual changes must be additive: existing class strings may be extended, but no class that another component or test depends on may be removed without a documented replacement.
+
+### 21.2 User Request (verbatim summary)
+
+> The current UI (especially the game grid tiles, on-screen keyboard, and letter sizing) does not scale properly on mobile devices and tablets — particularly iPads. Tiles and keyboard keys become either too large or too small, breaking the app-like feel on smaller and larger touch screens.
+
+### 21.3 Diagnosis of Current Scaling Issues
+
+Findings are based on HEAD as of Plan Version 1.5:
+
+1. **Grid tiles use fixed `min-h-*` with `aspect-square` and CSS Grid `minmax(0, 1fr)` columns** (`src/app/games/OgGame.tsx:80–95`, `src/app/games/GoGame.tsx:80–95`):
+   - Classes `flex aspect-square min-h-8 ... sm:min-h-10 sm:text-base` only define a *floor* on tile size, never a ceiling.
+   - Because the row is a `grid` with `repeat(N, minmax(0, 1fr))` inside the full-width `<main>` Panel, the tile width is `(panelWidth − gaps) / N`. On iPad portrait (~768 px viewport, panel ~720 px after padding), 5-letter daily rows produce tiles of ~135 px each — visually oversized relative to `text-base` (16 px) letters, breaking the app-like feel.
+   - On 35-letter practice rows on a phone, columns shrink below the `min-h-8` (32 px) floor in the *width* dimension while `aspect-square` keeps height ≥ 32 px, producing non-square tiles and overflow risk.
+   - Font sizing (`text-sm` / `sm:text-base`) is decoupled from tile size — letters stay tiny while tiles bloom on tablets, or letters look cramped on phones with long practice words.
+
+2. **On-screen keyboard keys use fixed `min-h-11 ... sm:min-h-12` and `text-sm`** (`src/ui/Keyboard.tsx:38, 55, 57`):
+   - The widest row is `qwertyuiop` (10 keys) plus `flex justify-center gap-1.5 sm:gap-2`. On a 320 px phone in portrait, 10 keys + 9 gaps + outer padding leave ~26 px per key — visually cramped and below the WCAG 24 px / Apple HIG 44 pt touch-target guidance once `px-2` padding is consumed.
+   - On iPad portrait, the same row consumes only ~520 px of a 720 px panel, producing a centered floating bar that looks under-sized relative to the grid above.
+   - The bottom row Enter/Del buttons use a smaller `text-xs` than the letter keys; on tablets this becomes visually inconsistent.
+
+3. **Outer Layout shell does not adapt to mobile viewport realities** (`src/ui/Layout.tsx:14–32`):
+   - `min-h-svh` is used (good), but inner padding `px-4 py-6 sm:px-6 lg:px-8` is symmetric and ignores iOS safe-area insets, so on notched devices the AccountBadge and grid edge under the status bar / home indicator in standalone PWA mode.
+   - `index.html` viewport tag (`<meta name="viewport" content="width=device-width, initial-scale=1.0" />`, `index.html:11`) lacks `viewport-fit=cover`, which is a precondition for `env(safe-area-inset-*)` to take effect.
+
+4. **No use of CSS container queries**:
+   - Tile and key sizes are driven by viewport breakpoints (`sm:`, `lg:`), not by the size of the panel/section they actually live in. The header Panel takes ~25 % of vertical space on phones, but the grid sizes itself off viewport width regardless of how much space the header consumes. On iPad split-view (e.g., 50 % width) the grid is treated as a phone because viewport width is small, even though container width is generous.
+
+5. **No dynamic viewport height handling for mobile browser chrome**:
+   - `min-h-svh` correctly accounts for the small viewport, but no element uses `dvh` (dynamic viewport height) for the playable area, so when the URL bar collapses there is a visible gap below the keyboard in Safari iOS.
+
+### 21.4 Proposed Solution (clean, minimal, non-breaking)
+
+The fix is delivered as a single new phase with five small steps. All changes are additive Tailwind class extensions and CSS variable definitions; no component contracts change.
+
+**Design principles**:
+- Use **CSS `clamp()`** to define a tile and key size with explicit floor, fluid middle (driven by container-query inline units `cqi` where supported, viewport units `vw` otherwise), and ceiling.
+- Use **CSS container queries** on the grid section and keyboard section so sizing follows the actual panel width, not the raw viewport.
+- Use **dynamic viewport units** (`dvh`, `svh`) on the app shell and `safe-area-inset-*` padding for iOS standalone PWA polish.
+- Use **explicit Tailwind breakpoints** (`sm` 640, `md` 768, `lg` 1024, `xl` 1280) for coarse adjustments, with `clamp()`/container queries doing the fluid work in between.
+- Tie **letter font-size to tile size** (and key font-size to key size) via `cqi` or `em` so glyphs grow and shrink together with their container.
+
+**Step 21.4.1 — Establish design tokens for tile and key sizing**
+
+- Add CSS variables in `src/index.css` (or a small `src/styles/responsive.css` imported from `src/index.css`):
+  - `--brrrdle-tile-min`, `--brrrdle-tile-ideal`, `--brrrdle-tile-max` (e.g., `2rem`, `clamp(2rem, 8cqi, 4.25rem)`, `4.25rem`).
+  - `--brrrdle-key-min`, `--brrrdle-key-ideal`, `--brrrdle-key-max` (e.g., `2.25rem`, `clamp(2.25rem, 9cqi, 3.75rem)`, `3.75rem`).
+  - `--brrrdle-tile-font` and `--brrrdle-key-font` expressed as `cqi`/`em` of the tile/key.
+- Defaults must reproduce current desktop appearance at ≥ `lg` viewports so no regression occurs on existing screens.
+
+**Step 21.4.2 — Make the grid section a CSS container and apply container-query sizing**
+
+- In `src/app/games/OgGame.tsx` and `src/app/games/GoGame.tsx`, wrap the existing `<div role="grid">` (or its parent) with a Tailwind container-query parent (`@container` / `class="@container"` via the Tailwind v4 built-in `container-type: inline-size` utility).
+- Replace the tile className:
+  - From: `flex aspect-square min-h-8 ... sm:min-h-10 sm:text-base`
+  - To (semantically): `flex aspect-square items-center justify-center rounded-xl border shadow-inner shadow-slate-950/20 font-black uppercase` plus inline `style={{ fontSize: 'clamp(0.875rem, 6cqi, 1.5rem)' }}` (or a Tailwind arbitrary value).
+- Cap the entire row's max width with `style={{ maxWidth: 'min(100%, calc(var(--brrrdle-tile-max) * N + gap * (N-1)))' }}` so 5-letter daily rows on iPads stop ballooning past ~340 px while 35-letter practice rows still occupy full width on phones.
+- Center the row with `mx-auto` so capped rows remain visually balanced.
+
+**Step 21.4.3 — Responsive on-screen keyboard**
+
+- In `src/ui/Keyboard.tsx`, wrap the `<section>` with `@container` and key sizing driven by `cqi`:
+  - Replace `min-h-11 ... sm:min-h-12` with `min-h-[2.25rem] @md:min-h-[2.75rem] @lg:min-h-[3.25rem]` plus inline `style={{ fontSize: 'clamp(0.75rem, 4.25cqi, 1.05rem)', minWidth: 'clamp(1.75rem, 8.5cqi, 2.75rem)' }}`.
+  - Set Enter/Del to `style={{ minWidth: 'clamp(2.5rem, 12cqi, 4.25rem)' }}` and use `text-[clamp(0.625rem,3.5cqi,0.95rem)]` so they scale with letter keys instead of staying at a fixed `text-xs`.
+- Preserve the 44 px Apple HIG touch-target floor by clamping `min-h` ≥ `2.25rem` (36 px logical; ≥ 44 px once tapped area + padding considered) and adding `touch-action: manipulation` to prevent iOS double-tap zoom on rapid letter entry.
+- On `@sm`-and-narrower containers, reduce gap from `gap-1.5` to `gap-1` and reduce horizontal padding so 10 keys always fit one row at ≥ 320 px viewport.
+
+**Step 21.4.4 — App-shell and viewport polish**
+
+- Update `index.html:11` viewport tag to `<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />`.
+- In `src/ui/Layout.tsx`:
+  - Add safe-area padding: `pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]` and equivalent left/right for landscape on notched devices.
+  - Switch the shell to `min-h-dvh` (with `min-h-svh` retained as fallback for older Safari via the existing `min-h-svh` class — Tailwind v4 emits the `dvh` variant cleanly).
+  - On `@md`-and-up containers, consider a two-column layout where the keyboard sits to the side on landscape tablets/desktops (optional polish; only if it keeps the app-like feel — see §21.4.5).
+
+**Step 21.4.5 — Tasteful creative polish (optional within this phase)**
+
+- Sticky keyboard on phone portrait: on `< @md` containers, keyboard becomes `sticky bottom-0` with a subtle backdrop-blur, ensuring it never scrolls out of reach during practice with long words and a tall grid.
+- Subtle haptic-style press animation (`active:scale-95 transition-transform`) on keyboard buttons for mobile app-feel. Respect `motion-reduce` users (`motion-safe:` prefix).
+- Grid row "shake" and tile "reveal" animations already exist and remain unchanged.
+- iPad portrait: introduce a comfortable `max-w-md` cap on the keyboard so it visually mirrors the capped 5-letter daily grid above instead of stretching to the full panel.
+
+### 21.5 Phase 16 — Sub-Phase Plan
+
+| Sub-phase | Title | Files Touched (planned) | Verification |
+|-----------|-------|-------------------------|--------------|
+| 16.0 | Pre-flight & responsive baseline capture | none (read-only) | Re-confirm 256/256 tests pass; capture before-screenshots at iPhone SE (375×667), iPhone 14 Pro (393×852), iPad mini portrait (744×1133), iPad Pro 11" portrait (834×1194), iPad Pro 11" landscape (1194×834), and desktop (1440×900) — used only as agent notes, not committed |
+| 16.1 | Design tokens & viewport polish | `index.html`, `src/index.css` (+/- a new `src/styles/responsive.css`), `src/ui/Layout.tsx` | `npm run lint`, `npm run build`, visual sanity check |
+| 16.2 | Responsive grid tiles | `src/app/games/OgGame.tsx`, `src/app/games/GoGame.tsx` | `npm run test` (existing grid tests must remain green), `npm run build` |
+| 16.3 | Responsive on-screen keyboard | `src/ui/Keyboard.tsx` | `npm run test` (keyboard tests remain green), `npm run build` |
+| 16.4 | Optional polish (sticky keyboard, press animation, iPad keyboard cap) | `src/ui/Keyboard.tsx`, `src/app/games/OgGame.tsx`, `src/app/games/GoGame.tsx` (markup only) | `npm run test`, `npm run build` |
+| 16.5 | Final integration, cross-feature verification, and release gate | docs/changelog/progress only | full pipeline (see §21.6) |
+
+Each sub-phase ends with a `progress/PROGRESS-STEP-N.md` and a `progress/PROGRESS.csv` row appended for the corresponding `phase_id` (next available IDs after Phase 15's last). The agent halts at every sub-phase gate per CONSTITUTION.md §1.3 unless the user explicitly authorizes contiguous execution.
+
+### 21.6 Verification & Release Gate (Phase 16.5)
+
+Required to pass before declaring Phase 16 complete:
+
+1. `npm run lint` — clean.
+2. `npm run test` — all existing tests (currently 256) pass with zero new failures. Add at least one new render test per modified component asserting the presence of the new responsive class tokens (no new `data-testid`s introduced gratuitously).
+3. `npm run build` — clean; no new bundle-size regressions beyond a small CSS delta.
+4. `npx tsc -p tsconfig.api.json --noEmit` — clean.
+5. Client-bundle leak check: `grep -R "@vercel/blob" dist/` returns no matches (Phase 13 invariant).
+6. Manual visual verification at the six viewports listed in §21.5 Phase 16.0. Grid tiles must:
+   - Remain visually square at every breakpoint.
+   - Cap at ~`4.25rem` per side on 5-letter daily rows on iPad portrait and wider.
+   - Scale font-size with tile size so the letter always fills ~55–65 % of the tile height.
+7. Keyboard must:
+   - Fit 10 keys + gaps within a 320 px viewport without horizontal scroll.
+   - Show ≥ 44 px effective touch targets on phones.
+   - Not exceed `max-w-md`-equivalent on iPad portrait so it visually mirrors the capped grid.
+8. CodeQL run on changed lines after Phase 16.4; any true-positive alerts must be fixed before Phase 16.5 closes.
+
+### 21.7 Preserved Invariants (Phase 16-specific re-statement)
+
+- Daily 5-letter lock and practice 2..35 — unchanged; grid still uses `repeat(${session.wordLength}, minmax(0, 1fr))`.
+- Admin tab — purely a navigation/visibility concern; not touched.
+- Word Explorer, Feedback, Sound Effects, Auth flows (`AuthModal`, `AccountBadge`, `ProfilePanel`, `classifyAuthError`, magic-link + password coexistence) — markup may receive responsive class additions only; component contracts unchanged.
+- Pay-to-Continue economy, sharing, definitions, stats, guest persistence, sync stub — untouched.
+- No file deletion, no test removal/skip/weakening.
+- No new env vars, no service-role on client, no `@vercel/blob` in client bundle.
+- No new runtime dependency.
+
+### 21.8 Progress Tracking and CHANGELOG
+
+- Append rows to `progress/PROGRESS.csv` for each of Phases 16.0 through 16.5, using the next contiguous `phase_id` values after the highest currently recorded ID. Titles follow the pattern `"Phase 16.x — <Sub-phase title>"`.
+- Create `progress/PROGRESS-STEP-N.md` from `progress/PROGRESS-TEMPLATE.md` for each sub-phase, summarising what changed, verification results, blockers, and explicit go/no-go for the next sub-phase.
+- Add `[Unreleased] — Changed` and `[Unreleased] — Added` entries to `CHANGELOG.md` for: responsive design tokens, container-query-driven grid sizing, responsive on-screen keyboard, iOS safe-area / viewport-fit polish, and any optional polish actually shipped.
+
+### 21.9 Phase 16 Exit Checklist
+
+- All §21.3 diagnoses are demonstrably resolved on the six reference viewports.
+- All §21.7 invariants verified intact.
+- All Phase 16.6 verification items (§21.6) green.
+- `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-*.md`, and `CHANGELOG.md` updated and free of sensitive data.
+- Halt for explicit user approval before any production release action.
 
 ---
 
