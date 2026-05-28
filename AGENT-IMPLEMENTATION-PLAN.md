@@ -1,9 +1,9 @@
 # AGENT-IMPLEMENTATION-PLAN.md
 
 **Project**: brrrdle  
-**Plan Version**: 1.3
+**Plan Version**: 1.4
 **Date**: 2026-05-27
-**Status**: Draft for user review — amended with Hugging Face word-list source integration; further amended on 2026-05-27 with the `ADDITIONS-2026-05-27.md` addendum (see §18).
+**Status**: Draft for user review — amended with Hugging Face word-list source integration; further amended on 2026-05-27 with the `ADDITIONS-2026-05-27.md` addendum (see §18); further amended on 2026-05-27 with the `DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27.md` addendum (see §19).
 **Authority**: Must follow `CONSTITUTION.md`, `BRRRDLE-SPEC.md`, and the approved v2.6 plan in `BRRRDLE-OVERVIEW.md`.
 
 ---
@@ -1661,6 +1661,194 @@ Binding rules for this addendum:
 - `codeql_checker` was run after every step and every true-positive alert in changed lines is fixed.
 - `progress/PROGRESS.csv`, all new `progress/PROGRESS-STEP-N.md` reports, and `CHANGELOG.md` are updated and free of sensitive data.
 - All manual follow-up steps (Supabase password-auth enablement, label creation on `ryanjosephkamp/brrrdle`, optional Vercel reconfiguration only if any move actually touched a Vercel-bound path) are listed in the final progress report.
+- The agent halts and waits for explicit user approval before any production release action.
+
+---
+
+## 19. Phase 14 — Plan Addendum (DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27): Fix the Admin Tab
+
+**Plan Version**: 1.4 (addendum)
+**Date**: 2026-05-27
+**Status**: Draft for user review — implementation must NOT begin until the user explicitly approves this addendum.
+**Authority**: This addendum is bound by `CONSTITUTION.md` (v3.1), `BRRRDLE-SPEC.md`, `BRRRDLE-OVERVIEW.md`, all prior sections of this plan, `ADDITIONS-2026-05-27.md`, and `DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27.md` (the binding diagnosis report for this addendum).
+
+### 19.1 Scope, Source of Truth, and Operating Rules
+
+This addendum is **scoped strictly** to fixing the Admin tab regression described in `DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27.md`. It does **not** introduce any feature outside that scope.
+
+Binding rules:
+
+- `DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27.md` is the source of truth for the observed behavior and expected behavior; this section is the source of truth for sequencing, verification, and pause points.
+- No source file may be deleted or renamed in a lossy way. Every change must be a minimal, additive or in-place edit that preserves all existing behavior outside the admin path.
+- The daily 5-letter lock (CONSTITUTION §3, BRRRDLE-SPEC §3.1) and the practice 2..35 contract are out of scope and must remain untouched.
+- The Supabase env-var contract is unchanged: only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` may be read on the client. No service-role key may ever appear on the client (CONSTITUTION §14).
+- The existing `/api/admin-refresh` server route, its authorization checks, and its env-var bindings (`SUPABASE_URL` / `SUPABASE_ANON_KEY`) must not be weakened. Any client-side call to it must continue to send the user's Supabase access token via `Authorization: Bearer …`.
+- Both authentication flows (magic link and email + password) must continue to work after this addendum, and the admin tab must behave correctly under either.
+- No test may be removed, skipped, or weakened (CONSTITUTION §6.3).
+- The Phase 13 client-bundle leak invariant (`@vercel/blob` must not appear in any `dist/assets/*.js` chunk) must remain intact.
+- Every step ends with verification and an explicit halt-for-approval gate (CONSTITUTION §5.3, §6, and Standard Phase Exit Checklist in §1.3).
+- `progress/PROGRESS.csv` and a new `progress/PROGRESS-STEP-N.md` report must be created/updated for every implementation step below before halting. `CHANGELOG.md` must receive a corresponding `[Unreleased]` entry at every step that ships a user-visible or build-visible change.
+- No secrets, tokens, deployment URLs containing internal identifiers, or private deployment data may appear in any artifact (CONSTITUTION §5.4, §14).
+
+### 19.2 Root-Cause Diagnosis
+
+The observed symptom — the Admin tab consistently shows the static copy beginning with `"PROTECTED ADMIN / Manual refresh controls / Manual refresh requests must be sent through the protected /api/admin-refresh server route…"` — is produced by `src/admin/AdminPanel.tsx`. Concretely:
+
+- That copy is the `access.allowed === true` branch of `AdminPanel.tsx`. When the user reports "the Admin tab is still showing only the placeholder text", the user is in fact **already** being recognised as having admin access; the panel simply has no actionable controls rendered inside the allowed branch. The current allowed branch is a descriptive `<Panel>` only — there is no manual refresh button, no status surface, and no call site for `/api/admin-refresh`.
+- This is consistent with the diagnosis report's expected behaviour: "the Admin tab must render the full manual refresh UI/controls (the button that calls `/api/admin-refresh`)." Today the controls do not exist on the client. This is the **primary** root cause of the Admin tab regression.
+
+In addition, there are two **secondary** robustness gaps that the diagnosis report explicitly calls out and that this addendum must close so the fix is durable:
+
+- **Role-source coverage.** `src/account/auth.ts → getRoles()` derives admin status by reading `user.app_metadata.roles` (array) and `user.app_metadata.role` (string). In Supabase's JS client `app_metadata` mirrors the database column `raw_app_meta_data`, so in normal operation `app_metadata.role === "admin"` correctly reflects `raw_app_meta_data.role === "admin"`. However, the function does not defensively read `user.raw_app_meta_data?.role` (or `roles`) when present on the returned `User`. In practice this can matter when (a) a future auth-helper or middleware shape exposes the raw column directly, (b) older cached sessions surface only one of the two shapes, or (c) the user inspects the session in the browser console (the diagnostic commands in the diagnosis report) and is misled by an inconsistency between the two shapes. The fix must check **both** shapes and accept admin if either resolves to `"admin"`.
+- **Stale session after login.** `App.tsx` subscribes to `onAuthStateChange` exactly once and hydrates `authState` from `getCurrentAuthState()` on mount. That is correct, but immediately after a successful magic-link or email + password sign-in (or sign-up confirmation), the access token in memory still embeds the role claim from the moment the JWT was issued. If the Supabase admin role was granted **after** the JWT was minted, the cached `User` will not yet reflect `role === "admin"` until the next auto-refresh. The fix must explicitly call `supabase.auth.refreshSession()` after a successful sign-in / sign-up (and on the `SIGNED_IN` / `TOKEN_REFRESHED` / `USER_UPDATED` events) so the next role read sees the freshest claim, and the Admin tab updates immediately on first login.
+
+### 19.3 Scope of Fix (summary)
+
+In one minimal, focused phase the agent will:
+
+1. **Render the actual manual-refresh controls** inside `AdminPanel.tsx`'s allowed branch: a single "Refresh now" button that POSTs to `/api/admin-refresh` with `Authorization: Bearer <access_token>`, an accessible status region for the in-flight / success / failure states, and a small read-out of the last refresh response (revision, generatedAt, fetchedAt, per-length summary, persistence status) so admins can verify it ran. The descriptive paragraphs already in the allowed branch must be **kept** (no deletions) and merely complemented by the new controls.
+2. **Harden admin-role detection** in `src/account/auth.ts` so that admin is granted when **any** of the following resolves to `"admin"`:
+   - `user.app_metadata.roles[]` contains `"admin"`,
+   - `user.app_metadata.role === "admin"`,
+   - `user.raw_app_meta_data?.roles[]` contains `"admin"` (defensive read; `raw_app_meta_data` is not part of the published `User` type but may be present at runtime),
+   - `user.raw_app_meta_data?.role === "admin"` (defensive read).
+   The function must remain pure, must continue to return `readonly string[]`, must preserve the array-vs-string preference, and must never throw on missing/null shapes.
+3. **Force a session refresh after successful sign-in / sign-up** so the Admin tab updates immediately:
+   - After a successful `signInWithPassword`, `signUpWithPassword`, and on the `SIGNED_IN`, `TOKEN_REFRESHED`, and `USER_UPDATED` events delivered through `onAuthStateChange`, call `supabase.auth.refreshSession()` once and re-derive `authState` from the refreshed user. The magic-link flow already redirects through Supabase and arrives at `SIGNED_IN`, so the same `onAuthStateChange` path covers it.
+   - The refresh must be best-effort: failures must not log the user out, must not throw to the UI, and must be reported through the existing `subscribeToAuthChanges` listener path only.
+4. **Cover both auth flows** (magic link and email + password) by the same `onAuthStateChange` plumbing so no flow-specific code is needed.
+5. **Keep the change non-breaking**: no file deletion, no file rename, no removal of existing behavior, no test removal. The current Phase 13 `subscribeToAuthChanges` contract and `App.tsx` admin-tab visibility predicate (`authState.user?.roles.includes('admin')`) continue to work unchanged.
+
+Explicitly **out of scope**: Word Explorer, Feedback tab, Sound Effects, Repository Cleanup, OG/GO gameplay, daily lock, practice lengths, definitions, sharing, PWA, Supabase RLS changes, server-route behavior changes.
+
+### 19.4 Phase 14.0 — Pre-flight & Reproduction Map
+
+**Goal**: Confirm a clean baseline and record the exact failure surface before any edit.
+
+**Build / modify**: No source changes. Produce only progress artifacts.
+
+**Activities**:
+
+- Run the baseline verification commands listed in §19.6 against the current `main` and record their results in `progress/PROGRESS-STEP-20.md`.
+- Read `src/admin/AdminPanel.tsx`, `src/admin/authorization.ts`, `src/account/auth.ts`, `src/account/AuthPanel.tsx`, `src/account/supabaseClient.ts`, and `src/app/App.tsx` and confirm the current code paths match the diagnosis in §19.2. Record any deltas in the progress report.
+- Confirm `supabaseClient.ts` already constructs the client with `persistSession: true` and `autoRefreshToken: true`; if it does not, record that as a blocker for §19.5.3. Do not change it yet.
+- Confirm `/api/admin-refresh` continues to read the bearer token and check `app_metadata.role`/`roles` for `"admin"`. If it does, no server change is required by this addendum.
+- Record the planned change list (§19.5.1–§19.5.4) and the user-action follow-ups (§19.7) in the progress report.
+
+**Verification**: §19.6 baseline list.
+
+**Pause point**: Halt for explicit user approval before beginning Step 19.5.
+
+### 19.5 Phase 14.1 — Fix the Admin Tab (minimal, surgical)
+
+**Goal**: Implement the four-part fix described in §19.3 with the smallest, safest diff that closes the regression.
+
+**Build / modify** (in clearly separated sub-commits so review is feasible):
+
+- **19.5.1 Harden role detection** (`src/account/auth.ts`).
+  - Extend `getRoles(user)` to also defensively read `user.raw_app_meta_data?.roles` (when an array of strings) and `user.raw_app_meta_data?.role` (when a string), in that priority order after the existing `app_metadata` reads, deduplicated. Treat `raw_app_meta_data` as an unknown record (no `User` type widening) and use a narrow runtime guard so the published `@supabase/supabase-js` `User` type does not need to change.
+  - Add an explicit `isAdminUser(user)` helper that returns `true` iff any of the four checks in §19.3.2 resolves to `"admin"`. Use it from `summarizeUser` so `AuthUserSummary.roles` continues to be the single source the UI consults.
+  - Preserve the existing function signatures, return types (`readonly string[]`), and behavior for non-admin users. Do not introduce new exports beyond `isAdminUser`.
+
+- **19.5.2 Render the manual refresh controls** (`src/admin/AdminPanel.tsx`, `src/admin/index.ts`, new `src/admin/manualRefresh.ts`, new `src/admin/ManualRefreshControls.tsx`).
+  - Add `src/admin/manualRefresh.ts` exporting a pure async client helper `requestAdminRefresh({ supabase })` that:
+    - Reads the current session via `supabase.auth.getSession()`,
+    - Returns `{ ok: false, reason: 'missing-session' }` when there is no session,
+    - POSTs to `/api/admin-refresh` with `Authorization: Bearer <access_token>` and `accept: application/json`, no body,
+    - Parses the JSON response and returns a discriminated union: `{ ok: true, payload: AdminRefreshSuccess }` for HTTP 202, otherwise `{ ok: false, reason: 'unauthorized' | 'forbidden' | 'server-error' | 'network-error', status?: number, message?: string }`,
+    - Never logs the bearer token; never persists the response payload to `localStorage`; never calls `console.error` with the token in scope.
+  - Add `src/admin/ManualRefreshControls.tsx` rendering, inside the existing allowed-branch `<Panel>` (without removing the existing paragraphs):
+    - A primary `<Button>` labeled "Refresh now" wired to `requestAdminRefresh`,
+    - An accessible `aria-live="polite"` status region that shows idle / in-flight / success / failure states,
+    - A read-out of the last successful response (revision, generatedAt, fetchedAt, length count, persistence.status) and, on failure, the diagnostic stage and message,
+    - Disabled state while a request is in flight and after a successful refresh until the user re-arms (to avoid accidental double-refresh).
+  - Update `AdminPanel.tsx` to render `ManualRefreshControls` inside the allowed branch in addition to the existing descriptive paragraphs. The existing `ErrorState` branches for `missing-authentication`, `missing-admin-role`, and `unconfigured` are unchanged. Re-export `ManualRefreshControls` from `src/admin/index.ts`.
+  - The new component must accept the Supabase client via prop (not via a module-level import) so it remains testable with a client double, mirrors the pattern used elsewhere in `src/account/`, and supports the `unconfigured` case without crashing.
+
+- **19.5.3 Force fresh session after auth events** (`src/account/auth.ts`, `src/account/AuthPanel.tsx`, `src/app/App.tsx`).
+  - In `signInWithPassword` and `signUpWithPassword`, after a successful Supabase call, invoke `await client.auth.refreshSession()` (best-effort: ignore errors, do not surface to the UI, do not log tokens). Return the existing `{ ok: true }` shape unchanged so callers do not need to change.
+  - In `subscribeToAuthChanges`, on `SIGNED_IN`, `TOKEN_REFRESHED`, and `USER_UPDATED` events, re-derive the listener payload from `session.user` (already happens) **and** opportunistically call `getCurrentAuthState(client)` after a fresh `getUser()` to pick up server-side role updates that the cached JWT may not yet reflect. Debounce so we never issue more than one `getUser()` per event.
+  - In `App.tsx`, no new effects are required; the existing single `useEffect` that subscribes to `subscribeToAuthChanges` will receive the refreshed state through the same listener and re-render the navigation and Admin tab automatically. Verify by trace, not by adding code.
+  - Do not call `refreshSession()` for the magic-link send path (`sendMagicLink`); the magic-link redirect arrives at `SIGNED_IN` and the listener path covers it.
+
+- **19.5.4 Tests** (new or extended, no removals):
+  - `src/account/auth.test.ts` — add cases for `isAdminUser` / `summarizeUser` covering all four shapes in §19.3.2 (including `raw_app_meta_data.role` only, `raw_app_meta_data.roles` only, `app_metadata.role` only, `app_metadata.roles` only, and combinations); cases for `signInWithPassword` / `signUpWithPassword` confirming that `refreshSession` is invoked on success and **not** invoked on failure; case confirming the refresh failure is swallowed and does not change the returned `{ ok: true }` shape.
+  - `src/admin/authorization.test.ts` — add cases confirming the allowed/denied branches are unchanged for the new role-source shapes (the test continues to drive `evaluateAdminAccess` through `AuthState`, not through raw `User`).
+  - New `src/admin/manualRefresh.test.ts` — cases for `requestAdminRefresh`: missing session, 401, 403, 502, network failure, and 202 success; assert that the `Authorization` header carries `Bearer <token>` and that the token never appears in the returned payload.
+  - New `src/admin/ManualRefreshControls.test.tsx` — render the component with a Supabase client double and a fetch double; assert idle → in-flight → success and idle → in-flight → failure transitions; assert that the status region is `aria-live="polite"`; assert that the button is disabled during the request; assert that the existing descriptive paragraphs continue to render alongside the new controls (proving no deletion).
+  - All other existing tests must continue to pass unmodified.
+
+**Key files**:
+
+- Modified: `src/account/auth.ts`, `src/account/auth.test.ts`, `src/admin/AdminPanel.tsx`, `src/admin/authorization.test.ts`, `src/admin/index.ts`.
+- New: `src/admin/manualRefresh.ts`, `src/admin/manualRefresh.test.ts`, `src/admin/ManualRefreshControls.tsx`, `src/admin/ManualRefreshControls.test.tsx`.
+- Unchanged (verified by inspection, not edit): `src/account/AuthPanel.tsx` body (no UI change), `src/account/supabaseClient.ts` (already persists session / auto-refreshes token), `api/admin-refresh.ts` (server contract unchanged), `src/app/App.tsx` admin-tab visibility predicate.
+
+### 19.6 Verification
+
+After **every** sub-commit in §19.5 and one final time at the end of the phase, the agent must run and record:
+
+- `npm ci`
+- `npm run lint`
+- `npm run test` — full suite must pass with **strictly more** tests than before (new tests added, no tests removed or skipped).
+- `npm run build` — `tsc -b` + `vite build` must succeed with no new TypeScript errors. The pre-existing >500 kB chunk-size warning may remain unchanged.
+- `npx tsc -p tsconfig.api.json --noEmit` — must succeed.
+- Client-bundle leak check: `grep -R "@vercel/blob" dist/assets/*.js` returns no matches.
+- `git diff --check` — clean.
+- `codeql_checker` — run on the cumulative diff at the end of the phase; every true-positive alert in changed lines must be fixed before halting.
+
+**Diagnostic console commands** (to be executed manually by the user in the deployed app, recorded in the progress report verbatim, exactly as listed in `DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27.md`):
+
+```js
+// 1. Check current user role
+supabase.auth.getUser().then(({ data }) => {
+  console.log("Full user:", data.user);
+  console.log("app_metadata.role:", data.user?.app_metadata?.role);
+  console.log("raw_app_meta_data.role:", data.user?.raw_app_meta_data?.role);
+  console.log("Is admin?", data.user?.raw_app_meta_data?.role === "admin");
+});
+
+// 2. Check if Admin tab should be visible
+console.log("Current session:", supabase.auth.getSession());
+```
+
+**Manual smoke checks** (recorded in `progress/PROGRESS-STEP-20.md`):
+
+- Sign in via magic link as a Supabase user with `raw_app_meta_data.role = "admin"`. The Admin tab becomes visible in the primary navigation **without a manual page reload** within one auth event, and shows both the existing descriptive paragraphs **and** the new "Refresh now" button.
+- Repeat with email + password sign-in. Same expected result.
+- Repeat with email + password sign-up for a brand-new user that the operator promotes to admin in the Supabase dashboard **after** sign-up; on the next `TOKEN_REFRESHED` (or after the operator triggers `Refresh now` once, or after the operator signs out and back in), the Admin tab appears.
+- Sign in as a non-admin user. The Admin tab remains hidden from the primary navigation, and the `evaluateAdminAccess`-driven `ErrorState` would show if the route were forced.
+- Click "Refresh now" as the admin user. The status region transitions idle → in-flight → success (or → failure with a diagnostic stage/message). The browser DevTools network panel shows a POST to `/api/admin-refresh` with `Authorization: Bearer …`. No service-role key is sent.
+- Reload the page after sign-in. The session persists, the Admin tab remains visible, and the refresh button remains operational.
+
+### 19.7 Manual Follow-Up Steps (User-Required)
+
+These steps must be listed verbatim in `progress/PROGRESS-STEP-20.md` and in the `CHANGELOG.md` `[Unreleased] — User action required` block:
+
+- **Supabase (required)**: Confirm that at least one user has `raw_app_meta_data.role = "admin"` set via the Supabase dashboard or admin API. Without this, no smoke check in §19.6 can verify the admin path end-to-end.
+- **Supabase (required for email + password verification)**: Confirm the Email + Password provider remains enabled (carried over from the Phase 13.5 follow-up in §18.7).
+- **Vercel**: No environment-variable or routing change is required. `SUPABASE_URL` and `SUPABASE_ANON_KEY` (or their `VITE_`-prefixed counterparts) must continue to be set on the Vercel project so `/api/admin-refresh` can validate the bearer token.
+- **GitHub Actions / Pages / labels**: No action required.
+- **Browser session hygiene** (recommended once after deploy): The first time an existing admin user opens the new build, ask them to sign out and sign back in so the locally cached JWT is replaced. This guarantees the `raw_app_meta_data` claim that was minted before the deploy is immediately re-read.
+
+### 19.8 Progress Tracking and CHANGELOG
+
+- Append `phase_id = 20` ("Phase 14.0 — Admin Tab Fix Pre-flight & Reproduction Map") and `phase_id = 21` ("Phase 14.1 — Admin Tab Fix (Implementation & Verification)") to `progress/PROGRESS.csv` as their respective steps are executed.
+- Create `progress/PROGRESS-STEP-20.md` (for Phase 14.0, pre-flight) and `progress/PROGRESS-STEP-21.md` (for Phase 14.1, implementation) using `progress/PROGRESS-TEMPLATE.md`.
+- For the addendum-drafting step itself (this section), append a note to the most recent existing progress report (`progress/PROGRESS-STEP-19.md`) and add an `[Unreleased] — Documentation` entry to `CHANGELOG.md` recording that the addendum has been created and that implementation has not begun.
+- For Phase 14.1, add `[Unreleased] — Fixed` and `[Unreleased] — Added` entries to `CHANGELOG.md` describing the admin-tab regression fix, the new manual-refresh controls component, the hardened role detection, and the post-login session refresh.
+
+### 19.9 Phase 14 Exit Checklist
+
+- The Admin tab renders an actionable "Refresh now" button (plus the existing descriptive paragraphs) for users whose Supabase user has `raw_app_meta_data.role === "admin"` (or `app_metadata.role === "admin"`).
+- Admin role detection accepts admin from any of `app_metadata.roles[]`, `app_metadata.role`, `raw_app_meta_data.roles[]`, or `raw_app_meta_data.role`.
+- The Admin tab updates immediately after sign-in (magic link or email + password) without requiring a manual page reload, via the `onAuthStateChange` listener and an explicit best-effort `refreshSession()` call.
+- No file was deleted; no test was removed, skipped, or weakened.
+- The daily 5-letter lock and the practice 2..35 contract are unchanged.
+- No service-role key is present on the client; `/api/admin-refresh` server contract is unchanged.
+- `npm run lint`, `npm run test`, `npm run build`, and `npx tsc -p tsconfig.api.json --noEmit` all pass.
+- `codeql_checker` was run on the cumulative diff and every true-positive alert in changed lines is fixed.
+- `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-20.md`, `progress/PROGRESS-STEP-21.md`, and `CHANGELOG.md` are updated and free of sensitive data.
 - The agent halts and waits for explicit user approval before any production release action.
 
 ---

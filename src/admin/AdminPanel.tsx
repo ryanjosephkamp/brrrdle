@@ -1,9 +1,12 @@
 import type { AuthState } from '../account/auth'
+import type { BrrrdleSupabaseClient } from '../account/supabaseClient'
 import { ErrorState, Panel } from '../ui'
 import { evaluateAdminAccess } from './authorization'
+import { ManualRefreshControls } from './ManualRefreshControls'
 
 interface AdminPanelProps {
   readonly authState: AuthState
+  readonly supabaseClient?: BrrrdleSupabaseClient
 }
 
 const reasonMessages = {
@@ -12,7 +15,7 @@ const reasonMessages = {
   unconfigured: 'Supabase is not configured in this environment, so admin controls are unavailable.',
 } as const
 
-export function AdminPanel({ authState }: AdminPanelProps) {
+export function AdminPanel({ authState, supabaseClient }: AdminPanelProps) {
   const access = evaluateAdminAccess(authState)
 
   if (!access.allowed) {
@@ -27,6 +30,7 @@ export function AdminPanel({ authState }: AdminPanelProps) {
         <p>Manual refresh requests must be sent through the protected `/api/admin-refresh` server route with a valid Supabase session.</p>
         <p>The browser never receives service-role credentials; admin authorization must also be enforced by Supabase RLS and the server handler.</p>
       </Panel>
+      <ManualRefreshControls supabase={supabaseClient} />
     </section>
   )
 }
