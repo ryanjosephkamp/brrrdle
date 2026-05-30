@@ -40,6 +40,12 @@ Autonomous execution of the Phase 18 feature work (sub-phases 18.1–18.9) per `
 - **Tests** (3 new; 283/283 total): the go seed is deterministic, in-range, and never equals the og index across 400 consecutive dates; single-answer fallback equals the og index; and at length 5 the daily go chain's first word differs from the daily og answer across 120 dates while the five chain words stay mutually distinct.
 - This was the spec's only **Critical** item and ships self-contained, so the user may cherry-pick/merge it independently if desired.
 
+#### 18.6 — Word Explorer difficulty column + Define modal (`phase_id = 42`)
+- **Difficulty column**: each `WordExplorerEntry` now carries a `difficulty?: DifficultyTier` computed from the in-repo model via `classifyAnswerTier(length, word)` (the minimal tier the word belongs to as an *answer*; `undefined` for valid-guess-only words). A new sortable **Difficulty** column renders nested-inclusion labels via `difficultyBadgeLabel` ("Casual · Standard · Expert", "Standard · Expert", "Expert only", "Valid guess only").
+- **Difficulty filter**: a new control filters rows by tier using nested inclusion (selecting Standard shows Casual + Standard answers; valid-guess-only words are excluded from any tier filter).
+- **Define modal**: each row (desktop table and mobile cards) gains a **Define** button that opens a `Dialog` hosting the existing `DefinitionPanel` for that word, reusing the live definition lookup. The dialog notes that difficulty never affects which words are valid guesses.
+- **Tests** (6 new; 286/286 total): difficulty filter nested-inclusion at each tier; difficulty sort orders tiers ascending with valid-guess-only words last; `difficultyBadgeLabel` mapping for all four cases. Existing Word Explorer tests unchanged and passing.
+
 ### Phase 18 — Prompt 2: Constitution Phase-Range Amendment & Repo Adjustments (PHASE-18-WORD-DIFFICULTY-AND-GO-IMPROVEMENTS-SPEC-2026-05-28)
 - **Scope of this entry**: governance/documentation only. **No game code, tests, or game scripts changed.** This is Prompt 2 of the user's 3-prompt Phase 18 workflow (Prompt 1 = planning/cleanup/README; **Prompt 2 = constitution/repo adjustments**; Prompt 3 = full Phase 18 feature execution, still gated on explicit approval).
 - **Applied the approved constitution phase-range amendment** (`CONSTITUTION.md` v3.1 → **v3.2**, user answer #3 from `AGENT-IMPLEMENTATION-PLAN.md` §23.11). No rule was removed or weakened:

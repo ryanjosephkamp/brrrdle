@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, Panel } from '../ui'
+import { Button, Dialog, Panel } from '../ui'
+import { DefinitionPanel } from '../definitions'
+import { DIFFICULTY_TIERS, getDifficultyTierMeta, isDifficultyTier, type DifficultyTier } from '../data/difficulty'
 import { buildWordRequestIssueUrl } from '../lib/githubIssue'
 import {
   DEFAULT_WORD_EXPLORER_LENGTH,
   WORD_EXPLORER_LENGTHS,
+  difficultyBadgeLabel,
   emptyStateMessage,
   filterAndSortEntries,
   loadWordExplorerEntries,
@@ -35,9 +38,11 @@ export function WordExplorerPanel() {
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [showAnswers, setShowAnswers] = useState<boolean>(true)
   const [showValidGuesses, setShowValidGuesses] = useState<boolean>(true)
+  const [difficultyFilter, setDifficultyFilter] = useState<DifficultyTier | 'all'>('all')
   const [sortField, setSortField] = useState<SortField>('word')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [copiedWord, setCopiedWord] = useState<string | undefined>(undefined)
+  const [definitionWord, setDefinitionWord] = useState<string | undefined>(undefined)
   const bundledEntries = useMemo(() => loadWordExplorerEntries(length), [length])
   const [liveLoad, setLiveLoad] = useState<WordExplorerLoadResult | undefined>(undefined)
 
@@ -56,8 +61,8 @@ export function WordExplorerPanel() {
   const effectiveLoad = liveLoad ?? { entries: bundledEntries, source: 'bundled' as const, message: 'Checking live word list…' }
   const entries = effectiveLoad.entries
   const filtered = useMemo(
-    () => filterAndSortEntries(entries, { searchTerm, showAnswers, showValidGuesses }, { field: sortField, direction: sortDirection }),
-    [entries, searchTerm, showAnswers, showValidGuesses, sortField, sortDirection],
+    () => filterAndSortEntries(entries, { searchTerm, showAnswers, showValidGuesses, difficulty: difficultyFilter }, { field: sortField, direction: sortDirection }),
+    [entries, searchTerm, showAnswers, showValidGuesses, difficultyFilter, sortField, sortDirection],
   )
 
   const toggleSort = useCallback((field: SortField) => {
@@ -136,6 +141,20 @@ export function WordExplorerPanel() {
               /> Valid Guesses
             </label>
           </div>
+          <label className="grid gap-1 font-semibold text-cyan-100">
+            Difficulty
+            <select
+              aria-label="Filter by difficulty"
+              className="rounded-xl border border-slate-600 bg-slate-950 px-3 py-2 text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
+              onChange={(event) => setDifficultyFilter(isDifficultyTier(event.target.value) ? event.target.value : 'all')}
+              value={difficultyFilter}
+            >
+              <option value="all">All answers &amp; guesses</option>
+              {DIFFICULTY_TIERS.map((tier) => (
+                <option key={tier} value={tier}>{getDifficultyTierMeta(tier).label} answers</option>
+              ))}
+            </select>
+          </label>
         </div>
         <p aria-live="polite" className="text-xs text-slate-400">
           Showing {filtered.length} of {entries.length} {length}-letter word{entries.length === 1 ? '' : 's'} from {effectiveLoad.source === 'live' ? 'the live manifest' : 'bundled fallback data'}.
@@ -162,7 +181,7 @@ export function WordExplorerPanel() {
           <table className="hidden w-full table-fixed text-left text-sm md:table">
             <thead className="bg-slate-900/80 text-xs uppercase tracking-wider text-cyan-100">
               <tr>
-                <th className="w-2/5 px-4 py-3">
+                <th className="w-1/4 px-4 py-3">
                   <button
                     aria-label={`Sort by word (currently ${sortField === 'word' ? sortDirection : 'unsorted'})`}
                     className="inline-flex items-center gap-1 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
@@ -172,7 +191,7 @@ export function WordExplorerPanel() {
                     Word{sortField === 'word' ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : ''}
                   </button>
                 </th>
-                <th className="w-2/5 px-4 py-3">
+                <th className="w-1/4 px-4 py-3">
                   <button
                     aria-label={`Sort by type (currently ${sortField === 'type' ? sortDirection : 'unsorted'})`}
                     className="inline-flex items-center gap-1 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
@@ -182,7 +201,17 @@ export function WordExplorerPanel() {
                     Type{sortField === 'type' ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : ''}
                   </button>
                 </th>
-                <th className="w-1/5 px-4 py-3 text-right">Actions</th>
+                <th className="w-1/4 px-4 py-3">
+                  <button
+                    aria-label={`Sort by difficulty (currently ${sortField === 'difficulty' ? sortDirection : 'unsorted'})`}
+                    className="inline-flex items-center gap-1 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
+                    onClick={() => toggleSort('difficulty')}
+                    type="button"
+                  >
+                    Difficulty{sortField === 'difficulty' ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : ''}
+                  </button>
+                </th>
+                <th className="w-1/4 px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -190,15 +219,26 @@ export function WordExplorerPanel() {
                 <tr key={entry.word} className="border-t border-slate-800 text-slate-100">
                   <td className="px-4 py-2 font-mono">{entry.word}</td>
                   <td className="px-4 py-2 text-slate-300">{typeBadgeLabel(entry.types)}</td>
+                  <td className="px-4 py-2 text-slate-300">{difficultyBadgeLabel(entry.difficulty)}</td>
                   <td className="px-4 py-2 text-right">
-                    <Button
-                      aria-label={`Copy ${entry.word} to clipboard`}
-                      onClick={() => void handleCopy(entry.word)}
-                      size="sm"
-                      variant="secondary"
-                    >
-                      {copiedWord === entry.word ? 'Copied' : 'Copy'}
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        aria-label={`Define ${entry.word}`}
+                        onClick={() => setDefinitionWord(entry.word)}
+                        size="sm"
+                        variant="secondary"
+                      >
+                        Define
+                      </Button>
+                      <Button
+                        aria-label={`Copy ${entry.word} to clipboard`}
+                        onClick={() => void handleCopy(entry.word)}
+                        size="sm"
+                        variant="secondary"
+                      >
+                        {copiedWord === entry.word ? 'Copied' : 'Copy'}
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -210,7 +250,16 @@ export function WordExplorerPanel() {
               <li key={entry.word} className="rounded-xl border border-slate-800 bg-slate-900/60 p-3 text-sm text-slate-100">
                 <p className="font-mono text-base">{entry.word}</p>
                 <p className="mt-1 text-xs text-slate-300">{typeBadgeLabel(entry.types)}</p>
-                <div className="mt-2">
+                <p className="mt-1 text-xs text-slate-400">{difficultyBadgeLabel(entry.difficulty)}</p>
+                <div className="mt-2 flex gap-2">
+                  <Button
+                    aria-label={`Define ${entry.word}`}
+                    onClick={() => setDefinitionWord(entry.word)}
+                    size="sm"
+                    variant="secondary"
+                  >
+                    Define
+                  </Button>
                   <Button
                     aria-label={`Copy ${entry.word} to clipboard`}
                     onClick={() => void handleCopy(entry.word)}
@@ -225,6 +274,23 @@ export function WordExplorerPanel() {
           </ul>
         </div>
       ) : null}
+
+      <Dialog
+        description="Definitions are looked up live; difficulty does not affect which words are valid guesses."
+        isOpen={definitionWord !== undefined}
+        onClose={() => setDefinitionWord(undefined)}
+        title={definitionWord ? definitionWord.toLocaleUpperCase('en-US') : 'Definitions'}
+      >
+        {definitionWord ? (
+          <DefinitionPanel
+            enabled
+            mode="og"
+            scope="practice"
+            word={definitionWord}
+            wordLength={length}
+          />
+        ) : null}
+      </Dialog>
     </section>
   )
 }
