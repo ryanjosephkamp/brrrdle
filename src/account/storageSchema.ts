@@ -1,6 +1,7 @@
 import type { GameMode, PlayScope } from '../game/types'
 import { DEFAULT_DIFFICULTY_TIER, normalizeDifficultyTier, type DifficultyTier } from '../data/difficulty'
 import { DEFAULT_GO_PUZZLE_COUNT, normalizeGoPuzzleCount, type GoPuzzleCount } from '../game/constants'
+import { DEFAULT_THEME, normalizeTheme, type Theme } from '../theme/theme'
 import { createEmptyStatistics } from '../stats/statistics'
 import type { StatisticsState } from '../stats/types'
 import type { ResumeSlot } from './resumeSlot'
@@ -40,6 +41,13 @@ export interface GuestSettingsState {
    * length is independent of this count.
    */
   readonly goPuzzleCountDefault: GoPuzzleCount
+  /**
+   * Phase 19.5 — global default visual theme (accent/border palette only).
+   * Additive; defaults to `'icy'` so existing players keep today's look. The
+   * per-puzzle layout and tile-state colors are unaffected. Synced to the
+   * Supabase profile alongside other preferences when signed in.
+   */
+  readonly themeDefault: Theme
 }
 
 export interface GameHistoryEntry {
@@ -85,6 +93,7 @@ export function createDefaultGuestSettings(): GuestSettingsState {
     reducedMotion: false,
     difficultyDefault: DEFAULT_DIFFICULTY_TIER,
     goPuzzleCountDefault: DEFAULT_GO_PUZZLE_COUNT,
+    themeDefault: DEFAULT_THEME,
   }
 }
 
@@ -100,6 +109,7 @@ export function normalizeGuestSettings(raw: unknown): GuestSettingsState {
     reducedMotion: typeof record.reducedMotion === 'boolean' ? record.reducedMotion : false,
     difficultyDefault: normalizeDifficultyTier(record.difficultyDefault),
     goPuzzleCountDefault: normalizeGoPuzzleCount(record.goPuzzleCountDefault),
+    themeDefault: normalizeTheme(record.themeDefault),
   }
 }
 

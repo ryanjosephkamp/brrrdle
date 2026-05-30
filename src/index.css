@@ -65,6 +65,38 @@ textarea {
   color: var(--color-polar-night);
 }
 
+/*
+ * Phase 19.5 — Light theming foundation. Each non-default theme swaps ONLY the
+ * accent/border tokens (ice scale + focus ring + aurora glow) via a data-theme
+ * attribute the theme module sets on <html>. Layout and the tile-state colors
+ * (correct/present/absent) are intentionally untouched, so contrast minima and
+ * gameplay legibility are preserved across themes. The default ('icy') theme
+ * removes the attribute and uses the base :root tokens above.
+ */
+:root[data-theme='classic'] {
+  --color-aurora-glow: rgb(34 197 94 / 0.18);
+  --color-ice-100: #f0fdf4;
+  --color-ice-200: #bbf7d0;
+  --color-ice-300: #4ade80;
+  --color-focus-ring: #bbf7d0;
+}
+
+:root[data-theme='neon'] {
+  --color-aurora-glow: rgb(217 70 239 / 0.2);
+  --color-ice-100: #fdf4ff;
+  --color-ice-200: #f0abfc;
+  --color-ice-300: #e879f9;
+  --color-focus-ring: #f5d0fe;
+}
+
+:root[data-theme='country-flag'] {
+  --color-aurora-glow: rgb(239 68 68 / 0.18);
+  --color-ice-100: #eff6ff;
+  --color-ice-200: #bfdbfe;
+  --color-ice-300: #93c5fd;
+  --color-focus-ring: #fecaca;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

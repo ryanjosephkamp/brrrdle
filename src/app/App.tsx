@@ -8,6 +8,7 @@ import { StatsDashboard } from '../stats'
 import { WordExplorerPanel } from '../wordExplorer'
 import { FeedbackPanel } from '../feedback'
 import { SoundProvider, useSound } from '../sound'
+import { applyTheme } from '../theme'
 import { GoGame } from './games/GoGame'
 import { OgGame } from './games/OgGame'
 import { DEFAULT_ROUTE_ID, getPrimaryNavigationRoutes, getRouteById, getRoutesByGroup, type AppRoute } from './routes'
@@ -433,6 +434,10 @@ function AppInner() {
   useEffect(() => {
     guestProgressRef.current = guestProgress
   }, [guestProgress])
+
+  useEffect(() => {
+    applyTheme(guestProgress.settings.themeDefault)
+  }, [guestProgress.settings.themeDefault])
 
   useEffect(() => {
     let isMounted = true

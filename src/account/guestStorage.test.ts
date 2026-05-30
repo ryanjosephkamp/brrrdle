@@ -49,6 +49,7 @@ describe('guest storage', () => {
     expect(migrated.settings.reducedMotion).toBe(true)
     expect(migrated.settings.difficultyDefault).toBe('expert')
     expect(migrated.settings.goPuzzleCountDefault).toBe(5)
+    expect(migrated.settings.themeDefault).toBe('icy')
   })
 
   it('records completed games once for history, stats, XP, and coins', () => {
