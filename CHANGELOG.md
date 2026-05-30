@@ -4,6 +4,16 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Phase 19 — Prompt 2: Confirmed Numbering Decision & Final Governance/Clarity Adjustments (PHASE-19-ENHANCED-STATS-RESUME-CONFIGURABLE-GO-AND-POLISH-SPEC-2026-05-30)
+
+Governance/clarity stage of the Phase 19 3-prompt workflow, run after the user reviewed Prompt 1 and approved the progress-step numbering decision. **No game code, tests, or source files changed** — documentation/governance only. Full autonomous execution of the Phase 19 features (sub-phases 19.1–19.6) remains gated on explicit user approval ("Start Prompt 3" or equivalent).
+
+#### 19 Prompt 2 — Plan/governance adjustments (`phase_id = 47`)
+- **`AGENT-IMPLEMENTATION-PLAN.md`**: recorded the **user-confirmed** progress-step numbering decision (`phase_id = 46` / `progress/PROGRESS-STEP-46.md` — smart preservation of existing records) in §24.2, the §24.10 phase-id note, and the §24.12 exit checklist; updated the §24 status banner; bumped the plan version **v2.1 → v2.2** (top `Plan Version` field + header changelog line). Recorded that Prompt 2 itself is `phase_id = 47` and that feature sub-phases 19.1–19.6 receive final ids 48+ at execution in Prompt 3.
+- **Constitution review**: confirmed **no amendment is required** for Phase 19 — `CONSTITUTION.md` v3.2 already binds "all subsequently approved addenda, Phases 12+," names no model, and is not self-edited outside an explicitly approved amendment (CONSTITUTION §17). Left unchanged.
+- **Cross-reference cleanup**: refreshed stale "flagged for confirmation" wording to "confirmed" across the affected plan sections; no other content changed.
+- Recorded in `progress/PROGRESS.csv` (`phase_id = 47`) and `progress/PROGRESS-STEP-47.md`. Halt for explicit user approval ("Start Prompt 3") before any sub-phase 19.1+ game code.
+
 ### Phase 19 — Prompt 1: Planning & §24 Addendum (PHASE-19-ENHANCED-STATS-RESUME-CONFIGURABLE-GO-AND-POLISH-SPEC-2026-05-30)
 
 Planning stage for Phase 19 (Enhanced Statistics Visualizations, Configurable Go Puzzle Count, Full Resume-Most-Recent-Game Activation, Advanced Polish & Theming Foundations), executed under the user's 3-prompt workflow. **No game code changes** — documentation/governance only. All gameplay implementation (sub-phases 19.1–19.6) is gated on explicit user approval ("Start Prompt 2" or equivalent).
