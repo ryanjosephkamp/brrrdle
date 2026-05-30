@@ -1,5 +1,6 @@
 export * from './guestStorage'
 export * from './storageSchema'
+export * from './resumeSlot'
 export * from './auth'
 export * from './dangerZone'
 export * from './guestTransfer'

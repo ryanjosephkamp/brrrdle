@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AccountBadge, AuthModal, ProfilePanel, classifyAuthError, createBrrrdleSupabaseClient, createSyncStatus, getCurrentAuthState, loadGuestProgress, recordCompletedGame, sendPasswordResetEmail, resetGuestProgress, saveGuestProgress, sendMagicLink, Settings, signInWithPassword, signOut, signUpWithPassword, subscribeToAuthChanges, updateProfile, type AuthState, type CompletedGameInput, type ProfileAccentColor } from '../account'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AccountBadge, AuthModal, ProfilePanel, classifyAuthError, createBrrrdleSupabaseClient, createResumeSlot, createSyncStatus, describeResumeSlot, getCurrentAuthState, isCaptureInProgress, loadGuestProgress, normalizeResumeSlot, recordCompletedGame, sendPasswordResetEmail, resetGuestProgress, saveGuestProgress, sendMagicLink, Settings, signInWithPassword, signOut, signUpWithPassword, subscribeToAuthChanges, updateProfile, type AuthState, type CompletedGameInput, type ProfileAccentColor, type ResumeCapture, type ResumeSlot } from '../account'
 import { BUNDLED_WORD_LIST_LENGTHS, type DifficultyTier } from '../data'
 import { DAILY_WORD_LENGTH, MAX_PRACTICE_WORD_LENGTH, MIN_PRACTICE_WORD_LENGTH, type GoPuzzleCount } from '../game/constants'
 import { Button, Layout, Navigation, Panel } from '../ui'
@@ -34,8 +34,10 @@ function PracticeGameSwitcher({
   coins,
   defaultDifficulty,
   defaultGoPuzzleCount,
+  initialResume,
   keyboardDisabled,
   onGameComplete,
+  onResumeCapture,
   onSaveDifficultyDefault,
   onSaveGoPuzzleCountDefault,
   onSpendCoins,
@@ -43,13 +45,16 @@ function PracticeGameSwitcher({
   readonly coins: number
   readonly defaultDifficulty: DifficultyTier
   readonly defaultGoPuzzleCount: GoPuzzleCount
+  readonly initialResume?: ResumeSlot
   readonly keyboardDisabled?: boolean
   readonly onGameComplete: (input: CompletedGameInput) => void
+  readonly onResumeCapture: (capture: ResumeCapture) => void
   readonly onSaveDifficultyDefault: (tier: DifficultyTier) => void
   readonly onSaveGoPuzzleCountDefault: (count: GoPuzzleCount) => void
   readonly onSpendCoins: (amount: number) => boolean
 }) {
-  const [practiceMode, setPracticeMode] = useState<'og' | 'go'>('og')
+  const resumeMode = initialResume?.scope === 'practice' ? initialResume.mode : undefined
+  const [practiceMode, setPracticeMode] = useState<'og' | 'go'>(resumeMode ?? 'og')
 
   return (
     <section className="space-y-5" aria-label="Practice mode selector">
@@ -58,8 +63,8 @@ function PracticeGameSwitcher({
         <Button onClick={() => setPracticeMode('go')} variant={practiceMode === 'go' ? 'primary' : 'secondary'}>go practice</Button>
       </div>
       {practiceMode === 'og'
-        ? <OgGame coins={coins} defaultDifficulty={defaultDifficulty} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onSaveDifficultyDefault={onSaveDifficultyDefault} onSpendCoins={onSpendCoins} scope="practice" />
-        : <GoGame coins={coins} defaultDifficulty={defaultDifficulty} defaultGoPuzzleCount={defaultGoPuzzleCount} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onSaveDifficultyDefault={onSaveDifficultyDefault} onSaveGoPuzzleCountDefault={onSaveGoPuzzleCountDefault} onSpendCoins={onSpendCoins} scope="practice" />}
+        ? <OgGame coins={coins} defaultDifficulty={defaultDifficulty} initialResume={initialResume?.scope === 'practice' && initialResume.mode === 'og' ? initialResume : undefined} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onResumeCapture={onResumeCapture} onSaveDifficultyDefault={onSaveDifficultyDefault} onSpendCoins={onSpendCoins} scope="practice" />
+        : <GoGame coins={coins} defaultDifficulty={defaultDifficulty} defaultGoPuzzleCount={defaultGoPuzzleCount} initialResume={initialResume?.scope === 'practice' && initialResume.mode === 'go' ? initialResume : undefined} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onResumeCapture={onResumeCapture} onSaveDifficultyDefault={onSaveDifficultyDefault} onSaveGoPuzzleCountDefault={onSaveGoPuzzleCountDefault} onSpendCoins={onSpendCoins} scope="practice" />}
     </section>
   )
 }
@@ -72,6 +77,8 @@ function RoutePanel({
   authState,
   authMessage,
   onResetProgress,
+  onResume,
+  onResumeCapture,
   onSelectRoute,
   onSendMagicLink,
   onSignInWithPassword,
@@ -80,6 +87,8 @@ function RoutePanel({
   onSignOut,
   onOpenAuthModal,
   onOpenProfilePanel,
+  pendingResume,
+  resumeSlot,
   soundEnabled,
   onToggleSound,
   onUpdateSettings,
@@ -92,12 +101,16 @@ function RoutePanel({
   readonly keyboardDisabled?: boolean
   readonly onGameComplete: (input: CompletedGameInput) => void
   readonly onResetProgress: () => void
+  readonly onResume: () => void
+  readonly onResumeCapture: (capture: ResumeCapture) => void
   readonly onSendMagicLink: (email: string) => void
   readonly onSignInWithPassword: (email: string, password: string) => void
   readonly onSignUpWithPassword: (email: string, password: string) => void
   readonly onSignOut: () => void
   readonly onOpenAuthModal: () => void
   readonly onOpenProfilePanel: () => void
+  readonly pendingResume?: ResumeSlot
+  readonly resumeSlot?: ResumeSlot
   readonly route: AppRoute
   readonly onSelectRoute: (routeId: AppRoute['id']) => void
   readonly soundEnabled: boolean
@@ -109,26 +122,37 @@ function RoutePanel({
 }) {
   if (route.id === 'home') {
     return (
-      <div className="grid gap-4 md:grid-cols-3">
-        {getRoutesByGroup('play')
-          .filter((playRoute) => playRoute.id !== 'home')
-          .map((playRoute) => (
-            <ModeCard key={playRoute.id} onSelect={(selectedRoute) => onSelectRoute(selectedRoute.id)} route={playRoute} />
-          ))}
+      <div className="space-y-4">
+        {resumeSlot ? (
+          <Panel className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" tone="muted">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-ice-200)]">Pick up where you left off</p>
+              <p className="mt-1 text-base text-slate-200">You have an unfinished game in progress.</p>
+            </div>
+            <Button onClick={onResume} variant="primary">{describeResumeSlot(resumeSlot)}</Button>
+          </Panel>
+        ) : null}
+        <div className="grid gap-4 md:grid-cols-3">
+          {getRoutesByGroup('play')
+            .filter((playRoute) => playRoute.id !== 'home')
+            .map((playRoute) => (
+              <ModeCard key={playRoute.id} onSelect={(selectedRoute) => onSelectRoute(selectedRoute.id)} route={playRoute} />
+            ))}
+        </div>
       </div>
     )
   }
 
   if (route.id === 'og-daily') {
-    return <OgGame coins={guestProgress.progression.coins} defaultDifficulty={guestProgress.settings.difficultyDefault} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onSaveDifficultyDefault={(tier) => onUpdateSettings({ difficultyDefault: tier })} onSpendCoins={onSpendCoins} scope="daily" />
+    return <OgGame coins={guestProgress.progression.coins} defaultDifficulty={guestProgress.settings.difficultyDefault} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onResumeCapture={onResumeCapture} onSaveDifficultyDefault={(tier) => onUpdateSettings({ difficultyDefault: tier })} onSpendCoins={onSpendCoins} scope="daily" />
   }
 
   if (route.id === 'go-daily') {
-    return <GoGame coins={guestProgress.progression.coins} defaultDifficulty={guestProgress.settings.difficultyDefault} defaultGoPuzzleCount={guestProgress.settings.goPuzzleCountDefault} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onSaveDifficultyDefault={(tier) => onUpdateSettings({ difficultyDefault: tier })} onSaveGoPuzzleCountDefault={(count) => onUpdateSettings({ goPuzzleCountDefault: count })} onSpendCoins={onSpendCoins} scope="daily" />
+    return <GoGame coins={guestProgress.progression.coins} defaultDifficulty={guestProgress.settings.difficultyDefault} defaultGoPuzzleCount={guestProgress.settings.goPuzzleCountDefault} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onResumeCapture={onResumeCapture} onSaveDifficultyDefault={(tier) => onUpdateSettings({ difficultyDefault: tier })} onSaveGoPuzzleCountDefault={(count) => onUpdateSettings({ goPuzzleCountDefault: count })} onSpendCoins={onSpendCoins} scope="daily" />
   }
 
   if (route.id === 'practice') {
-    return <PracticeGameSwitcher coins={guestProgress.progression.coins} defaultDifficulty={guestProgress.settings.difficultyDefault} defaultGoPuzzleCount={guestProgress.settings.goPuzzleCountDefault} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onSaveDifficultyDefault={(tier) => onUpdateSettings({ difficultyDefault: tier })} onSaveGoPuzzleCountDefault={(count) => onUpdateSettings({ goPuzzleCountDefault: count })} onSpendCoins={onSpendCoins} />
+    return <PracticeGameSwitcher coins={guestProgress.progression.coins} defaultDifficulty={guestProgress.settings.difficultyDefault} defaultGoPuzzleCount={guestProgress.settings.goPuzzleCountDefault} initialResume={pendingResume} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onResumeCapture={onResumeCapture} onSaveDifficultyDefault={(tier) => onUpdateSettings({ difficultyDefault: tier })} onSaveGoPuzzleCountDefault={(count) => onUpdateSettings({ goPuzzleCountDefault: count })} onSpendCoins={onSpendCoins} />
   }
 
   if (route.id === 'word-explorer') {
@@ -203,8 +227,73 @@ function AppInner() {
   const [profileMessage, setProfileMessage] = useState<string | undefined>(undefined)
   const [profileBusy, setProfileBusy] = useState(false)
   const [syncStatus] = useState(() => createSyncStatus(supabaseClient ? 'idle' : 'error'))
+  const [pendingResume, setPendingResume] = useState<ResumeSlot | undefined>(undefined)
+  const autoResumedRef = useRef(false)
+  const guestProgressRef = useRef(guestProgress)
   const activeRoute = getRouteById(activeRouteId)
+  const resumeSlot = useMemo(() => normalizeResumeSlot(guestProgress.resumeSlot), [guestProgress.resumeSlot])
   const navigationRoutes = useMemo(() => getPrimaryNavigationRoutes(authState.user?.roles.includes('admin') ?? false), [authState.user?.roles])
+  const handleNavigate = useCallback((routeId: AppRoute['id']) => {
+    setPendingResume(undefined)
+    setActiveRouteId(routeId)
+  }, [])
+  const handleResumeCapture = useCallback((capture: ResumeCapture) => {
+    setGuestProgress((currentProgress) => {
+      const currentSlot = currentProgress.resumeSlot
+      if (isCaptureInProgress(capture)) {
+        const nextSlot = createResumeSlot(capture)
+        if (currentSlot && currentSlot.mode === nextSlot.mode && currentSlot.scope === nextSlot.scope && JSON.stringify(currentSlot.serializedSession) === JSON.stringify(nextSlot.serializedSession)) {
+          return currentProgress
+        }
+        const nextProgress = { ...currentProgress, resumeSlot: nextSlot }
+        saveGuestProgress(nextProgress)
+        return nextProgress
+      }
+      // Not in progress: only clear the slot it corresponds to (same mode/scope/length),
+      // so peeking at an unrelated finished game never wipes a real resume slot.
+      const matchesTrackedGame = currentSlot
+        && currentSlot.mode === capture.mode
+        && currentSlot.scope === capture.scope
+        && currentSlot.wordLength === capture.wordLength
+      if (!matchesTrackedGame) {
+        return currentProgress
+      }
+      const nextProgress = { ...currentProgress, resumeSlot: undefined }
+      saveGuestProgress(nextProgress)
+      return nextProgress
+    })
+  }, [])
+  const handleResume = useCallback(() => {
+    const slot = normalizeResumeSlot(guestProgress.resumeSlot)
+    if (!slot) {
+      return
+    }
+    if (slot.scope === 'practice') {
+      setPendingResume(slot)
+      setActiveRouteId('practice')
+      return
+    }
+    setPendingResume(undefined)
+    setActiveRouteId(slot.mode === 'og' ? 'og-daily' : 'go-daily')
+  }, [guestProgress.resumeSlot])
+  // Auto-resume the most recent unfinished game once per signed-in load (spec §2).
+  // Called from async auth callbacks (not synchronously in an effect body).
+  const maybeAutoResume = useCallback((nextAuthState: AuthState) => {
+    if (nextAuthState.status !== 'authenticated' || autoResumedRef.current) {
+      return
+    }
+    const slot = normalizeResumeSlot(guestProgressRef.current.resumeSlot)
+    if (!slot) {
+      return
+    }
+    autoResumedRef.current = true
+    if (slot.scope === 'practice') {
+      setPendingResume(slot)
+      setActiveRouteId('practice')
+    } else {
+      setActiveRouteId(slot.mode === 'og' ? 'og-daily' : 'go-daily')
+    }
+  }, [])
   const handleGameComplete = useCallback((input: CompletedGameInput) => {
     setGuestProgress((currentProgress) => {
       const nextProgress = recordCompletedGame(input, currentProgress)
@@ -342,15 +431,21 @@ function AppInner() {
   }, [supabaseClient])
 
   useEffect(() => {
+    guestProgressRef.current = guestProgress
+  }, [guestProgress])
+
+  useEffect(() => {
     let isMounted = true
     void getCurrentAuthState(supabaseClient).then((nextAuthState) => {
       if (isMounted) {
         setAuthState(nextAuthState)
+        maybeAutoResume(nextAuthState)
       }
     })
     const subscription = subscribeToAuthChanges(supabaseClient, (nextAuthState) => {
       if (isMounted) {
         setAuthState(nextAuthState)
+        maybeAutoResume(nextAuthState)
       }
     })
 
@@ -358,7 +453,7 @@ function AppInner() {
       isMounted = false
       subscription.unsubscribe()
     }
-  }, [supabaseClient])
+  }, [maybeAutoResume, supabaseClient])
 
   return (
     <Layout
@@ -367,7 +462,7 @@ function AppInner() {
       navigation={(
         <div className="flex flex-col gap-3 lg:items-end">
           <AccountBadge authState={authState} onOpenAuthModal={handleOpenAuthModal} onOpenProfile={handleOpenProfilePanel} />
-          <Navigation activeRouteId={activeRoute.id} onNavigate={setActiveRouteId} routes={navigationRoutes} />
+          <Navigation activeRouteId={activeRoute.id} onNavigate={handleNavigate} routes={navigationRoutes} />
         </div>
       )}
       title="Choose your puzzle path."
@@ -405,7 +500,9 @@ function AppInner() {
             onOpenAuthModal={handleOpenAuthModal}
             onOpenProfilePanel={handleOpenProfilePanel}
             onResetProgress={handleResetProgress}
-            onSelectRoute={setActiveRouteId}
+            onResume={handleResume}
+            onResumeCapture={handleResumeCapture}
+            onSelectRoute={handleNavigate}
             onSendMagicLink={handleSendMagicLink}
             onSignInWithPassword={handleSignInWithPassword}
             onSignOut={handleSignOut}
@@ -413,6 +510,8 @@ function AppInner() {
             onSpendCoins={handleSpendCoins}
             onToggleSound={sound.setEnabled}
             onUpdateSettings={handleUpdateSettings}
+            pendingResume={pendingResume}
+            resumeSlot={resumeSlot}
             route={activeRoute}
             soundEnabled={sound.enabled}
             supabaseClient={supabaseClient}

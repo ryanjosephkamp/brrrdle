@@ -3,6 +3,7 @@ import type { DifficultyTier } from '../data/difficulty'
 import { updateStatistics } from '../stats/statistics'
 import type { CompletedGameStatsInput } from '../stats/types'
 import { createDefaultGuestProgress, GUEST_PROGRESS_SCHEMA_VERSION, normalizeGuestSettings, type GameHistoryEntry, type GuestProgressState } from './storageSchema'
+import { normalizeResumeSlot } from './resumeSlot'
 
 export interface KeyValueStorage {
   readonly getItem: (key: string) => string | null
@@ -52,6 +53,7 @@ export function migrateGuestProgress(value: unknown): GuestProgressState | undef
 
   return {
     ...value,
+    resumeSlot: normalizeResumeSlot(value.resumeSlot),
     schemaVersion: GUEST_PROGRESS_SCHEMA_VERSION,
     settings: normalizeGuestSettings(value.settings),
   }

@@ -56,12 +56,20 @@ describe('guest transfer', () => {
     expect(merged.settings.hardModeDefault).toBe(true)
   })
 
-  it('preserves a reserved resume slot from either side without enabling it', () => {
-    const local = { ...createDefaultGuestProgress(), resumeSlot: { mode: 'og' } }
+  it('preserves a typed resume slot from either side', () => {
+    const slot = {
+      difficulty: 'expert',
+      mode: 'og',
+      scope: 'practice',
+      serializedSession: { answer: 'crane', continuationCount: 0, currentGuess: 'cr', guesses: [], hardMode: false, maxAttempts: 6 },
+      updatedAt: '2026-05-30T06:00:00.000Z',
+      wordLength: 5,
+    } as const
+    const local = { ...createDefaultGuestProgress(), resumeSlot: slot }
     const cloud = createDefaultGuestProgress()
 
-    expect(mergeGuestProgressIntoCloud(local, cloud).resumeSlot).toEqual({ mode: 'og' })
-    expect(mergeGuestProgressIntoCloud(cloud, local).resumeSlot).toEqual({ mode: 'og' })
+    expect(mergeGuestProgressIntoCloud(local, cloud).resumeSlot).toEqual(slot)
+    expect(mergeGuestProgressIntoCloud(cloud, local).resumeSlot).toEqual(slot)
     expect(mergeGuestProgressIntoCloud(cloud, cloud).resumeSlot).toBeUndefined()
   })
 })

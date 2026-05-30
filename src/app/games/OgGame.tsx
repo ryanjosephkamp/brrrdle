@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BUNDLED_WORD_LIST_LENGTHS, DEFAULT_DIFFICULTY_TIER, type DifficultyTier } from '../../data'
-import type { CompletedGameInput } from '../../account'
+import type { CompletedGameInput, OgResumeSlot, ResumeCapture } from '../../account'
 import { DefinitionPanel } from '../../definitions'
 import {
   createDailyOgSetup,
@@ -31,8 +31,10 @@ import { CustomizeMenu } from './CustomizeMenu'
 interface OgGameProps {
   readonly coins: number
   readonly defaultDifficulty?: DifficultyTier
+  readonly initialResume?: OgResumeSlot
   readonly keyboardDisabled?: boolean
   readonly onGameComplete?: (input: CompletedGameInput) => void
+  readonly onResumeCapture?: (capture: ResumeCapture) => void
   readonly onSaveDifficultyDefault?: (tier: DifficultyTier) => void
   readonly onSpendCoins: (amount: number) => boolean
   readonly scope: 'daily' | 'practice'
@@ -129,11 +131,13 @@ function OgGameSession({
   onGameComplete,
   onPracticeLengthChange,
   onPracticeSeedChange,
+  onResumeCapture,
   onSaveDifficultyDefault,
   onSpendCoins,
   practiceLength,
   practiceLengths,
   practiceSeed,
+  restoreFrom,
   scope,
   setup,
 }: {
@@ -145,15 +149,22 @@ function OgGameSession({
   readonly onGameComplete?: (input: CompletedGameInput) => void
   readonly onPracticeLengthChange: (length: number) => void
   readonly onPracticeSeedChange: () => void
+  readonly onResumeCapture?: (capture: ResumeCapture) => void
   readonly onSaveDifficultyDefault?: (tier: DifficultyTier) => void
   readonly onSpendCoins: (amount: number) => boolean
   readonly practiceLength: number
   readonly practiceLengths: readonly number[]
   readonly practiceSeed: number
+  readonly restoreFrom?: ReturnType<typeof serializeOgSession>
   readonly scope: OgGameProps['scope']
   readonly setup: OgPuzzleSetup
 }) {
-  const [session, setSession] = useState(() => scope === 'daily' ? createInitialDailySession(setup) : createOgSession(setup))
+  const [session, setSession] = useState(() => {
+    if (restoreFrom) {
+      return restoreOgSession(restoreFrom, setup.validGuesses)
+    }
+    return scope === 'daily' ? createInitialDailySession(setup) : createOgSession(setup)
+  })
   const [continuationMessage, setContinuationMessage] = useState<string>()
   const completionPercentage = getCompletionPercentage(session)
   const continuationCost = calculatePayToContinueCost({
@@ -173,6 +184,16 @@ function OgGameSession({
       session: serializeOgSession(session),
     })
   }, [scope, session, setup.dateKey])
+
+  useEffect(() => {
+    onResumeCapture?.({
+      difficulty,
+      mode: 'og',
+      scope,
+      serializedSession: serializeOgSession(session),
+      wordLength: session.wordLength,
+    })
+  }, [difficulty, onResumeCapture, scope, session])
 
   useEffect(() => {
     if (session.status === 'playing') {
@@ -361,16 +382,21 @@ function OgGameSession({
   )
 }
 
-export function OgGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, keyboardDisabled = false, onGameComplete, onSaveDifficultyDefault, onSpendCoins, scope }: OgGameProps) {
+export function OgGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, initialResume, keyboardDisabled = false, onGameComplete, onResumeCapture, onSaveDifficultyDefault, onSpendCoins, scope }: OgGameProps) {
+  const resumePractice = initialResume?.scope === 'practice' ? initialResume : undefined
   const practiceLengths = useMemo(() => getAvailableOgPracticeLengths(), [])
-  const [practiceLength, setPracticeLength] = useState(5)
+  const [practiceLength, setPracticeLength] = useState(() => resumePractice?.wordLength ?? 5)
   const [practiceSeed, setPracticeSeed] = useState(0)
-  const [difficulty, setDifficulty] = useState<DifficultyTier>(defaultDifficulty)
+  const [difficulty, setDifficulty] = useState<DifficultyTier>(resumePractice?.difficulty ?? defaultDifficulty)
+  const [resumeConsumed, setResumeConsumed] = useState(false)
+  const activeResume = resumePractice && !resumeConsumed ? resumePractice : undefined
   const setup = useMemo(
     () => scope === 'daily' ? createDailyOgSetup(new Date(), difficulty) : createPracticeOgSetup(practiceLength, practiceSeed, difficulty),
     [difficulty, practiceLength, practiceSeed, scope],
   )
-  const sessionKey = scope === 'daily' ? `${scope}-${difficulty}-${setup.dateKey}` : `${scope}-${difficulty}-${practiceLength}-${practiceSeed}`
+  const sessionKey = scope === 'daily'
+    ? `${scope}-${difficulty}-${setup.dateKey}`
+    : `${scope}-${difficulty}-${practiceLength}-${practiceSeed}${activeResume ? `-resume-${activeResume.updatedAt}` : ''}`
 
   return (
     <OgGameSession
@@ -379,15 +405,17 @@ export function OgGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, key
       defaultDifficulty={defaultDifficulty}
       difficulty={difficulty}
       keyboardDisabled={keyboardDisabled}
-      onDifficultyChange={setDifficulty}
+      onDifficultyChange={(tier) => { setResumeConsumed(true); setDifficulty(tier) }}
       onGameComplete={onGameComplete}
-      onPracticeLengthChange={setPracticeLength}
-      onPracticeSeedChange={() => setPracticeSeed((seed) => seed + 1)}
+      onPracticeLengthChange={(length) => { setResumeConsumed(true); setPracticeLength(length) }}
+      onPracticeSeedChange={() => { setResumeConsumed(true); setPracticeSeed((seed) => seed + 1) }}
+      onResumeCapture={onResumeCapture}
       onSaveDifficultyDefault={onSaveDifficultyDefault}
       onSpendCoins={onSpendCoins}
       practiceLength={practiceLength}
       practiceLengths={practiceLengths}
       practiceSeed={practiceSeed}
+      restoreFrom={activeResume?.serializedSession}
       scope={scope}
       setup={setup}
     />

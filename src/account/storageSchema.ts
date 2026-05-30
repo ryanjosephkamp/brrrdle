@@ -3,7 +3,7 @@ import { DEFAULT_DIFFICULTY_TIER, normalizeDifficultyTier, type DifficultyTier }
 import { DEFAULT_GO_PUZZLE_COUNT, normalizeGoPuzzleCount, type GoPuzzleCount } from '../game/constants'
 import { createEmptyStatistics } from '../stats/statistics'
 import type { StatisticsState } from '../stats/types'
-
+import type { ResumeSlot } from './resumeSlot'
 /**
  * Bumped to 2 in Phase 18.3 when `GuestSettingsState.difficultyDefault` was
  * added, and to 3 in Phase 19.2 when `GuestSettingsState.goPuzzleCountDefault`
@@ -70,12 +70,13 @@ export interface GuestProgressState {
   readonly settings: GuestSettingsState
   readonly stats: StatisticsState
   /**
-   * Phase 18.8 — reserved, forward-compatible slot for a future
-   * "resume most recent unfinished game" feature. Always omitted/undefined in
-   * this phase; reserving the name keeps the serialization shape stable so the
-   * feature can be enabled later without another migration. No behaviour change.
+   * Phase 18.8 reserved a forward-compatible slot for "resume most recent
+   * unfinished game"; Phase 19.3 gives it a concrete typed shape and activates
+   * it. Populated only while a game is in progress and cleared on completion,
+   * so it is omitted/undefined for everyone who is not mid-game (no behaviour
+   * change). Validated on load via `normalizeResumeSlot` (untrusted-input safe).
    */
-  readonly resumeSlot?: unknown
+  readonly resumeSlot?: ResumeSlot
 }
 
 export function createDefaultGuestSettings(): GuestSettingsState {
