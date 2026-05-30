@@ -1,14 +1,14 @@
 # brrrdle Constitution
 
-**Version**: 3.1
-**Date**: 2026-05-25
-**Status**: Final upgraded project constitution with progress tracking amendment — binding until revised with explicit user approval.
+**Version**: 3.2
+**Date**: 2026-05-30
+**Status**: Final upgraded project constitution with the progress tracking amendment and the phase-range generalization amendment (Phases 0–11 plus all subsequently approved addenda, Phases 12+) — binding until revised with explicit user approval.
 
 ---
 
 ## 1. Purpose
 
-This constitution governs all autonomous development of `brrrdle`. It binds implementation to the approved product specification, the approved v2.6 project plan, and the approved `AGENT-IMPLEMENTATION-PLAN.md`.
+This constitution governs all autonomous development of `brrrdle`. It binds implementation to the approved product specification, the approved v2.6 project plan, and the approved `AGENT-IMPLEMENTATION-PLAN.md`. The `AGENT-IMPLEMENTATION-PLAN.md` now spans Phases 0–11 plus all subsequently approved addenda (Phases 12+); every approved addendum is bound by this constitution to the same degree as the original phases.
 
 The goal is to build a polished, production-ready Wordle + Hurdle hybrid while preventing scope creep, preserving implementation fidelity, enforcing phase-by-phase verification, maintaining durable progress records, and requiring human review at every gate.
 
@@ -77,9 +77,9 @@ Do not implement without explicit approval:
 
 The agent must halt and wait for explicit user approval:
 
-- After this final constitution upgrade.
+- After any constitution upgrade or amendment.
 - Before beginning Phase 0 scaffolding.
-- After Phase 0 and after every later phase in `AGENT-IMPLEMENTATION-PLAN.md`.
+- After Phase 0 and after every later phase in `AGENT-IMPLEMENTATION-PLAN.md` (including all subsequently approved addenda, Phases 12+).
 - Whenever a phase's pause point says to halt.
 - Whenever requirements conflict.
 - Whenever verification cannot be completed.
@@ -102,7 +102,7 @@ Then stop. Do not continue into the next phase, scaffold, or implement additiona
 
 ## 5. Phase Execution Rules
 
-The approved implementation plan defines Phases 0 through 11. Work must proceed in order unless the user explicitly approves a change.
+The approved implementation plan defines Phases 0–11 plus all subsequently approved addenda (Phases 12+). Work must proceed in order unless the user explicitly approves a change.
 
 ### 5.1 Phase Discipline
 
@@ -130,6 +130,8 @@ For each phase:
 10. Phase 9 — Sharing, PWA, polish, accessibility, and performance.
 11. Phase 10 — GitHub Pages + Jekyll blog/docs.
 12. Phase 11 — Final integration, release readiness, and deployment verification.
+
+Phases 12 and later are introduced through explicitly approved addenda to `AGENT-IMPLEMENTATION-PLAN.md` (see its addendum sections). Each approved addendum extends this order and is governed by the same phase-discipline, verification, progress-logging, and review-gate rules; the §3 scope invariants (including the daily 5-letter lock and practice lengths 2–35) continue to apply.
 
 ### 5.3 Phase Exit Checklist
 
@@ -496,7 +498,7 @@ Implementation and tests must explicitly consider:
 
 ## 17. Constitution Evolution
 
-This constitution includes the approved second upgrade plus a progress tracking amendment. Future revisions require explicit user approval and must preserve:
+This constitution includes the approved second upgrade, a progress tracking amendment, and a phase-range generalization amendment (Phases 0–11 plus all subsequently approved addenda, Phases 12+). Future revisions require explicit user approval and must preserve:
 
 - Scope fidelity.
 - Mandatory review gates.
@@ -507,6 +509,7 @@ This constitution includes the approved second upgrade plus a progress tracking 
 - Accessibility and performance standards.
 - Minimal-change conduct.
 - Progress logging for transparency, resumability, and coordination.
+- Phase-range continuity, so every approved addendum (Phases 12+) remains bound by the same rules as Phases 0–11.
 
 ---
 

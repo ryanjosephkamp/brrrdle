@@ -4,6 +4,19 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Phase 18 — Prompt 2: Constitution Phase-Range Amendment & Repo Adjustments (PHASE-18-WORD-DIFFICULTY-AND-GO-IMPROVEMENTS-SPEC-2026-05-28)
+- **Scope of this entry**: governance/documentation only. **No game code, tests, or game scripts changed.** This is Prompt 2 of the user's 3-prompt Phase 18 workflow (Prompt 1 = planning/cleanup/README; **Prompt 2 = constitution/repo adjustments**; Prompt 3 = full Phase 18 feature execution, still gated on explicit approval).
+- **Applied the approved constitution phase-range amendment** (`CONSTITUTION.md` v3.1 → **v3.2**, user answer #3 from `AGENT-IMPLEMENTATION-PLAN.md` §23.11). No rule was removed or weakened:
+  - **§1 (Purpose)** — added that `AGENT-IMPLEMENTATION-PLAN.md` now spans "Phases 0–11 plus all subsequently approved addenda (Phases 12+)," each bound by this constitution to the same degree as the original phases.
+  - **§5 (Phase Execution Rules)** — "The approved implementation plan defines Phases 0 through 11" → "defines Phases 0–11 plus all subsequently approved addenda (Phases 12+)."
+  - **§5.2 (Phase Order)** — added a note that Phases 12+ are introduced through explicitly approved addenda (see the plan's addendum sections) and are governed by the same phase-discipline, verification, progress-logging, and review-gate rules, with §3 scope invariants (daily 5-letter lock, practice 2–35) preserved.
+  - **§4 (Mandatory Review Gates)** — clarified the post-amendment gate ("After any constitution upgrade or amendment") and noted that the per-phase halt covers "every later phase … (including all subsequently approved addenda, Phases 12+)."
+  - **§17 (Constitution Evolution)** — recorded the new phase-range generalization amendment and added a preserved-invariant bullet for phase-range continuity.
+  - **Header** — Version 3.1 → 3.2, Date → 2026-05-30, Status updated to name the phase-range generalization amendment.
+- **`AGENT-IMPLEMENTATION-PLAN.md`** — header version bumped 1.9 → **2.0**; §23.2 item 2 and §23.11 answer #3 updated from "deferred to prompt 2" to "applied in Prompt 2"; §23.13 already noted the application; added a §23.10 phase-id note recording Prompt 2 at `phase_id = 36` and clarifying that 18.1–18.9 final phase-ids are assigned (37+) at execution.
+- **Progress tracking**: `progress/PROGRESS.csv` row `phase_id = 36`; new `progress/PROGRESS-STEP-36.md`.
+- **Halt**: per CONSTITUTION §4, awaiting explicit user approval ("Start Prompt 3" or equivalent) before any Phase 18 game code changes.
+
 ### Phase 18.0 — Governance & Repository Cleanup (model-agnostic) + README upgrade, planning stage (PHASE-18-WORD-DIFFICULTY-AND-GO-IMPROVEMENTS-SPEC-2026-05-28)
 - **Source of truth**: `PHASE-18-WORD-DIFFICULTY-AND-GO-IMPROVEMENTS-SPEC-2026-05-28.md` and `AGENT-IMPLEMENTATION-PLAN.md` §23.
 - **Scope of this entry**: planning/governance cleanup + README only. **No game code changed.** The full Phase 18 feature work (difficulty tiers, Word Explorer / Go / Settings improvements, daily Og↔Go overlap fix) is drafted in `AGENT-IMPLEMENTATION-PLAN.md` §23 and is gated on explicit user approval (see §23.13).
