@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import {
+  SOUND_CATEGORIES,
   SOUND_PREF_STORAGE_KEY,
   createSoundEngine,
+  getSoundCategory,
   loadSoundPreference,
   saveSoundPreference,
   type AudioContextLike,
   type GainNodeLike,
   type OscillatorNodeLike,
+  type SoundCategory,
+  type SoundEvent,
 } from './soundEngine'
 
 function createMockContext() {
@@ -133,5 +137,37 @@ describe('sound preference persistence', () => {
 
   it('uses a stable storage key', () => {
     expect(SOUND_PREF_STORAGE_KEY).toBe('brrrdle:sound-effects-enabled')
+  })
+})
+
+describe('sound categories', () => {
+  const events: readonly SoundEvent[] = [
+    'tile-flip',
+    'correct-guess',
+    'game-over-win',
+    'game-over-loss',
+    'keyboard-click',
+    'invalid-guess',
+  ]
+
+  it('assigns every sound event to exactly one category', () => {
+    for (const event of events) {
+      expect(SOUND_CATEGORIES[event]).toBe(getSoundCategory(event))
+      expect(SOUND_CATEGORIES[event]).toBeTypeOf('string')
+    }
+  })
+
+  it('maps gameplay events to the expected categories', () => {
+    expect(getSoundCategory('keyboard-click')).toBe('keypress')
+    expect(getSoundCategory('tile-flip')).toBe('submit')
+    expect(getSoundCategory('correct-guess')).toBe('submit')
+    expect(getSoundCategory('game-over-win')).toBe('win')
+    expect(getSoundCategory('game-over-loss')).toBe('loss')
+    expect(getSoundCategory('invalid-guess')).toBe('ui')
+  })
+
+  it('covers exactly the five defined categories', () => {
+    const categories = new Set<SoundCategory>(Object.values(SOUND_CATEGORIES))
+    expect([...categories].sort()).toEqual(['keypress', 'loss', 'submit', 'ui', 'win'])
   })
 })

@@ -15,6 +15,28 @@ export type SoundEvent =
   | 'keyboard-click'
   | 'invalid-guess'
 
+/**
+ * Phase 19.4 — coarse categories layered over the individual sound events. They
+ * are metadata only: every event still plays solely when the master sound
+ * toggle is on, so categorizing changes no current behaviour. The grouping is
+ * the foundation for future per-category preferences without another refactor.
+ */
+export type SoundCategory = 'keypress' | 'submit' | 'win' | 'loss' | 'ui'
+
+export const SOUND_CATEGORIES: Record<SoundEvent, SoundCategory> = {
+  'correct-guess': 'submit',
+  'game-over-loss': 'loss',
+  'game-over-win': 'win',
+  'invalid-guess': 'ui',
+  'keyboard-click': 'keypress',
+  'tile-flip': 'submit',
+}
+
+/** The category a given sound event belongs to. */
+export function getSoundCategory(event: SoundEvent): SoundCategory {
+  return SOUND_CATEGORIES[event]
+}
+
 export interface SoundEngineOptions {
   readonly enabled: boolean
   /** Optional override for the audio context, used in tests. */
