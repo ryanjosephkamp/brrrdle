@@ -1,4 +1,4 @@
-import { BUNDLED_WORD_LIST_LENGTHS, getDailyAnswerIndex, getDailyDateKey, getWordRepository } from '../../data'
+import { BUNDLED_WORD_LIST_LENGTHS, getDailyGoSeedIndex, getDailyDateKey, getWordRepository } from '../../data'
 import { DEFAULT_DIFFICULTY_TIER, type DifficultyTier } from '../../data/difficulty'
 import { DAILY_WORD_LENGTH, GO_PUZZLE_COUNT, SUPPORTED_PRACTICE_WORD_LENGTHS } from '../constants'
 import {
@@ -86,7 +86,7 @@ export function createDailyGoSetup(date = new Date(), difficulty: DifficultyTier
   }
 
   const dateKey = getDailyDateKey(date)
-  const answers = selectAnswerSequence(repository.answers, getDailyAnswerIndex(dateKey, repository.answers.length))
+  const answers = selectAnswerSequence(repository.answers, getDailyGoSeedIndex(dateKey, repository.answers.length))
   const priorAnswers: string[] = []
   const puzzles = answers.map((answer) => {
     const prefilledGuesses = [...priorAnswers]
