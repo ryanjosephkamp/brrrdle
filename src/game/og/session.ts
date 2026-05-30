@@ -1,5 +1,6 @@
 import { BUNDLED_WORD_LIST_LENGTHS, getWordRepository } from '../../data'
 import type { WordEntry } from '../../data'
+import { DEFAULT_DIFFICULTY_TIER, type DifficultyTier } from '../../data/difficulty'
 import { getDailyOgPuzzle } from '../../data/daily'
 import { DAILY_WORD_LENGTH, SUPPORTED_PRACTICE_WORD_LENGTHS } from '../constants'
 import { createPuzzleSession, type PuzzleSessionState } from '../session'
@@ -33,9 +34,9 @@ export function getAvailableOgPracticeLengths(): readonly number[] {
   return SUPPORTED_PRACTICE_WORD_LENGTHS.filter((length) => BUNDLED_WORD_LIST_LENGTHS.includes(length))
 }
 
-export function createDailyOgSetup(date = new Date()): OgPuzzleSetup {
-  const puzzle = getDailyOgPuzzle(date)
-  const repository = getWordRepository({ mode: 'og', scope: 'daily', length: DAILY_WORD_LENGTH })
+export function createDailyOgSetup(date = new Date(), difficulty: DifficultyTier = DEFAULT_DIFFICULTY_TIER): OgPuzzleSetup {
+  const puzzle = getDailyOgPuzzle(date, difficulty)
+  const repository = getWordRepository({ mode: 'og', scope: 'daily', length: DAILY_WORD_LENGTH, difficulty })
   if (!repository.ok) {
     throw new Error(repository.message)
   }
@@ -48,8 +49,8 @@ export function createDailyOgSetup(date = new Date()): OgPuzzleSetup {
   }
 }
 
-export function createPracticeOgSetup(length: number, seed = Date.now()): OgPuzzleSetup {
-  const repository = getWordRepository({ mode: 'og', scope: 'practice', length })
+export function createPracticeOgSetup(length: number, seed = Date.now(), difficulty: DifficultyTier = DEFAULT_DIFFICULTY_TIER): OgPuzzleSetup {
+  const repository = getWordRepository({ mode: 'og', scope: 'practice', length, difficulty })
   if (!repository.ok) {
     throw new Error(repository.message)
   }

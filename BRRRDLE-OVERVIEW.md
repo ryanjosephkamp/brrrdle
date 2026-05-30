@@ -1,8 +1,8 @@
-# brrrdle Game Development Plan (Autonomous GPT-5.5 Copilot Agent Build) — Updated v2.6 (Final Aligned Version)
+# brrrdle Game Development Plan (Autonomous Copilot Agent Build) — Updated v2.6 (Final Aligned Version)
 
 **Project**: `brrrdle` (no space) – The ultimate Wordle + Hurdle hybrid web game  
 **Repository**: https://github.com/ryanjosephkamp/brrrdle (currently cleaned/minimal)  
-**Core Approach**: Maximum autonomy via GitHub Copilot agent (GPT-5.5) sessions guided by a strong base Constitution + self-generated implementation plan with mandatory human review gates.  
+**Core Approach**: Maximum autonomy via a GitHub Copilot coding agent (model-agnostic — any sufficiently capable model, e.g. Claude Opus 4.8) guided by a strong base Constitution + self-generated implementation plan with mandatory human review gates.  
 **Date**: 2026-05-25  
 **Version**: v2.6 (Final aligned version — all major decisions resolved)
 
@@ -10,7 +10,7 @@
 
 ## 1. Goal & SMART Success Criteria
 
-**Goal**: Build a complete, polished, production-ready `brrrdle` game using the autonomous GPT-5.5 Copilot workflow. All strategic, technical, hosting, data, scope, and UX decisions are now fully aligned.
+**Goal**: Build a complete, polished, production-ready `brrrdle` game using the autonomous Copilot agent workflow (model-agnostic). All strategic, technical, hosting, data, scope, and UX decisions are now fully aligned.
 
 **SMART Success Criteria**:
 - Fully playable `og` + `go` modes with exact coloring, Hard Mode, hybrid word list updates (tied to production deploys + protected admin override), and clean definition fallback with dynamic Google search button.

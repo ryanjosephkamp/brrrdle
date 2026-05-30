@@ -25,4 +25,43 @@ describe('guest transfer', () => {
     expect(merged.progression.xp).toBe(150)
     expect(merged.progression.level).toBe(2)
   })
+
+  it('keeps the difficulty default from the side with more history (signed-in persistence)', () => {
+    const local = {
+      ...createDefaultGuestProgress(),
+      history: [
+        { attemptsUsed: 1, coinAward: 10, completedAt: '2026-05-26T01:00:00Z', gameId: 'a', mode: 'og', scope: 'daily', status: 'won', word: 'crane', wordLength: 5, xpAward: 50 },
+        { attemptsUsed: 1, coinAward: 10, completedAt: '2026-05-26T02:00:00Z', gameId: 'b', mode: 'og', scope: 'daily', status: 'won', word: 'plumb', wordLength: 5, xpAward: 50 },
+      ],
+      settings: { ...createDefaultGuestProgress().settings, difficultyDefault: 'casual' },
+    } as const
+    const cloud = {
+      ...createDefaultGuestProgress(),
+      settings: { ...createDefaultGuestProgress().settings, difficultyDefault: 'expert' },
+    } as const
+
+    expect(mergeGuestProgressIntoCloud(local, cloud).settings.difficultyDefault).toBe('casual')
+    expect(mergeGuestProgressIntoCloud(cloud, local).settings.difficultyDefault).toBe('casual')
+  })
+
+  it('normalizes the winning settings so a missing tier falls back to the default (migration-safe)', () => {
+    const local = {
+      ...createDefaultGuestProgress(),
+      settings: { hardModeDefault: true, reducedMotion: false } as unknown as ReturnType<typeof createDefaultGuestProgress>['settings'],
+    }
+    const cloud = createDefaultGuestProgress()
+
+    const merged = mergeGuestProgressIntoCloud(local, cloud)
+    expect(merged.settings.difficultyDefault).toBe('expert')
+    expect(merged.settings.hardModeDefault).toBe(true)
+  })
+
+  it('preserves a reserved resume slot from either side without enabling it', () => {
+    const local = { ...createDefaultGuestProgress(), resumeSlot: { mode: 'og' } }
+    const cloud = createDefaultGuestProgress()
+
+    expect(mergeGuestProgressIntoCloud(local, cloud).resumeSlot).toEqual({ mode: 'og' })
+    expect(mergeGuestProgressIntoCloud(cloud, local).resumeSlot).toEqual({ mode: 'og' })
+    expect(mergeGuestProgressIntoCloud(cloud, cloud).resumeSlot).toBeUndefined()
+  })
 })

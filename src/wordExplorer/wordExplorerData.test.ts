@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_WORD_EXPLORER_LENGTH,
   WORD_EXPLORER_LENGTHS,
+  difficultyBadgeLabel,
   emptyStateMessage,
   filterAndSortEntries,
   loadWordExplorerEntries,
@@ -136,6 +137,38 @@ describe('filterAndSortEntries', () => {
       { field: 'word', direction: 'desc' },
     )
     expect(result.map((entry) => entry.word)).toEqual(['cherry', 'banana', 'apple'])
+  })
+
+  const tiered: readonly WordExplorerEntry[] = [
+    { word: 'aaaaa', types: new Set(['answer']), difficulty: 'casual' },
+    { word: 'bbbbb', types: new Set(['answer']), difficulty: 'standard' },
+    { word: 'ccccc', types: new Set(['answer']), difficulty: 'expert' },
+    { word: 'ddddd', types: new Set(['valid-guess']) },
+  ]
+
+  it('filters by difficulty using nested tier inclusion', () => {
+    const casual = filterAndSortEntries(tiered, { searchTerm: '', showAnswers: true, showValidGuesses: true, difficulty: 'casual' }, { field: 'word', direction: 'asc' })
+    expect(casual.map((entry) => entry.word)).toEqual(['aaaaa'])
+
+    const standard = filterAndSortEntries(tiered, { searchTerm: '', showAnswers: true, showValidGuesses: true, difficulty: 'standard' }, { field: 'word', direction: 'asc' })
+    expect(standard.map((entry) => entry.word)).toEqual(['aaaaa', 'bbbbb'])
+
+    const expert = filterAndSortEntries(tiered, { searchTerm: '', showAnswers: true, showValidGuesses: true, difficulty: 'expert' }, { field: 'word', direction: 'asc' })
+    expect(expert.map((entry) => entry.word)).toEqual(['aaaaa', 'bbbbb', 'ccccc'])
+  })
+
+  it('sorts by difficulty with valid-guess-only words last', () => {
+    const result = filterAndSortEntries(tiered, { searchTerm: '', showAnswers: true, showValidGuesses: true, difficulty: 'all' }, { field: 'difficulty', direction: 'asc' })
+    expect(result.map((entry) => entry.word)).toEqual(['aaaaa', 'bbbbb', 'ccccc', 'ddddd'])
+  })
+})
+
+describe('difficultyBadgeLabel', () => {
+  it('reflects nested tier inclusion', () => {
+    expect(difficultyBadgeLabel('casual')).toBe('Casual · Standard · Expert')
+    expect(difficultyBadgeLabel('standard')).toBe('Standard · Expert')
+    expect(difficultyBadgeLabel('expert')).toBe('Expert only')
+    expect(difficultyBadgeLabel(undefined)).toBe('Valid guess only')
   })
 })
 

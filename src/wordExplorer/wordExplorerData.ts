@@ -3,12 +3,19 @@ import type { ServedManifest } from '../data/refreshStore.js'
 import type { WordEntry } from '../data/types.js'
 import { isSchemaValidationFailure, validateWordListFile } from '../data/wordListSchema.js'
 import { BUNDLED_WORD_LIST_LENGTHS } from '../data/wordLists.js'
+import { classifyAnswerTier, type DifficultyTier } from '../data/difficulty/index.js'
 
 export type WordEntryType = 'answer' | 'valid-guess'
 
 export interface WordExplorerEntry {
   readonly word: string
   readonly types: ReadonlySet<WordEntryType>
+  /**
+   * Minimal difficulty tier the word belongs to as an **answer** (`'casual'` ⊆
+   * `'standard'` ⊆ `'expert'`), or `undefined` when it is a valid-guess-only
+   * word. Computed from the in-repo difficulty model for the list length.
+   */
+  readonly difficulty?: DifficultyTier
 }
 
 export const WORD_EXPLORER_LENGTHS: readonly number[] = BUNDLED_WORD_LIST_LENGTHS
@@ -25,10 +32,10 @@ export function loadWordExplorerEntries(length: number): readonly WordExplorerEn
     return []
   }
 
-  return buildWordExplorerEntries(result.wordList)
+  return buildWordExplorerEntries(result.wordList, length)
 }
 
-function buildWordExplorerEntries(file: { readonly answers: readonly WordEntry[]; readonly validGuesses: Iterable<string> }): readonly WordExplorerEntry[] {
+function buildWordExplorerEntries(file: { readonly answers: readonly WordEntry[]; readonly validGuesses: Iterable<string> }, length: number): readonly WordExplorerEntry[] {
   const byWord = new Map<string, Set<WordEntryType>>()
   for (const answer of file.answers) {
     const key = answer.word
@@ -45,7 +52,11 @@ function buildWordExplorerEntries(file: { readonly answers: readonly WordEntry[]
 
   return [...byWord.entries()]
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-    .map(([word, types]) => ({ word, types }))
+    .map(([word, types]) => ({
+      word,
+      types,
+      difficulty: types.has('answer') ? classifyAnswerTier(length, word) : undefined,
+    }))
 }
 
 interface ManifestResponse {
@@ -106,7 +117,7 @@ export async function loadWordExplorerEntriesFromLive(
       return bundledResult(length, 'Live word list did not validate; showing bundled data.')
     }
 
-    return { entries: buildWordExplorerEntries(validation.value), source: 'live' }
+    return { entries: buildWordExplorerEntries(validation.value, length), source: 'live' }
   } catch {
     return bundledResult(length, 'Live word list fetch failed; showing bundled data.')
   }
@@ -116,9 +127,10 @@ export interface WordExplorerFilter {
   readonly searchTerm: string
   readonly showAnswers: boolean
   readonly showValidGuesses: boolean
+  readonly difficulty?: DifficultyTier | 'all'
 }
 
-export type SortField = 'word' | 'type'
+export type SortField = 'word' | 'type' | 'difficulty'
 export type SortDirection = 'asc' | 'desc'
 
 export interface WordExplorerSort {
@@ -134,6 +146,20 @@ function matchesTypeFilter(entry: WordExplorerEntry, filter: WordExplorerFilter)
     return true
   }
   return false
+}
+
+function matchesDifficultyFilter(entry: WordExplorerEntry, filter: WordExplorerFilter): boolean {
+  const difficulty = filter.difficulty ?? 'all'
+  if (difficulty === 'all') {
+    return true
+  }
+  // A word belongs to a tier if its minimal tier is at or below the requested
+  // tier (Casual ⊆ Standard ⊆ Expert). Valid-guess-only words have no tier.
+  if (!entry.difficulty) {
+    return false
+  }
+  const rank: Record<DifficultyTier, number> = { casual: 0, standard: 1, expert: 2 }
+  return rank[entry.difficulty] <= rank[difficulty]
 }
 
 function matchesSearchTerm(entry: WordExplorerEntry, searchTerm: string): boolean {
@@ -155,10 +181,41 @@ export function typeBadgeLabel(types: ReadonlySet<WordEntryType>): string {
   return labels.join(' & ')
 }
 
+const DIFFICULTY_RANK: Record<DifficultyTier, number> = { casual: 0, standard: 1, expert: 2 }
+
+/**
+ * Human-readable difficulty label for a Word Explorer row. Because tiers are
+ * nested, a Casual answer is also available at Standard and Expert; this is
+ * reflected in the label so players understand the inclusion.
+ */
+export function difficultyBadgeLabel(difficulty: DifficultyTier | undefined): string {
+  switch (difficulty) {
+    case 'casual':
+      return 'Casual · Standard · Expert'
+    case 'standard':
+      return 'Standard · Expert'
+    case 'expert':
+      return 'Expert only'
+    default:
+      return 'Valid guess only'
+  }
+}
+
 function compareEntries(a: WordExplorerEntry, b: WordExplorerEntry, sort: WordExplorerSort): number {
   if (sort.field === 'word') {
     const ordering = a.word < b.word ? -1 : a.word > b.word ? 1 : 0
     return sort.direction === 'asc' ? ordering : -ordering
+  }
+
+  if (sort.field === 'difficulty') {
+    // Valid-guess-only words (no tier) sort after all tiered answers.
+    const rankA = a.difficulty ? DIFFICULTY_RANK[a.difficulty] : 3
+    const rankB = b.difficulty ? DIFFICULTY_RANK[b.difficulty] : 3
+    const ordering = rankA - rankB
+    if (ordering !== 0) {
+      return sort.direction === 'asc' ? ordering : -ordering
+    }
+    return a.word < b.word ? -1 : a.word > b.word ? 1 : 0
   }
 
   const labelA = typeBadgeLabel(a.types)
@@ -177,7 +234,10 @@ export function filterAndSortEntries(
   filter: WordExplorerFilter,
   sort: WordExplorerSort,
 ): readonly WordExplorerEntry[] {
-  const filtered = entries.filter((entry) => matchesTypeFilter(entry, filter) && matchesSearchTerm(entry, filter.searchTerm))
+  const filtered = entries.filter((entry) =>
+    matchesTypeFilter(entry, filter)
+    && matchesDifficultyFilter(entry, filter)
+    && matchesSearchTerm(entry, filter.searchTerm))
   return [...filtered].sort((a, b) => compareEntries(a, b, sort))
 }
 

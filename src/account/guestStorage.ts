@@ -1,7 +1,7 @@
 import { calculateCoinAward, calculateXpAward, getLevelForXp } from '../progression'
 import { updateStatistics } from '../stats/statistics'
 import type { CompletedGameStatsInput } from '../stats/types'
-import { createDefaultGuestProgress, GUEST_PROGRESS_SCHEMA_VERSION, type GameHistoryEntry, type GuestProgressState } from './storageSchema'
+import { createDefaultGuestProgress, GUEST_PROGRESS_SCHEMA_VERSION, normalizeGuestSettings, type GameHistoryEntry, type GuestProgressState } from './storageSchema'
 
 export interface KeyValueStorage {
   readonly getItem: (key: string) => string | null
@@ -25,7 +25,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 export function isGuestProgressState(value: unknown): value is GuestProgressState {
   return isRecord(value)
-    && value.schemaVersion === GUEST_PROGRESS_SCHEMA_VERSION
+    && (value.schemaVersion === GUEST_PROGRESS_SCHEMA_VERSION || value.schemaVersion === 1)
     && isRecord(value.progression)
     && typeof value.progression.xp === 'number'
     && typeof value.progression.level === 'number'
@@ -36,6 +36,26 @@ export function isGuestProgressState(value: unknown): value is GuestProgressStat
     && Array.isArray(value.completedGameIds)
 }
 
+/**
+ * Phase 18.3 — upgrade a structurally-valid persisted payload (schema v1 or v2)
+ * to the current schema, preserving all existing data. The only field added in
+ * v2 is `settings.difficultyDefault`, which is filled with its Expert default
+ * for legacy v1 payloads via `normalizeGuestSettings`. Returns `undefined` when
+ * the payload is not a recognizable guest-progress object so callers can fall
+ * back to a fresh default (no partial/corrupt state is ever surfaced).
+ */
+export function migrateGuestProgress(value: unknown): GuestProgressState | undefined {
+  if (!isGuestProgressState(value)) {
+    return undefined
+  }
+
+  return {
+    ...value,
+    schemaVersion: GUEST_PROGRESS_SCHEMA_VERSION,
+    settings: normalizeGuestSettings(value.settings),
+  }
+}
+
 export function loadGuestProgress(storage: KeyValueStorage | undefined = getBrowserStorage()): GuestProgressState {
   const rawValue = storage?.getItem(GUEST_PROGRESS_STORAGE_KEY)
   if (!rawValue) {
@@ -44,7 +64,7 @@ export function loadGuestProgress(storage: KeyValueStorage | undefined = getBrow
 
   try {
     const parsed: unknown = JSON.parse(rawValue)
-    return isGuestProgressState(parsed) ? parsed : createDefaultGuestProgress()
+    return migrateGuestProgress(parsed) ?? createDefaultGuestProgress()
   } catch {
     return createDefaultGuestProgress()
   }

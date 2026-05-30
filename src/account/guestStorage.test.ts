@@ -22,13 +22,32 @@ describe('guest storage', () => {
     saveGuestProgress({ ...progress, progression: { ...progress.progression, coins: 12 } }, storage)
 
     expect(loadGuestProgress(storage).progression.coins).toBe(12)
-    expect(JSON.parse(exportGuestProgress(loadGuestProgress(storage))).schemaVersion).toBe(1)
+    expect(JSON.parse(exportGuestProgress(loadGuestProgress(storage))).schemaVersion).toBe(2)
     expect(resetGuestProgress(storage).progression.coins).toBe(0)
   })
 
   it('falls back to defaults for corrupted or incompatible data', () => {
-    expect(loadGuestProgress(createMemoryStorage('{broken')).schemaVersion).toBe(1)
+    expect(loadGuestProgress(createMemoryStorage('{broken')).schemaVersion).toBe(2)
     expect(loadGuestProgress(createMemoryStorage(JSON.stringify({ schemaVersion: 99 }))).progression.level).toBe(1)
+  })
+
+  it('migrates legacy v1 payloads without losing progress and fills the difficulty default', () => {
+    const legacy = createDefaultGuestProgress()
+    const legacyPayload = JSON.stringify({
+      ...legacy,
+      schemaVersion: 1,
+      progression: { ...legacy.progression, coins: 42, xp: 120, level: 3 },
+      settings: { hardModeDefault: true, reducedMotion: true },
+    })
+    const migrated = loadGuestProgress(createMemoryStorage(legacyPayload))
+
+    expect(migrated.schemaVersion).toBe(2)
+    expect(migrated.progression.coins).toBe(42)
+    expect(migrated.progression.xp).toBe(120)
+    expect(migrated.progression.level).toBe(3)
+    expect(migrated.settings.hardModeDefault).toBe(true)
+    expect(migrated.settings.reducedMotion).toBe(true)
+    expect(migrated.settings.difficultyDefault).toBe('expert')
   })
 
   it('records completed games once for history, stats, XP, and coins', () => {

@@ -1,5 +1,6 @@
 import { DAILY_WORD_LENGTH } from '../game/constants.js'
 import type { GameMode, PlayScope } from '../game/types.js'
+import { DEFAULT_DIFFICULTY_TIER, getAnswerSubset, type DifficultyTier } from './difficulty/index.js'
 import type { LoadWordListFailure } from './loadWordList.js'
 import { isLoadWordListFailure, loadBundledWordList } from './loadWordList.js'
 import type { NormalizedWordList, WordDefinitionEntry, WordEntry } from './types.js'
@@ -30,6 +31,12 @@ export interface WordRepositoryRequest {
   readonly mode: GameMode
   readonly scope: PlayScope
   readonly length: number
+  /**
+   * Phase 18.2 — answer difficulty tier. Additive and optional; defaults to
+   * Expert so every existing caller reproduces today's full-curated behaviour.
+   * Tiers subset the `answers` pool only; `validGuesses` is always the full list.
+   */
+  readonly difficulty?: DifficultyTier
 }
 
 export function getRequestedWordLength(scope: PlayScope, length: number): number {
@@ -37,15 +44,19 @@ export function getRequestedWordLength(scope: PlayScope, length: number): number
 }
 
 export function getWordRepository(request: WordRepositoryRequest): WordRepositoryResult {
-  const wordList = loadBundledWordList(request.scope, getRequestedWordLength(request.scope, request.length))
+  const requestedLength = getRequestedWordLength(request.scope, request.length)
+  const wordList = loadBundledWordList(request.scope, requestedLength)
   if (isLoadWordListFailure(wordList)) {
     return wordList
   }
 
+  const tier = request.difficulty ?? DEFAULT_DIFFICULTY_TIER
+  const answers = getAnswerSubset(wordList.wordList.answers, requestedLength, tier)
+
   return {
     ok: true,
     wordList: wordList.wordList,
-    answers: wordList.wordList.answers,
+    answers,
     validGuesses: wordList.wordList.validGuesses,
   }
 }

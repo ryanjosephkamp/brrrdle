@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { BUNDLED_WORD_LIST_LENGTHS } from '../../data'
+import { BUNDLED_WORD_LIST_LENGTHS, DEFAULT_DIFFICULTY_TIER, type DifficultyTier } from '../../data'
 import type { CompletedGameInput } from '../../account'
 import { DefinitionPanel } from '../../definitions'
 import {
@@ -26,11 +26,14 @@ import { calculatePayToContinueCost } from '../../progression'
 import { useSound } from '../../sound'
 import { Button, Keyboard, Panel, ShareButton } from '../../ui'
 import { classNames } from '../../ui/classNames'
+import { CustomizeMenu } from './CustomizeMenu'
 
 interface OgGameProps {
   readonly coins: number
+  readonly defaultDifficulty?: DifficultyTier
   readonly keyboardDisabled?: boolean
   readonly onGameComplete?: (input: CompletedGameInput) => void
+  readonly onSaveDifficultyDefault?: (tier: DifficultyTier) => void
   readonly onSpendCoins: (amount: number) => boolean
   readonly scope: 'daily' | 'practice'
 }
@@ -119,10 +122,14 @@ function getCompletionPercentage(session: PuzzleSessionState): number {
 
 function OgGameSession({
   coins,
+  defaultDifficulty,
+  difficulty,
   keyboardDisabled,
+  onDifficultyChange,
   onGameComplete,
   onPracticeLengthChange,
   onPracticeSeedChange,
+  onSaveDifficultyDefault,
   onSpendCoins,
   practiceLength,
   practiceLengths,
@@ -131,10 +138,14 @@ function OgGameSession({
   setup,
 }: {
   readonly coins: number
+  readonly defaultDifficulty: DifficultyTier
+  readonly difficulty: DifficultyTier
   readonly keyboardDisabled: boolean
+  readonly onDifficultyChange: (tier: DifficultyTier) => void
   readonly onGameComplete?: (input: CompletedGameInput) => void
   readonly onPracticeLengthChange: (length: number) => void
   readonly onPracticeSeedChange: () => void
+  readonly onSaveDifficultyDefault?: (tier: DifficultyTier) => void
   readonly onSpendCoins: (amount: number) => boolean
   readonly practiceLength: number
   readonly practiceLengths: readonly number[]
@@ -280,6 +291,16 @@ function OgGameSession({
           </div>
         ) : null}
 
+        {onSaveDifficultyDefault ? (
+          <CustomizeMenu
+            defaultDifficulty={defaultDifficulty}
+            difficulty={difficulty}
+            locked={session.guesses.length > 0}
+            onDifficultyChange={onDifficultyChange}
+            onSaveDefault={() => onSaveDifficultyDefault(difficulty)}
+          />
+        ) : null}
+
         <label className="flex items-center gap-3 text-sm font-semibold text-cyan-100">
           <input
             checked={session.hardMode}
@@ -339,24 +360,29 @@ function OgGameSession({
   )
 }
 
-export function OgGame({ coins, keyboardDisabled = false, onGameComplete, onSpendCoins, scope }: OgGameProps) {
+export function OgGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, keyboardDisabled = false, onGameComplete, onSaveDifficultyDefault, onSpendCoins, scope }: OgGameProps) {
   const practiceLengths = useMemo(() => getAvailableOgPracticeLengths(), [])
   const [practiceLength, setPracticeLength] = useState(5)
   const [practiceSeed, setPracticeSeed] = useState(0)
+  const [difficulty, setDifficulty] = useState<DifficultyTier>(defaultDifficulty)
   const setup = useMemo(
-    () => scope === 'daily' ? createDailyOgSetup() : createPracticeOgSetup(practiceLength, practiceSeed),
-    [practiceLength, practiceSeed, scope],
+    () => scope === 'daily' ? createDailyOgSetup(new Date(), difficulty) : createPracticeOgSetup(practiceLength, practiceSeed, difficulty),
+    [difficulty, practiceLength, practiceSeed, scope],
   )
-  const sessionKey = scope === 'daily' ? `${scope}-${setup.dateKey}` : `${scope}-${practiceLength}-${practiceSeed}`
+  const sessionKey = scope === 'daily' ? `${scope}-${difficulty}-${setup.dateKey}` : `${scope}-${difficulty}-${practiceLength}-${practiceSeed}`
 
   return (
     <OgGameSession
       key={sessionKey}
       coins={coins}
+      defaultDifficulty={defaultDifficulty}
+      difficulty={difficulty}
       keyboardDisabled={keyboardDisabled}
+      onDifficultyChange={setDifficulty}
       onGameComplete={onGameComplete}
       onPracticeLengthChange={setPracticeLength}
       onPracticeSeedChange={() => setPracticeSeed((seed) => seed + 1)}
+      onSaveDifficultyDefault={onSaveDifficultyDefault}
       onSpendCoins={onSpendCoins}
       practiceLength={practiceLength}
       practiceLengths={practiceLengths}

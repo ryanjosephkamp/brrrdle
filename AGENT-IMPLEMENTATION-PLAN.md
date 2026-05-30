@@ -1,9 +1,9 @@
 # AGENT-IMPLEMENTATION-PLAN.md
 
 **Project**: brrrdle  
-**Plan Version**: 1.7
-**Date**: 2026-05-28
-**Status**: Draft for user review — amended with Hugging Face word-list source integration; further amended on 2026-05-27 with the `ADDITIONS-2026-05-27.md` addendum (see §18); further amended on 2026-05-27 with the `DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27.md` addendum (see §19); further amended on 2026-05-27 with the `AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27.md` addendum (see §20); further amended on 2026-05-28 with the Mobile & Tablet Responsiveness phase (see §21); further amended on 2026-05-28 with the Local Word Lists addendum (`LOCAL-WORD-LISTS-SPEC-2026-05-28.md`) as Phase 17 (see §22).
+**Plan Version**: 2.0
+**Date**: 2026-05-30
+**Status**: Draft for user review — amended with Hugging Face word-list source integration; further amended on 2026-05-27 with the `ADDITIONS-2026-05-27.md` addendum (see §18); further amended on 2026-05-27 with the `DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27.md` addendum (see §19); further amended on 2026-05-27 with the `AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27.md` addendum (see §20); further amended on 2026-05-28 with the Mobile & Tablet Responsiveness phase (see §21); further amended on 2026-05-28 with the Local Word Lists addendum (`LOCAL-WORD-LISTS-SPEC-2026-05-28.md`) as Phase 17 (see §22); further amended on 2026-05-28 with the Word List Difficulty Tiers + Word Explorer / Go / Settings improvements addendum (`PHASE-18-WORD-DIFFICULTY-AND-GO-IMPROVEMENTS-SPEC-2026-05-28.md`) as Phase 18 (see §23), whose §23.2 (Phase 18.0) performs an approved model-agnostic governance/repo cleanup and a root `README.md` upgrade in the planning stage; further amended on 2026-05-30 (v1.9) to integrate the user's definitive answers to the five §23.11 open questions (now recorded as resolved decisions) and to record the Phase 18.0 `README.md` upgrade; further amended on 2026-05-30 (v2.0) to record that Phase 18 **Prompt 2** has applied the approved constitution phase-range amendment (`CONSTITUTION.md` §1/§4/§5/§5.2/§17, v3.1 → v3.2) and the associated repo/doc adjustments, ahead of Prompt 3 (full Phase 18 feature execution).
 **Authority**: Must follow `CONSTITUTION.md`, `BRRRDLE-SPEC.md`, and the approved v2.6 plan in `BRRRDLE-OVERVIEW.md`.
 
 ---
@@ -2200,6 +2200,153 @@ Required to pass before declaring Phase 17 complete:
 - All §22.6 invariants verified intact.
 - All §22.5 verification items green.
 - `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-*.md`, and `CHANGELOG.md` updated and free of sensitive data.
+- Halt for explicit user approval before any production release action.
+
+---
+
+## 23. Phase 18 — Word List Difficulty Tiers + Word Explorer / Go / Settings Improvements (Addendum, PHASE-18-WORD-DIFFICULTY-AND-GO-IMPROVEMENTS-SPEC-2026-05-28)
+
+**Plan Version**: 1.8 (addendum). Bound by `CONSTITUTION.md` v3.1, `BRRRDLE-SPEC.md`, `BRRRDLE-OVERVIEW.md`, the prior plan (Phases 0–17), and `PHASE-18-WORD-DIFFICULTY-AND-GO-IMPROVEMENTS-SPEC-2026-05-28.md` (the source of truth for this phase). Triggered by the user's Phase 18 spec requesting selectable answer-difficulty tiers, Word Explorer / Go-mode / Settings polish, and a critical daily Og↔Go overlap fix.
+
+> Status: **No game code changes yet.** This addendum exists for user review. The only changes made during the drafting of this addendum are the §23.2 (Phase 18.0) governance/repo cleanup items that the user explicitly authorized for the planning stage (model-agnostic edits + a root `README.md` upgrade + documentation). All gameplay/feature implementation (18.1 onward) is gated on explicit user approval (see §23.13). On 2026-05-30 (plan v1.9), the user provided definitive answers to all five §23.11 open questions; those answers are now integrated below as resolved decisions, and the §23.11 section records them.
+
+### 23.1 Scope, Source of Truth, and Operating Rules
+
+- **Source of truth for this phase**: `PHASE-18-WORD-DIFFICULTY-AND-GO-IMPROVEMENTS-SPEC-2026-05-28.md` and this Section 23. If the spec and prior phases conflict, the spec wins for the narrow concerns it covers (answer-difficulty tiers, the Customize quick menu, Settings reorganization, Word Explorer difficulty column + per-row Define, Go-mode per-puzzle definitions and practice-only reveal, and the daily Og↔Go overlap fix). All other invariants from Phases 0–17 are preserved.
+- **Constitutional fit / scope check**: `CONSTITUTION.md` §3.3 lists "Themes or sound effects" and "Additional game modes" as out of scope without approval, but sound effects and the Word Explorer/Feedback tabs were already explicitly approved and shipped via the `ADDITIONS-2026-05-27.md` addendum (Phase 13). Phase 18 adds **no new game mode** and **no new monetization mechanic** — answer-difficulty tiers refine the existing answer-selection within the already-approved data layer, and the practice-only "Give Up / Reveal Answer" reuses the existing coin/streak economy. This addendum treats the user's Phase 18 spec as the explicit approval required by §3.3/§2 for these specific additions, and records that interpretation here for auditability. **Resolved (user answer #4, 2026-05-30): the user confirmed the Phase 18 spec serves as the §3.3/§2 scope approval for the difficulty tiers and the practice-only reveal.**
+- **Non-negotiable preserved invariants** (carried unchanged from Phases 0–17):
+  - Daily `og`/`go` locked at 5 letters; practice 2–35. Difficulty tiers do **not** introduce variable daily lengths.
+  - `getTileStates`/`getGuessResult` remains the single source of truth for coloring (CONSTITUTION §7.1). Difficulty tiers touch **answer selection only**, never tile logic or Hard Mode.
+  - **Valid Guesses are identical across all three tiers** (spec §1): tiers subset the **answers** pool only; `validGuesses` is always the full per-length list. This is the central correctness rule for the whole phase.
+  - Admin tab + `/api/admin-refresh` server contract intact; local-source loader from Phase 17 remains the gameplay default.
+  - Public sync-API data-layer signatures from Phase 17 remain backward-compatible; any new parameter (e.g., a `difficulty` selector) is **additive with a default that reproduces today's behavior** (default tier = **Expert** = current full curated list, per spec §1).
+  - No file deletion. No removal/skip/weakening of existing tests. No service-role on client. No `@vercel/blob` in client bundle. No new runtime dependency unless justified by approved scope and cleared against advisories (CONSTITUTION §14).
+- **Operating rules**: strictly minimal, cohesive, reviewable changes; re-read the relevant plan section before each sub-phase; halt at each sub-phase gate per CONSTITUTION §4 unless the user authorizes contiguous execution; update `progress/PROGRESS.csv`, the relevant `progress/PROGRESS-STEP-N.md`, and `CHANGELOG.md` at every sub-phase; run `npm run lint`, `npm run test`, `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, and the client-bundle leak checks before declaring any sub-phase complete; run CodeQL on changed lines.
+
+### 23.2 Phase 18.0 — Governance & Repository Cleanup (Model-Agnostic) — performed in the planning stage
+
+This sub-step is the only part of Phase 18 executed during plan drafting, per the user's explicit instruction to perform the allowed constitution/repo cleanup now while deferring all game code changes.
+
+**What was reviewed and changed now (planning stage):**
+
+1. **`BRRRDLE-OVERVIEW.md` made model-agnostic.** The three GPT-5.5 references were rewritten so the plan no longer assumes a specific model:
+   - Title: "Autonomous GPT-5.5 Copilot Agent Build" → "Autonomous Copilot Agent Build".
+   - Core Approach line: "GitHub Copilot agent (GPT-5.5) sessions" → "a GitHub Copilot coding agent (model-agnostic — any sufficiently capable model, e.g. Claude Opus 4.8)".
+   - Goal line: "the autonomous GPT-5.5 Copilot workflow" → "the autonomous Copilot agent workflow (model-agnostic)".
+   - A repo-wide grep (`GPT-5`, `GPT 5`, `gpt-5`, `GPT5`) afterward returns **zero** matches across `*.md`, `*.ts`, `*.tsx`, `*.json`, `*.html`. No rules, scope, or success criteria were removed — only the model attribution changed.
+2. **`CONSTITUTION.md` reviewed in the planning stage; the approved phase-range amendment is applied in Prompt 2 (not in the planning stage).** The constitution names **no** model anywhere, so no model-agnostic edit is required — it is already model-neutral and suitable for Claude Opus 4.8 or any capable model. Two staleness observations were recorded for the user during planning (the agent does **not** self-edit the binding constitution outside an explicitly approved amendment, per CONSTITUTION §17):
+   - §1/§5/§5.2 said the plan "defines Phases 0 through 11," which predates the approved Phase 12–18 addenda. **Resolved (user answer #3) and APPLIED in Prompt 2 (2026-05-30):** generalized to "Phases 0–11 plus all subsequently approved addenda (Phases 12+)" in `CONSTITUTION.md` §1, §5, and §5.2 (with a new §5.2 addenda note), plus a §4 review-gate clarification, a §17 amendment record, and a version bump v3.1 → **v3.2**. No rule was removed or weakened.
+   - §4 / §5.2's enumerated phase list could optionally cite the addendum sections (§§16–23). Applied in Prompt 2 as a §5.2 note pointing at the plan's addendum sections; the §4 gate was also clarified to cover "any constitution upgrade or amendment" and "every later phase … (including all subsequently approved addenda, Phases 12+)."
+3. **Light repository organization — evaluated, conservative action taken.** The repository root holds many dated governance/spec/report files (`ADDITIONS-2026-05-27.md`, `AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27.md`, `LOCAL-WORD-LISTS-SPEC-2026-05-28.md`, `DIAGNOSIS-REPORT-*.md`, `VERCEL-*-LOGS-*.md`, `PHASE-18-…-SPEC-2026-05-28.md`). A cross-reference scan shows **nearly all are referenced by bare filename** from `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, multiple `progress/PROGRESS-STEP-N.md`, and even a source test (`src/wordExplorer/wordExplorerData.test.ts` references `ADDITIONS-2026-05-27.md`). Physically moving them now would silently break those governance references. **Resolved (user answer #5):** the user elected to **keep the current root layout for now** and defer any reorganization to a later optional cleanup phase. Per that decision and the "do not delete or edit game scripts" / minimal-change mandate, **no files were moved.**
+4. **Root `README.md` upgraded (planning stage).** Per the user's explicit Phase 18.0 instruction, the root `README.md` was rewritten into a professional, comprehensive, visually appealing project README. It adds: a project tagline + badge row, a features overview (modes, difficulty tiers preview, progression/economy, accounts/sync, definitions, sharing, PWA, Word Explorer/Feedback/sound), a "Why brrrdle" section, a quick-start, a full tech-stack table, available-scripts table, environment-variable guidance (public-only, no secrets), Supabase/admin setup, deployment targets, an updated repository-structure tree (now including `src/latest/`), a governance/authoritative-sources section, a contributing guide reflecting the phase-gated workflow, and accessibility/security notes. **No facts were invented:** scripts, env vars, structure, and behavior were taken from `package.json`, `.env.example`, the on-disk tree, and existing docs. This is a documentation-only change.
+5. **`BRRRDLE-SPEC.md` reviewed; left unchanged.** It names no model and required no model-agnostic edit.
+
+**Documentation of the cleanup** lives in `CHANGELOG.md` (Unreleased → Phase 18.0 entry) and `progress/PROGRESS-STEP-35.md`, with a `progress/PROGRESS.csv` row at `phase_id = 35`.
+
+**Verification for 18.0**: documentation-only changes (no source, no tooling). `git diff --check` clean; repo-wide GPT-5 grep returns zero matches. Lint/build/test are not required for Markdown-only governance/README edits per the plan's operating rules, and were therefore not run for 18.0.
+
+### 23.3 Diagnosis of the Daily Og↔Go Overlap Bug (spec §5)
+
+Confirmed against HEAD:
+
+- `src/game/go/session.ts` builds the **daily** go answer sequence with `selectAnswerSequence(repository.answers, getDailyAnswerIndex(dateKey, repository.answers.length))` (lines ~87–88), where `repository` is `getWordRepository({ mode: 'go', scope: 'daily', length: 5 })`.
+- `src/data/daily.ts` `getDailyOgPuzzle` picks the daily **og** answer with the *same* `getDailyAnswerIndex(dateKey, answers.length)` against `getWordRepository({ mode: 'og', scope: 'daily', length: 5 })`.
+- Because og and go daily both resolve to the identical length-5 curated `answers` array and the identical seed index for a given `dateKey`, **the first go puzzle is consistently the same word as the daily og answer.** This is the exact symptom the spec calls out.
+
+**Root cause**: a single shared seed function (`getDailyAnswerIndex`) with no mode-specific offset/salt. The fix must give daily go an **independent** deterministic seed while keeping both deterministic per `dateKey` (so the daily puzzle is stable for all players on a date) and keeping daily go's five words mutually distinct (existing behavior).
+
+### 23.4 Proposed Solution — Difficulty Tiers (spec §1)
+
+Central rule: **tiers subset answers only; valid guesses are always the full list.**
+
+- **Tier model**: introduce a `DifficultyTier = 'casual' | 'standard' | 'expert'` type in the game/data layer with `DEFAULT_DIFFICULTY_TIER = 'expert'` (spec default reproduces today's behavior). Expert = the full curated `answers` already shipped per length in `src/latest/words_length_N.json`.
+- **Answer-subset derivation** (the key design decision — needs a data source for Casual/Standard):
+  - **Expert**: the existing curated `answers` array verbatim. No new data.
+  - **Standard**: union (or larger) of the classic official Wordle answer list and the classic Hurdle answer set. These exist **only at length 5**. **Resolved (user answers #1 + #2):**
+    - **Length 5**: ship a small curated `standard-5` answer list as a static JSON asset under `src/data/difficulty/`, built as the **union (or a larger superset) of the classic Wordle + Hurdle answer sets**, intersected with the shipped Expert length-5 `answers` so `Standard ⊆ Expert` holds.
+    - **Lengths ≠ 5**: define **Standard as "Expert minus the rarest stratum"** — i.e., drop the lowest-quality/rarest tail of Expert using the same deterministic in-repo heuristic that powers Casual (see below), with a less aggressive cutoff than Casual. This guarantees `Casual ⊆ Standard ⊆ Expert` at every length 2–35 and is unit-tested as a hard invariant.
+  - **Casual**: "common/frequent words only, dynamically scaled per length" (spec §1). The current per-length JSONs carry **no per-word frequency score** at runtime (only a `metadata.curation` description of the offline `stratified_quality_score_v1` method). **Resolved (user answer #1):** compute the Casual (and non-5 Standard) tiers **in-repo via a deterministic heuristic** from the existing local JSON files — **no external data-pipeline dependency**. The heuristic reproducibly scores each Expert word per length (e.g., letter-frequency / positional-frequency / vowel-balance, mirroring the spirit of the offline `stratified_quality_score_v1`) and selects a stable top fraction per length as Casual, and a larger stable top fraction as non-5 Standard. The scoring must be pure/deterministic (no randomness, no clock, no network) so the same inputs always yield the same tiers, and the loader stays **ready to consume explicit per-word tier/score tags** if a future data regeneration ships them (forward-compatible, but not required now).
+  - **Performance**: subsetting happens at answer-selection time from already-loaded per-length data; no extra network and no daily-mode slowdown. Casual/Standard subset computation must be memoized per (length, tier).
+- **Selection wiring**:
+  - Add an **additive, defaulted** `difficulty?: DifficultyTier` to the answer-selection path (`WordRepositoryRequest` and the daily/practice selectors), defaulting to Expert so all existing callers and tests are unchanged.
+  - `getAnswerCandidates` / daily+practice selectors filter the Expert `answers` down to the requested tier's subset. `validateGuess`/`getValidGuesses` are **untouched** (full list always).
+- **Persistence** (spec §1, §6): the **global default tier** is a new user setting saved to the guest profile (`GuestSettingsState`) and, when signed in, to the Supabase profile alongside other preferences. A **per-game override** is selected via the Customize quick menu and is **locked once a game starts** (changing it requires a new game).
+
+### 23.5 Proposed Solution — UI: Customize Quick Menu + Settings (spec §1, §2)
+
+- **Customize quick menu** (creative-but-tasteful per spec/Agent Instructions): a small **"Customize"** button near the mode selector opens an accessible popover/quick menu exposing the three tiers (Casual/Standard/Expert) with short descriptions/tooltips and a **"Save as default"** button. Selecting a tier sets the per-game override; "Save as default" also persists it as the global default. Once a game is in progress the control is disabled/locked with a clear hint ("Start a new game to change difficulty"). Reuse existing `ui/Dialog`/`Panel`/`Button` primitives; honor focus-trap, ESC-to-close, reduced-motion, and WCAG-AA contrast (CONSTITUTION §12.2).
+- **Settings reorganization** (spec §2): move the existing **Hard Mode** control into the same section as the new **global difficulty** selector (Hard Mode currently lives per-game in `OgGame.tsx`/`GoGame.tsx` via `session.hardMode`, with `hardModeDefault` already stored in `GuestSettingsState`; the Settings section gains a global Hard-Mode-default toggle co-located with the difficulty selector — the per-game Hard Mode toggles remain). Add accessible **tooltips** (hover + click/focus) for the major settings in this section. Tooltips must be keyboard-reachable and screen-reader friendly.
+
+### 23.6 Proposed Solution — Word Explorer (spec §3)
+
+- Add a **"Difficulty"** column to `src/wordExplorer/WordExplorerPanel.tsx` / `wordExplorerData.ts` showing the applicable tier label per word: `"Casual"`, `"Standard + Expert"`, `"Expert only"`, computed from the same nested-subset logic in §23.4 (so a word in Casual is by definition also in Standard and Expert). The column is **filterable and sortable** consistent with the existing Word Explorer table affordances. Non-answer valid-guess-only rows render an explicit "—/Valid guess only" so the answer-vs-guess distinction stays clear.
+- Add a **"Define"** button per row that opens the existing post-game definition surface (`src/definitions/DefinitionPanel.tsx`) in a modal, including the always-available Google fallback (CONSTITUTION §9). Reuse the existing `definitionService` lookup order; no new definition source.
+
+### 23.7 Proposed Solution — Go Mode (spec §4)
+
+- **Per-puzzle definitions**: after each go puzzle is solved correctly, render its definition **below the grid**, stacking vertically as subsequent puzzles are solved. Reuse `DefinitionPanel`/`definitionService`; the existing end-of-chain `DefinitionPanel` in `GoGame.tsx` stays. Add a **"Hide Definitions" / "Show All"** toggle controlling the stacked list.
+- **Give Up / Reveal Answer (practice only)**: add a button rendered **only when `scope === 'practice'`** in `GoGame.tsx`. Revealing applies an appropriate coin/streak penalty using the **existing** economy helpers (no new monetization mechanic). It must integrate with stats as a loss-equivalent for that puzzle and must not appear in daily go. Daily go remains penalty-locked to preserve fairness. Edge cases: insufficient coins, reveal on the last puzzle, and reveal interacting with Pay-to-Continue must all be specified and tested.
+
+### 23.8 Proposed Solution — Daily Og↔Go Overlap Fix (spec §5)
+
+- Give daily go an **independent deterministic seed** so its first word is not tied to the daily og index. Approach: add a mode/scope **salt** to the daily index derivation (e.g., a dedicated `getDailyGoSeedIndex(dateKey, answerCount)` or a salted variant of `getDailyAnswerIndex` that incorporates a stable `'go'` discriminator), keeping determinism per `dateKey` and preserving the five-word mutual-distinctness already guaranteed by `selectAnswerSequence`. The fix must guarantee, via unit test across a range of `dateKey`s, that **daily go's first word differs from the daily og answer** for that date (allowing the rare legitimate coincidence only if mathematically unavoidable for a tiny answer pool — assert inequality for length-5 where the pool is large).
+- This is the spec's only item flagged **Critical** and should be sequenced early (its own sub-phase, 18.5) so it can ship independently of the larger tier/UI work if the user wants a fast fix.
+
+### 23.9 Proposed Solution — Preferences Persistence & Future-Proofing (spec §6)
+
+- Persist as many user settings as possible — **including the difficulty tier** — to the Supabase profile when signed in, reusing the existing profile/sync plumbing (`src/account/profile.ts`, `sync.ts`, `storageSchema.ts`). All additions to `GuestSettingsState` are **additive with safe defaults** and a guest-storage schema migration that preserves existing data (CONSTITUTION §15: "preserve existing user data and migration paths"). Bump `GUEST_PROGRESS_SCHEMA_VERSION` only if the shape changes, with a forward-compatible migration.
+- **Future-proof for "resume most recent unfinished game"**: do **not** implement resume in this phase, but ensure the new settings/serialization shapes leave room for it (e.g., reserve a clearly-named optional slot) without enabling it. No behavior change.
+
+### 23.10 Phase 18 — Sub-Phase Plan
+
+| Sub-phase | `phase_id` | Title | Files Touched (planned) | Verification |
+|-----------|-----------|-------|-------------------------|--------------|
+| 18.0 | 35 | Governance & repo cleanup (model-agnostic) + root README upgrade — **done in planning stage** | `BRRRDLE-OVERVIEW.md` (model-agnostic), `README.md` (professional upgrade), `AGENT-IMPLEMENTATION-PLAN.md` (this §23), `CHANGELOG.md`, `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-35.md` | Markdown-only; `git diff --check`; repo-wide GPT-5 grep = 0 matches |
+| 18.1 | 36 | Pre-flight & baseline capture (doc reorg **declined** by user answer #5; root layout retained) | read-only baseline | Re-confirm `npm run lint` / `npm run test` / `npm run build` / `npx tsc -p tsconfig.api.json --noEmit` green at HEAD |
+| 18.2 | 37 | Difficulty-tier data model & answer-subset logic (answers-only; valid guesses untouched) | **New**: `src/data/difficulty/` (tier types, subset derivation, optional `standard-5` asset, tests). **Edit (additive)**: answer-selection path in `wordRepository.ts`/`daily.ts`/`go/session.ts` with defaulted `difficulty` | Unit tests: `Casual ⊆ Standard ⊆ Expert` for all lengths 2–35; Expert == today's answers; `validGuesses` byte-identical across tiers; daily 5-lock and practice 2–35 unchanged |
+| 18.3 | 38 | Settings reorg + global difficulty selector + tooltips | **Edit**: `src/account/Settings.tsx`, `src/account/storageSchema.ts` (additive setting + migration) | Tests for migration/back-compat; a11y checks (focus, tooltips, contrast) |
+| 18.4 | 39 | Customize quick menu + per-game override (lock-on-start) + "Save as default" | **New** quick-menu component; **Edit**: mode selector area, `OgGame.tsx`/`GoGame.tsx` to consume override | Tests: override applied; locked once started; save-as-default persists; a11y/focus-trap |
+| 18.5 | 40 | **Critical** daily Og↔Go overlap fix | **Edit**: `src/data/daily.ts` and/or `src/game/go/session.ts` (salted daily-go seed) | Unit test across many `dateKey`s: daily-go first word ≠ daily-og answer at length 5; five go words remain distinct; determinism per date preserved |
+| 18.6 | 41 | Word Explorer difficulty column (filter/sort) + per-row Define modal | **Edit**: `src/wordExplorer/wordExplorerData.ts`, `WordExplorerPanel.tsx` | Tests: tier label correctness, filter/sort, Define modal opens with Google fallback |
+| 18.7 | 42 | Go-mode per-puzzle definitions stack + Hide/Show toggle + practice-only Reveal | **Edit**: `src/app/games/GoGame.tsx`, go session/state | Tests: definition shown on solve, toggle, reveal practice-only with penalty + stats, daily unaffected |
+| 18.8 | 43 | Supabase preference sync (incl. tier) + resume-game-ready shapes | **Edit**: `src/account/sync.ts`, `profile.ts`, `storageSchema.ts` | Tests: signed-in persistence, guest fallback, migration, no behavior change for resume slot |
+| 18.9 | 44 | Final integration, cross-feature verification & release gate | docs/changelog/progress only | Full §23.12 pipeline + CodeQL |
+
+Each sub-phase ends with a `progress/PROGRESS-STEP-N.md`, a `progress/PROGRESS.csv` row, a `CHANGELOG.md` entry, and a halt for explicit user approval per CONSTITUTION §4 unless the user authorizes contiguous execution.
+
+> **Phase-id note (3-prompt workflow).** Phase 18.0 (planning) is recorded at `phase_id = 35`. The Prompt 2 constitution/repo adjustments (this amendment) are recorded at `phase_id = 36` (`progress/PROGRESS-STEP-36.md`). The feature sub-phases 18.1–18.9 above keep their projected `phase_id` column for planning purposes; their final `phase_id` integers are assigned sequentially (37+) when each is executed in Prompt 3.
+
+### 23.11 Resolved User Answers (formerly Open Questions)
+
+On 2026-05-30 the user provided definitive answers to all five questions. They are now binding decisions for Phase 18 and are integrated above (§23.2, §23.4). No open questions remain blocking.
+
+1. **Casual/Standard data source** (§23.4): **Resolved → compute tiers in-repo via a deterministic heuristic from the existing local JSON files** (default approach; no external data-pipeline dependency). The loader stays forward-compatible with explicit per-word tier/score tags if a future data regeneration ships them.
+2. **Standard at non-5 lengths** (§23.4): **Resolved → define Standard as "Expert minus the rarest stratum"** for lengths ≠ 5 (drop the lowest-quality tail). For length 5, use the **union (or larger superset) of the classic Wordle + Hurdle answer sets**. `Casual ⊆ Standard ⊆ Expert` is preserved at every length and unit-tested.
+3. **Constitution amendment** (§23.2): **Resolved → approved and APPLIED in Prompt 2 (2026-05-30).** Generalized CONSTITUTION §1/§5/§5.2 "Phases 0 through 11" to "Phases 0–11 plus all subsequently approved addenda (Phases 12+)," with supporting §4/§5.2/§17 clarifications and a version bump v3.1 → v3.2. No rule was removed or weakened.
+4. **Scope approval** (§23.1): **Resolved → confirmed.** The Phase 18 spec serves as the explicit CONSTITUTION §3.3/§2 approval for the difficulty tiers and the practice-only reveal.
+5. **Optional doc reorg** (§23.2/18.1): **Resolved → keep the current root layout for now;** defer any reorganization to a later optional cleanup phase.
+
+### 23.12 Verification & Release Gate (Phase 18.9)
+
+1. `npm run lint` — clean.
+2. `npm run test` — all existing tests pass with zero new failures; new tests added per sub-phase, including the nesting invariant, the valid-guess-identity-across-tiers invariant, and the daily Og↔Go inequality invariant.
+3. `npm run build` — clean; record bundle-size delta; keep daily-mode (length 5) fast.
+4. `npx tsc -p tsconfig.api.json --noEmit` — clean.
+5. Client-bundle leak checks against `dist/`: no `@vercel/blob`; no service-role/Supabase admin secrets; no regression in HF-URL occurrence vs. Phase 17 baseline.
+6. Manual smokes: difficulty selection (default Expert reproduces current behavior), Customize lock-on-start, Settings tooltips/a11y, Word Explorer difficulty filter/sort + Define modal, Go per-puzzle definitions + practice-only reveal penalty, daily Og↔Go non-overlap, signed-in preference sync + guest migration.
+7. CodeQL on changed lines; fix any true-positive before the gate closes.
+
+### 23.13 Phase 18 Exit Checklist
+
+- Difficulty tiers subset **answers only**, valid guesses identical across tiers, default tier Expert reproduces current behavior; `Casual ⊆ Standard ⊆ Expert` for all lengths.
+- Settings reorganized with co-located Hard Mode + difficulty and accessible tooltips; Customize quick menu with lock-on-start and Save-as-default.
+- Word Explorer difficulty column (filter/sort) and per-row Define modal in place.
+- Go per-puzzle definitions stack + Hide/Show toggle; practice-only Reveal with correct penalty/stats; daily unaffected.
+- Daily Og↔Go overlap fixed and unit-tested.
+- Preferences (incl. tier) persist to guest storage and Supabase when signed in, with a data-preserving migration; resume-ready shapes reserved but not enabled.
+- Daily 5-letter lock and practice 2–35 preserved; all §23.1 invariants intact.
+- `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-*.md`, and `CHANGELOG.md` updated and free of sensitive data.
+- All §23.11 questions resolved by the user (2026-05-30); decisions integrated into §23.2/§23.4. Constitution amendment (answer #3) applied in prompt 2.
 - Halt for explicit user approval before any production release action.
 
 ---

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { DAILY_WORD_LENGTH, GO_PUZZLE_COUNT } from '../constants'
-import { continueGoAfterLoss, createDailyGoSetup, createGoSession, createPracticeGoSetup, deleteGoLetter, enterGoLetter, getAvailableGoPracticeLengths, restoreGoSession, serializeGoSession, setGoHardMode, submitGoGuess } from './session'
+import { continueGoAfterLoss, createDailyGoSetup, createGoSession, createPracticeGoSetup, deleteGoLetter, enterGoLetter, getAvailableGoPracticeLengths, restoreGoSession, revealGoPuzzle, serializeGoSession, setGoHardMode, submitGoGuess } from './session'
 
 function submitWord(state: ReturnType<typeof createGoSession>, word: string) {
   const filled = [...word].reduce((currentState, letter) => enterGoLetter(currentState, letter), state)
@@ -84,5 +84,38 @@ describe('go session model', () => {
     expect(restored.currentPuzzleIndex).toBe(1)
     expect(restored.hardMode).toBe(true)
     expect(restored.priorAnswers).toEqual([setup.puzzles[0].answer])
+  })
+
+  it('reveals the current puzzle as a loss-equivalent and flags the session', () => {
+    const setup = createPracticeGoSetup(5, 0)
+    const session = revealGoPuzzle(createGoSession(setup))
+
+    expect(session.status).toBe('lost')
+    expect(session.revealedAnswer).toBe(true)
+    expect(session.puzzles[session.currentPuzzleIndex].status).toBe('lost')
+    expect(session.currentPuzzleIndex).toBe(0)
+  })
+
+  it('reveals later puzzles after earlier ones are solved', () => {
+    const setup = createPracticeGoSetup(5, 0)
+    const solved = submitWord(createGoSession(setup), setup.puzzles[0].answer)
+    expect(solved.currentPuzzleIndex).toBe(1)
+
+    const revealed = revealGoPuzzle(solved)
+    expect(revealed.status).toBe('lost')
+    expect(revealed.revealedAnswer).toBe(true)
+    expect(revealed.puzzles[0].status).toBe('won')
+    expect(revealed.puzzles[1].status).toBe('lost')
+  })
+
+  it('does not reveal once the chain is already over', () => {
+    const setup = createPracticeGoSetup(5, 0)
+    let session = createGoSession(setup)
+    for (const puzzle of setup.puzzles) {
+      session = submitWord(session, puzzle.answer)
+    }
+    expect(session.status).toBe('won')
+
+    expect(revealGoPuzzle(session)).toBe(session)
   })
 })

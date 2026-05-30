@@ -1,4 +1,5 @@
 import { DAILY_WORD_LENGTH } from '../game/constants.js'
+import { DEFAULT_DIFFICULTY_TIER, type DifficultyTier } from './difficulty/index.js'
 import type { WordEntry } from './types.js'
 import { getWordRepository, isWordRepositoryFailure } from './wordRepository.js'
 
@@ -24,6 +25,43 @@ export function getDailyAnswerIndex(dateKey: string, answerCount: number): numbe
   return Math.trunc(day) % answerCount
 }
 
+/**
+ * Deterministic integer hash used to salt the daily go seed so the daily go
+ * chain is decoupled from the daily og answer (fixes the Phase 18 critical
+ * Og↔Go overlap). Pure function of the day number; no clock/network/randomness.
+ */
+function mixDailyGoSeed(day: number): number {
+  let hash = (day ^ 0x9e3779b9) >>> 0
+  hash = Math.imul(hash ^ (hash >>> 16), 0x45d9f3b) >>> 0
+  hash = Math.imul(hash ^ (hash >>> 16), 0x45d9f3b) >>> 0
+  return (hash ^ (hash >>> 16)) >>> 0
+}
+
+/**
+ * Independent deterministic seed index for the **daily go** chain. Salted with a
+ * stable `'go'` discriminator so that, for the same date and answer pool, the
+ * daily go chain's first word is guaranteed to differ from the daily og answer
+ * whenever there is more than one candidate (the only mathematically
+ * unavoidable collision is a single-answer pool). Determinism is preserved per
+ * `dateKey`, and the five-word mutual-distinctness still comes from
+ * `selectAnswerSequence`.
+ */
+export function getDailyGoSeedIndex(dateKey: string, answerCount: number): number {
+  if (answerCount < 1) {
+    throw new Error('At least one answer candidate is required for a daily puzzle.')
+  }
+
+  const ogIndex = getDailyAnswerIndex(dateKey, answerCount)
+  if (answerCount === 1) {
+    return ogIndex
+  }
+
+  const day = Math.trunc(Date.parse(`${dateKey}T00:00:00.000Z`) / MS_PER_DAY)
+  // Offset in [1, answerCount - 1] guarantees a different index than the og answer.
+  const offset = 1 + (mixDailyGoSeed(day) % (answerCount - 1))
+  return (ogIndex + offset) % answerCount
+}
+
 export function selectDailyAnswer(answers: readonly WordEntry[], date = new Date()): DailyPuzzle {
   const dateKey = getDailyDateKey(date)
   const index = getDailyAnswerIndex(dateKey, answers.length)
@@ -37,8 +75,8 @@ export function selectDailyAnswer(answers: readonly WordEntry[], date = new Date
   }
 }
 
-export function getDailyOgPuzzle(date = new Date()): DailyPuzzle {
-  const repository = getWordRepository({ mode: 'og', scope: 'daily', length: DAILY_WORD_LENGTH })
+export function getDailyOgPuzzle(date = new Date(), difficulty: DifficultyTier = DEFAULT_DIFFICULTY_TIER): DailyPuzzle {
+  const repository = getWordRepository({ mode: 'og', scope: 'daily', length: DAILY_WORD_LENGTH, difficulty })
   if (isWordRepositoryFailure(repository)) {
     throw new Error(repository.message)
   }
