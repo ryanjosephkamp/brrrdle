@@ -1,9 +1,9 @@
 # AGENT-IMPLEMENTATION-PLAN.md
 
 **Project**: brrrdle  
-**Plan Version**: 2.3
-**Date**: 2026-05-31
-**Status**: Draft for user review — amended with Hugging Face word-list source integration; further amended on 2026-05-27 with the `ADDITIONS-2026-05-27.md` addendum (see §18); further amended on 2026-05-27 with the `DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27.md` addendum (see §19); further amended on 2026-05-27 with the `AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27.md` addendum (see §20); further amended on 2026-05-28 with the Mobile & Tablet Responsiveness phase (see §21); further amended on 2026-05-28 with the Local Word Lists addendum (`LOCAL-WORD-LISTS-SPEC-2026-05-28.md`) as Phase 17 (see §22); further amended on 2026-05-28 with the Word List Difficulty Tiers + Word Explorer / Go / Settings improvements addendum (`PHASE-18-WORD-DIFFICULTY-AND-GO-IMPROVEMENTS-SPEC-2026-05-28.md`) as Phase 18 (see §23), whose §23.2 (Phase 18.0) performs an approved model-agnostic governance/repo cleanup and a root `README.md` upgrade in the planning stage; further amended on 2026-05-30 (v1.9) to integrate the user's definitive answers to the five §23.11 open questions (now recorded as resolved decisions) and to record the Phase 18.0 `README.md` upgrade; further amended on 2026-05-30 (v2.0) to record that Phase 18 **Prompt 2** has applied the approved constitution phase-range amendment (`CONSTITUTION.md` §1/§4/§5/§5.2/§17, v3.1 → v3.2) and the associated repo/doc adjustments, ahead of Prompt 3 (full Phase 18 feature execution); further amended on 2026-05-30 (v2.1) to append the Phase 19 addendum (`PHASE-19-ENHANCED-STATS-RESUME-CONFIGURABLE-GO-AND-POLISH-SPEC-2026-05-30.md`) as §24 (Phase 19 — Enhanced Statistics Visualizations, Configurable Go Puzzle Count, Full Resume-Most-Recent-Game Activation, Advanced Polish & Theming Foundations), whose §24.2 (Phase 19.0) performs the approved planning-stage governance/repo cleanup and a root `README.md` polish while deferring all game code changes (sub-phases 19.1–19.6) to explicit user approval ("Start Prompt 2" or equivalent); further amended on 2026-05-30 (v2.2) to record that Phase 19 **Prompt 2** has confirmed the planning-stage progress-step numbering decision (`phase_id = 46` / `progress/PROGRESS-STEP-46.md`, approved by the user) and applied the associated small clarity/governance adjustments (no game code), ahead of Prompt 3 (full Phase 19 feature execution, sub-phases 19.1–19.6); further amended on 2026-05-31 (v2.3) to upgrade `CONSTITUTION.md` to v3.3 for multi-agent workflow governance and append the Phase 20 addendum (`PHASE-20-DRAMATIC-UI-LAYOUT-EXPLORATION-SPEC-2026-05-30.md`) as §25, with governance-only tracking at `phase_id = 54`.
+**Plan Version**: 2.4
+**Date**: 2026-06-01
+**Status**: Draft for user review — amended with Hugging Face word-list source integration; further amended on 2026-05-27 with the `ADDITIONS-2026-05-27.md` addendum (see §18); further amended on 2026-05-27 with the `DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27.md` addendum (see §19); further amended on 2026-05-27 with the `AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27.md` addendum (see §20); further amended on 2026-05-28 with the Mobile & Tablet Responsiveness phase (see §21); further amended on 2026-05-28 with the Local Word Lists addendum (`LOCAL-WORD-LISTS-SPEC-2026-05-28.md`) as Phase 17 (see §22); further amended on 2026-05-28 with the Word List Difficulty Tiers + Word Explorer / Go / Settings improvements addendum (`PHASE-18-WORD-DIFFICULTY-AND-GO-IMPROVEMENTS-SPEC-2026-05-28.md`) as Phase 18 (see §23), whose §23.2 (Phase 18.0) performs an approved model-agnostic governance/repo cleanup and a root `README.md` upgrade in the planning stage; further amended on 2026-05-30 (v1.9) to integrate the user's definitive answers to the five §23.11 open questions (now recorded as resolved decisions) and to record the Phase 18.0 `README.md` upgrade; further amended on 2026-05-30 (v2.0) to record that Phase 18 **Prompt 2** has applied the approved constitution phase-range amendment (`CONSTITUTION.md` §1/§4/§5/§5.2/§17, v3.1 → v3.2) and the associated repo/doc adjustments, ahead of Prompt 3 (full Phase 18 feature execution); further amended on 2026-05-30 (v2.1) to append the Phase 19 addendum (`PHASE-19-ENHANCED-STATS-RESUME-CONFIGURABLE-GO-AND-POLISH-SPEC-2026-05-30.md`) as §24 (Phase 19 — Enhanced Statistics Visualizations, Configurable Go Puzzle Count, Full Resume-Most-Recent-Game Activation, Advanced Polish & Theming Foundations), whose §24.2 (Phase 19.0) performs the approved planning-stage governance/repo cleanup and a root `README.md` polish while deferring all game code changes (sub-phases 19.1–19.6) to explicit user approval ("Start Prompt 2" or equivalent); further amended on 2026-05-30 (v2.2) to record that Phase 19 **Prompt 2** has confirmed the planning-stage progress-step numbering decision (`phase_id = 46` / `progress/PROGRESS-STEP-46.md`, approved by the user) and applied the associated small clarity/governance adjustments (no game code), ahead of Prompt 3 (full Phase 19 feature execution, sub-phases 19.1–19.6); further amended on 2026-05-31 (v2.3) to upgrade `CONSTITUTION.md` to v3.3 for multi-agent workflow governance and append the Phase 20 addendum (`PHASE-20-DRAMATIC-UI-LAYOUT-EXPLORATION-SPEC-2026-05-30.md`) as §25, with governance-only tracking at `phase_id = 54`; further amended on 2026-06-01 (v2.4) to record Phase 20 completion (Variant 03 "Lunar Signal Deck" finalized) and append the Phase 21 addendum (`PHASE-21-UI-POLISH-AND-THEMING-FOUNDATION-SPEC-2026-06-01.md`) as §26 (Phase 21 — UI Polish & Theming Foundation), whose Prompt 1 is a planning + governance-only step (no UI polish, layout, or theming-foundation code) tracked at `phase_id = 59`, ahead of Prompt 2 (full Phase 21 execution).
 **Authority**: Must follow `CONSTITUTION.md`, `BRRRDLE-SPEC.md`, and the approved v2.6 plan in `BRRRDLE-OVERVIEW.md`.
 
 ---
@@ -32,7 +32,10 @@
 | Phase 17 | §22 | Complete |
 | Phase 18 | §23 | Complete |
 | Phase 19 | §24 | Complete; halt before production release |
-| Phase 20 | §25 | Governance addendum added; implementation not started |
+| Phase 20 | §25 | Complete — Variant 03 "Lunar Signal Deck" finalized |
+| Phase 21 | §26 | Planning addendum added (Prompt 1); implementation not started |
+
+> **Upcoming planned roadmap (not yet specced into this plan):** Phase 22 — Dramatic Theming System (built on the Phase 21 foundation), followed by additional planned phases through Phase 26 covering future scope such as a consumables shop, calendar, and multiplayer. These are listed here only for roadmap awareness; no work on Phases 22–26 may begin until each is approved and added as its own addendum.
 
 ## 1. Operating Rules
 
@@ -2615,6 +2618,88 @@ Phase 20 must halt before any merge or production release. The user must explici
 - `progress/PROGRESS.csv`, relevant `progress/PROGRESS-STEP-*.md`, and `CHANGELOG.md` updated with no secrets.
 - Full verification matrix and manual responsive/accessibility smoke checks documented.
 - Halt for explicit user approval before merge and before any production release.
+
+---
+
+## 26. Phase 21 – UI Polish & Theming Foundation (Addendum, PHASE-21-UI-POLISH-AND-THEMING-FOUNDATION-SPEC-2026-06-01)
+
+**Plan Version**: 2.4 (addendum). Bound by `CONSTITUTION.md` v3.3, `BRRRDLE-SPEC.md`, `BRRRDLE-OVERVIEW.md`, the prior plan (Phases 0–20), and `PHASE-21-UI-POLISH-AND-THEMING-FOUNDATION-SPEC-2026-06-01.md` (the binding source of truth for this phase). Triggered by the user's Phase 21 spec requesting that the finalized Phase 20 "Lunar Signal Deck" layout be polished and upgraded — UI, components, and CSS architecture — into a sophisticated, consistent, extensible foundation that is ready for advanced theming in Phase 22, while preserving every existing mechanic 100% intact.
+
+> Status: **Phase 21 Prompt 1 (planning + governance) complete (`phase_id = 59`)**. This prompt appends this §26 addendum, updates the phase index, and records progress. **No UI polish, layout change, theming-foundation code, component refactor, CSS architecture change, source file, or test changed in Prompt 1.** Halt for explicit user approval before Prompt 2 (full execution of Phase 21).
+
+### 26.1 Scope, Source of Truth, and Operating Rules
+
+- **Source of truth for this phase**: `PHASE-21-UI-POLISH-AND-THEMING-FOUNDATION-SPEC-2026-06-01.md` and this §26. If either conflicts with earlier plan language for the narrow concerns of UI polish or theming-foundation preparation, stop and ask the user; do not infer.
+- **Phase goal**: take the finalized Phase 20 "Lunar Signal Deck" layout and polish/upgrade the entire UI and codebase so it is significantly more sophisticated, consistent, extensible, and ready for advanced, visually awesome theming in Phase 22.
+- **Phase boundary**: Phase 21 is UI polish plus a theming *foundation* only. It does **not** implement the Phase 22 dramatic theming system, nor any other future-phase features (consumables shop, calendar, multiplayer, etc.). Only prepare the foundation; do not build future-phase features.
+- **Preserve every mechanic 100% intact**: all existing gameplay, data, auth, sync, stats, definitions, sharing, PWA, sound, settings, resume, economy, accessibility, and current accent themes must behave exactly as before. No regressions are acceptable.
+- **About Brrrdle remains a dedicated page**: keep the About Brrrdle section as its own dedicated page/route.
+- **Maximum autonomy with guardrails**: maximum autonomy is allowed as long as nothing significant is broken or removed; `CONSTITUTION.md` v3.3 governs at all times.
+- **One major change set at a time where possible**, using the established 2-prompt workflow (this planning addendum first, then execution).
+- **Update tracking surfaces after every major step**: `CHANGELOG.md`, `progress/PROGRESS.csv`, and `progress/PROGRESS-STEP-N.md` must be updated after each major step.
+
+### 26.2 Core Objectives (from the spec)
+
+1. Polish and refine the current Lunar Signal Deck layout to the highest professional standard.
+2. Improve code organization, component structure, and CSS architecture to make future theming (Phase 22) much easier and more powerful.
+3. Ensure the UI feels cohesive, modern, and impressive while preserving every existing mechanic 100% intact.
+4. Prepare the codebase for the upcoming planned phases (22–26) without implementing any of their features yet.
+5. Update all progress tracking surfaces, changelog, and documentation.
+
+### 26.3 Strict Rules for Execution (from the spec)
+
+- Maximum autonomy is allowed as long as nothing significant is broken or removed.
+- Follow `CONSTITUTION.md` strictly at all times.
+- Update `CHANGELOG.md` and progress tracking surfaces (`PROGRESS.csv` + `PROGRESS-STEP-N.md`) after every major step.
+- Do not implement features from future phases (theming system, consumables shop, calendar, multiplayer, etc.). Only prepare the foundation.
+- Keep the About Brrrdle section as a dedicated page.
+- One major change set at a time where possible; use the 2-prompt workflow (planning addendum first, then execution).
+- After completing the phase, create a PR and merge it (or instruct the user to do so).
+
+### 26.4 Two-Prompt Workflow
+
+| Prompt | `phase_id` | Title | Scope | Verification |
+| --- | --- | --- | --- | --- |
+| 21 Prompt 1 | 59 | Planning & governance addendum | Append §26; update phase index/header; update progress/changelog | Markdown/governance only; confirm no source changes; `git diff --check`; CSV parse |
+| 21 Prompt 2 | 60+ | Full execution of Phase 21 | Polish Lunar Signal Deck layout; improve component structure and CSS architecture; build theming foundation; update docs/README screenshots | Full verification matrix (§26.6); responsive/accessibility smoke; preview before merge |
+
+The Prompt 2 id(s) are assigned sequentially in `progress/PROGRESS.csv` as the work proceeds. Never overwrite existing progress reports.
+
+### 26.5 Phase Deliverables (from the spec)
+
+1. Polished and upgraded Lunar Signal Deck layout.
+2. Improved theming foundation (CSS variables, component structure, etc.).
+3. Updated progress files and changelog.
+4. Merged PR with the final state.
+
+### 26.6 Success Criteria and Verification Gate
+
+The final Phase 21 result must be:
+
+- Visually cohesive and significantly more polished than before Phase 20.
+- Technically excellent and easy to theme in Phase 22.
+- Fully responsive and accessible (WCAG AA goals, keyboard navigation, visible focus, status announcements, reduced-motion support, readable contrast).
+- Free of any regressions in gameplay, auth, stats, definitions, sync, sharing, PWA, sound, settings, resume, economy, or current accent themes.
+
+Before declaring any Phase 21 implementation step complete:
+
+1. `npm run lint` — clean.
+2. `npm run test` — all existing tests pass with zero weakened/removed tests.
+3. `npm run build` — clean.
+4. `npx tsc -p tsconfig.api.json --noEmit` — clean.
+5. `git diff --check` — clean.
+6. Client-bundle leak check where source changes touch auth, data, API-adjacent, or build surfaces: no `@vercel/blob`, service-role strings, privileged credentials, or new secret-like values in client chunks.
+7. Manual/browser smoke across mobile, tablet, and desktop viewports: daily/practice `og` and `go` still playable; resume, stats, settings, Word Explorer, definitions, sharing, sound, auth/sync, and accent themes intact; About Brrrdle remains a dedicated page; keyboard-only navigation and reduced-motion behavior preserved; no critical console errors; no horizontal overflow.
+
+### 26.7 Phase 21 Exit Checklist
+
+- Lunar Signal Deck layout polished and upgraded to a professional standard.
+- Component structure and CSS architecture improved into a clean, extensible theming foundation (CSS variables, tokens, component organization) — without implementing the Phase 22 theming system.
+- About Brrrdle kept as a dedicated page.
+- All existing features and invariants preserved exactly, including daily 5-letter lock, practice 2–35, difficulty tiers, configurable Go count, resume, stats, economy, auth/sync, Word Explorer, definitions, sharing, PWA, sound, accessibility, and current accent themes.
+- `CHANGELOG.md`, `progress/PROGRESS.csv`, relevant `progress/PROGRESS-STEP-*.md`, and documentation/README screenshots updated with no secrets.
+- Full verification matrix and responsive/accessibility smoke checks documented.
+- Halt for explicit user approval before merge; create and merge the PR (or instruct the user to do so) only after approval.
 
 ---
 

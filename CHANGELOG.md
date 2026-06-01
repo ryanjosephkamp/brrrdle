@@ -4,7 +4,18 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
-### Phase 20 Complete - Final Lunar Signal Deck Layout + All Refinements
+### Phase 21 Prompt 1 — Planning & Governance Addendum: UI Polish & Theming Foundation (PHASE-21-UI-POLISH-AND-THEMING-FOUNDATION-SPEC-2026-06-01)
+
+Planning + governance-only step that binds the new Phase 21 spec into the implementation plan ahead of full execution. **No UI polish, layout change, theming-foundation code, component refactor, CSS architecture change, or future-phase feature was implemented in this step.** The finalized Phase 20 "Lunar Signal Deck" layout and every existing mechanic remain 100% intact.
+
+#### 21 Prompt 1 — Plan addendum §26 + progress tracking (`phase_id = 59`)
+- **`AGENT-IMPLEMENTATION-PLAN.md`**: bumped Plan Version 2.3 → 2.4; recorded Phase 20 completion and the Phase 21 addendum in the amendment history; updated the Current Phase Index (Phase 20 → Complete, added Phase 21 → §26, plus a Phases 22–26 roadmap-awareness note); appended §26 **Phase 21 – UI Polish & Theming Foundation** incorporating the spec's objectives, strict rules, two-prompt workflow, deliverables, success criteria, verification gate, and exit checklist.
+- **`progress/PROGRESS.csv`**: appended `phase_id = 59` for this governance-only prompt.
+- **`progress/PROGRESS-STEP-59.md`**: created the planning step report.
+- **Verification**: `git diff --check` clean; `PROGRESS.csv` parse check (all rows 12 columns, last row `phase_id = 59`); no source/test/build-config changes, so the lint/test/build baseline is unchanged from Phase 20 finalization (329/329).
+- **Gate**: halt here for explicit user approval before Phase 21 Prompt 2 (full execution). About Brrrdle remains a dedicated page.
+
+
 
 Phase 20 is finalized with **Variant 03 - Lunar Signal Deck** selected as the official layout direction. This completes the dramatic UI/layout exploration phase with a production-ready lunar command-deck shell, preserved gameplay mechanics, responsive landing/play surfaces, and the final refinement set captured in `PHASE-20-VARIANT-03-REFINEMENT-NOTES.md`.
 
