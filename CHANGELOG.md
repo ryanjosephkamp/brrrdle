@@ -4,6 +4,19 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Phase 21 Prompt 2 — Governance-Only Refined-Instruction Update: UI Polish & Theming Foundation (PHASE-21-UI-POLISH-AND-THEMING-FOUNDATION-SPEC-2026-06-01)
+
+Governance/documentation-only step that records the user's refined Phase 21 instructions before any implementation begins. **No code, UI polish, layout change, theming-foundation code, component refactor, CSS architecture change, or future-phase feature was implemented in this step.** The finalized Phase 20 "Lunar Signal Deck" layout and every existing mechanic remain 100% intact.
+
+#### 21 Prompt 2 — Refined instructions into spec, plan §26, changelog, progress (`phase_id = 60`)
+- **Refined user instructions recorded**: keep the Lunar Signal Deck layout and tab structure mostly the same; make the default background very minimalist (plain black or a simple grid pattern); turn the current Lunar Signal Deck visual style (background, effects, etc.) into one individual theme to be enabled in Phase 22; allow polish/upgrades to visual effects, sounds, animations, component structure, and CSS architecture without breaking or significantly removing anything; do not change any core gameplay mechanics, word logic, daily/practice rules, difficulty tiers, definitions, stats, economy, auth/sync, resume, sharing, or any other essential features.
+- **`PHASE-21-UI-POLISH-AND-THEMING-FOUNDATION-SPEC-2026-06-01.md`**: added a "Refined User Instructions (Prompt 2 Addendum)" section; updated Core Objective 1 and the Phase Deliverables to include the minimalist default background and the Lunar Signal Deck visual style as one Phase 22 theme.
+- **`AGENT-IMPLEMENTATION-PLAN.md`**: bumped Plan Version 2.4 → 2.5; extended the amendment history; updated the Current Phase Index Phase 21 row; updated the §26 status note; added §26.0 (Refined User Instructions); updated §26.2 objective 1, §26.4 prompt workflow (now Prompts 1–3 with Prompt 2 governance at `phase_id = 60` and Prompt 3 as full execution), §26.5 deliverables, and the §26.7 exit checklist.
+- **`progress/PROGRESS.csv`**: appended `phase_id = 60` for this governance-only prompt.
+- **`progress/PROGRESS-STEP-59.md`**: updated to record the Prompt 2 document changes and refined instructions.
+- **Verification**: `git diff --check` clean; `PROGRESS.csv` parse check (all rows 12 columns, last row `phase_id = 60`); no source/test/build-config changes, so the lint/test/build baseline is unchanged from Phase 20 finalization (329/329).
+- **Gate**: halt here for explicit user approval before Phase 21 Prompt 3 (full execution). About Brrrdle remains a dedicated page.
+
 ### Phase 21 Prompt 1 — Planning & Governance Addendum: UI Polish & Theming Foundation (PHASE-21-UI-POLISH-AND-THEMING-FOUNDATION-SPEC-2026-06-01)
 
 Planning + governance-only step that binds the new Phase 21 spec into the implementation plan ahead of full execution. **No UI polish, layout change, theming-foundation code, component refactor, CSS architecture change, or future-phase feature was implemented in this step.** The finalized Phase 20 "Lunar Signal Deck" layout and every existing mechanic remain 100% intact.
