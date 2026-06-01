@@ -2,10 +2,14 @@ import { describe, expect, it } from 'vitest'
 import {
   createResumeSlot,
   describeResumeSlot,
+  getLatestResumeSlot,
+  getResumeSlotKey,
   isCaptureInProgress,
   isGoSessionInProgress,
   isOgSessionInProgress,
+  mergeResumeSlots,
   normalizeResumeSlot,
+  normalizeResumeSlots,
   type ResumeCapture,
 } from './resumeSlot'
 
@@ -101,5 +105,32 @@ describe('resume slot model', () => {
     expect(describeResumeSlot(og)).toContain('og practice')
     const go = createResumeSlot({ difficulty: 'expert', goPuzzleCount: 10, mode: 'go', scope: 'daily', serializedSession: goSession({ currentPuzzleIndex: 1, priorAnswers: ['crane'] }), wordLength: 5 })
     expect(describeResumeSlot(go)).toContain('10 puzzles')
+  })
+
+  it('normalizes independent resume slots by lane and finds the newest one', () => {
+    const practiceOg = createResumeSlot({ difficulty: 'expert', mode: 'og', scope: 'practice', serializedSession: ogSession({ currentGuess: 'cr' }), wordLength: 5 }, '2026-05-30T06:00:00.000Z')
+    const practiceGo = createResumeSlot({ difficulty: 'expert', goPuzzleCount: 5, mode: 'go', scope: 'practice', serializedSession: goSession({ currentPuzzleIndex: 1, priorAnswers: ['crane'] }), wordLength: 5 }, '2026-05-30T07:00:00.000Z')
+    const slots = normalizeResumeSlots({
+      'practice-og': practiceOg,
+      'practice-go': practiceGo,
+      'daily-og': practiceGo,
+    })
+
+    expect(getResumeSlotKey(practiceOg)).toBe('practice-og')
+    expect(slots['practice-og']).toEqual(practiceOg)
+    expect(slots['practice-go']).toEqual(practiceGo)
+    expect(slots['daily-og']).toBeUndefined()
+    expect(getLatestResumeSlot(slots)).toEqual(practiceGo)
+  })
+
+  it('merges independent resume slots by keeping the newest per lane', () => {
+    const older = createResumeSlot({ difficulty: 'expert', mode: 'og', scope: 'practice', serializedSession: ogSession({ currentGuess: 'cr' }), wordLength: 5 }, '2026-05-30T06:00:00.000Z')
+    const newer = createResumeSlot({ difficulty: 'expert', mode: 'og', scope: 'practice', serializedSession: ogSession({ currentGuess: 'cra' }), wordLength: 5 }, '2026-05-30T07:00:00.000Z')
+    const daily = createResumeSlot({ difficulty: 'expert', goPuzzleCount: 5, mode: 'go', scope: 'daily', serializedSession: goSession({ currentPuzzleIndex: 1, priorAnswers: ['crane'] }), wordLength: 5 }, '2026-05-30T06:30:00.000Z')
+
+    expect(mergeResumeSlots({ 'practice-og': older }, { 'practice-og': newer, 'daily-go': daily })).toEqual({
+      'daily-go': daily,
+      'practice-og': newer,
+    })
   })
 })

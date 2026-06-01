@@ -9,6 +9,14 @@
   --color-ice-200: #a5f3fc;
   --color-ice-300: #67e8f9;
   --color-focus-ring: #bae6fd;
+  --prism-bg: #050309;
+  --prism-panel: rgb(7 6 12 / 0.68);
+  --prism-border: rgb(255 255 255 / 0.14);
+  --prism-lime: #baff00;
+  --prism-red: #ff4d2d;
+  --prism-cyan: #6cf7ff;
+  --prism-pink: #ff6bd6;
+  --prism-violet: #8c73ff;
 
   /*
    * Phase 16 — Mobile & Tablet Responsiveness design tokens.
@@ -117,6 +125,1300 @@ body {
 .brrrdle-top-command > * {
   position: relative;
   z-index: 1;
+}
+
+.brrrdle-lunar-shell {
+  position: relative;
+  isolation: isolate;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at var(--signal-x, 62%) var(--signal-y, 54%), color-mix(in srgb, var(--signal-color, #f5fbff), transparent 82%), transparent 24rem),
+    radial-gradient(circle at 14% 82%, rgb(255 77 69 / 0.14), transparent 22rem),
+    linear-gradient(135deg, #020207 0%, #060714 45%, #061318 100%);
+}
+
+.brrrdle-lunar-shell.is-dormant {
+  height: 100svh;
+  min-height: 100svh;
+  overflow: hidden;
+}
+
+@supports (height: 100dvh) {
+  .brrrdle-lunar-shell.is-dormant {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+}
+
+.brrrdle-lunar-canvas,
+.brrrdle-lunar-noise {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.brrrdle-lunar-canvas {
+  z-index: 0;
+  cursor: crosshair;
+}
+
+.brrrdle-lunar-noise {
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.018) 1px, transparent 1px);
+  background-size: 5rem 5rem;
+  mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0.12));
+  mix-blend-mode: screen;
+}
+
+.brrrdle-lunar-cursor {
+  position: fixed;
+  z-index: 60;
+  left: 0;
+  top: 0;
+  width: 3.5rem;
+  aspect-ratio: 1;
+  border: 1px solid rgb(255 255 255 / 0.54);
+  border-radius: 999px;
+  box-shadow:
+    0 0 1.6rem color-mix(in srgb, var(--signal-color, #f5fbff), transparent 48%),
+    inset 0 0 1rem rgb(255 255 255 / 0.08);
+  pointer-events: none;
+  transform: translate3d(calc(var(--signal-client-x, 62vw) - 50%), calc(var(--signal-client-y, 54vh) - 50%), 0);
+  will-change: transform;
+}
+
+.brrrdle-lunar-cursor::after {
+  content: '';
+  position: absolute;
+  inset: 42%;
+  border-radius: inherit;
+  background: white;
+  box-shadow: 0 0 1rem white;
+}
+
+.brrrdle-lunar-interface {
+  position: relative;
+  z-index: 3;
+  box-sizing: border-box;
+  margin-inline: auto;
+  min-height: 100svh;
+  width: min(100%, 104rem);
+  padding: max(0.9rem, env(safe-area-inset-top)) max(0.9rem, env(safe-area-inset-right)) max(1.25rem, env(safe-area-inset-bottom)) max(0.9rem, env(safe-area-inset-left));
+}
+
+.brrrdle-lunar-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.brrrdle-lunar-brand {
+  display: grid;
+  gap: 0.1rem;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 0.5rem;
+  background: rgb(3 3 10 / 0.72);
+  padding: 0.75rem 0.9rem;
+  color: white;
+  text-align: left;
+  box-shadow: 0 1.1rem 3rem rgb(0 0 0 / 0.38), 0 0 2.5rem color-mix(in srgb, var(--signal-color, #f5fbff), transparent 88%);
+  backdrop-filter: blur(18px);
+}
+
+.brrrdle-lunar-brand span {
+  font-size: 1.9rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.brrrdle-lunar-brand small,
+.brrrdle-lunar-command span,
+.brrrdle-lunar-route-head p,
+.brrrdle-lunar-rail-button small,
+.brrrdle-lunar-status p,
+.brrrdle-lunar-metrics span,
+.brrrdle-lunar-lines > p > span:first-child {
+  color: rgb(255 255 255 / 0.58);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.brrrdle-lunar-account-stack {
+  display: grid;
+  justify-items: end;
+  gap: 0.5rem;
+}
+
+.brrrdle-lunar-account {
+  min-width: min(100%, 18rem);
+}
+
+.brrrdle-lunar-daily-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: max-content;
+  border: 1px solid rgb(72 255 154 / 0.28);
+  border-radius: 0.5rem;
+  background: rgb(4 18 14 / 0.62);
+  color: rgb(202 255 227 / 0.86);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  box-shadow:
+    0 0.8rem 2.2rem rgb(0 0 0 / 0.22),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+  backdrop-filter: blur(16px);
+}
+
+.brrrdle-lunar-daily-status span {
+  width: 0.45rem;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: #48ff9a;
+  box-shadow: 0 0 1rem #48ff9a;
+}
+
+.brrrdle-lunar-intro {
+  position: relative;
+  display: grid;
+  min-height: calc(100svh - 7.25rem);
+  place-items: center;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.brrrdle-lunar-intro::before,
+.brrrdle-lunar-intro::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.brrrdle-lunar-intro::before {
+  inset: 10% 5% auto;
+  height: 38%;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-bottom: 0;
+  border-radius: 50% 50% 0 0;
+}
+
+.brrrdle-lunar-intro::after {
+  inset: auto 8% 8%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--signal-color, #f5fbff), white 22%), transparent);
+  box-shadow: 0 0 3rem color-mix(in srgb, var(--signal-color, #f5fbff), transparent 55%);
+}
+
+.brrrdle-lunar-hero {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  width: min(92vw, 58rem);
+  text-align: center;
+}
+
+.brrrdle-lunar-hero > span {
+  display: block;
+  max-width: 38rem;
+  color: rgb(255 255 255 / 0.72);
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+
+.brrrdle-lunar-command {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.45rem 1rem;
+  align-items: center;
+  margin-top: 2.2rem;
+  width: min(100%, 46rem);
+  min-height: 7rem;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 0.5rem;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.075), rgb(255 255 255 / 0.025)),
+    rgb(4 5 12 / 0.72);
+  color: white;
+  padding: 1.2rem 1.3rem;
+  text-align: left;
+  box-shadow:
+    0 1.4rem 5rem rgb(0 0 0 / 0.48),
+    0 0 4rem color-mix(in srgb, var(--signal-color, #f5fbff), transparent 82%),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
+  backdrop-filter: blur(22px);
+}
+
+.brrrdle-lunar-command strong {
+  grid-column: 1;
+  overflow-wrap: anywhere;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.brrrdle-lunar-command small {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--signal-color, #f5fbff), black 72%);
+  color: white;
+  padding: 0.7rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.brrrdle-lunar-dock {
+  position: absolute;
+  z-index: 4;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.1rem;
+  scrollbar-width: none;
+}
+
+.brrrdle-lunar-dock::-webkit-scrollbar {
+  display: none;
+}
+
+.brrrdle-lunar-dock-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  border: 1px solid rgb(255 255 255 / 0.13);
+  border-radius: 999px;
+  background: rgb(5 7 14 / 0.62);
+  color: white;
+  padding: 0.45rem 0.82rem;
+  font-size: 0.82rem;
+  font-weight: 900;
+  box-shadow: 0 0.8rem 2.5rem rgb(0 0 0 / 0.28);
+  backdrop-filter: blur(16px);
+}
+
+.brrrdle-lunar-dock-chip span,
+.brrrdle-lunar-rail-light {
+  flex: 0 0 auto;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--signal-color);
+  box-shadow: 0 0 1.5rem var(--signal-color);
+}
+
+.brrrdle-lunar-dock-chip[aria-current='true'],
+.brrrdle-lunar-dock-chip:hover,
+.brrrdle-lunar-dock-chip:focus-visible {
+  border-color: color-mix(in srgb, var(--signal-color), white 34%);
+  background: color-mix(in srgb, var(--signal-color), black 78%);
+  outline: none;
+}
+
+.brrrdle-lunar-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.brrrdle-lunar-rail {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+}
+
+.brrrdle-lunar-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.brrrdle-lunar-rail-button {
+  position: relative;
+  display: flex;
+  min-width: max-content;
+  align-items: center;
+  gap: 0.65rem;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 0.5rem;
+  background: rgb(5 7 14 / 0.62);
+  color: white;
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  box-shadow: 0 0.8rem 2.5rem rgb(0 0 0 / 0.28), inset 0 0 0 1px rgb(255 255 255 / 0.03);
+  backdrop-filter: blur(16px);
+}
+
+.brrrdle-lunar-rail-button::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--signal-color), transparent);
+  opacity: 0.75;
+}
+
+.brrrdle-lunar-rail-button[aria-current='page'] {
+  border-color: color-mix(in srgb, var(--signal-color), white 30%);
+  background: color-mix(in srgb, var(--signal-color), black 82%);
+  box-shadow: 0 0 3rem color-mix(in srgb, var(--signal-color), transparent 54%);
+}
+
+.brrrdle-lunar-rail-button strong {
+  display: block;
+  font-size: 0.92rem;
+  line-height: 1.1;
+}
+
+.brrrdle-lunar-panel,
+.brrrdle-lunar-playfield {
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 0.5rem;
+  background: linear-gradient(180deg, rgb(7 8 17 / 0.76), rgb(7 12 18 / 0.62));
+  box-shadow: 0 1.25rem 5rem rgb(0 0 0 / 0.42), inset 0 1px 0 rgb(255 255 255 / 0.06);
+  backdrop-filter: blur(22px);
+}
+
+.brrrdle-lunar-playfield {
+  overflow: hidden;
+  box-shadow:
+    0 1.5rem 6rem rgb(0 0 0 / 0.46),
+    0 0 5rem color-mix(in srgb, var(--signal-color), transparent 74%),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+.brrrdle-lunar-route-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.12);
+  padding: 1rem;
+}
+
+.brrrdle-lunar-route-head h1 {
+  margin-top: 0.2rem;
+  color: white;
+  font-size: 3.2rem;
+  font-weight: 950;
+  line-height: 0.94;
+}
+
+.brrrdle-lunar-route-head span {
+  display: block;
+  margin-top: 0.6rem;
+  max-width: 48rem;
+  color: rgb(255 255 255 / 0.72);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.brrrdle-lunar-live-chip {
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--signal-color), white 22%);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--signal-color), black 76%);
+  color: white !important;
+  padding: 0.5rem 0.75rem;
+  box-shadow: 0 0 2.5rem color-mix(in srgb, var(--signal-color), transparent 58%);
+  font-size: 0.7rem !important;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.brrrdle-lunar-route-body {
+  padding: 1rem;
+}
+
+.brrrdle-lunar-side {
+  display: grid;
+  gap: 1rem;
+}
+
+.brrrdle-lunar-panel {
+  padding: 1rem;
+}
+
+.brrrdle-lunar-status h2 {
+  margin-top: 0.35rem;
+  font-size: 2rem;
+  font-weight: 950;
+}
+
+.brrrdle-lunar-status span,
+.brrrdle-lunar-about p {
+  display: block;
+  margin-top: 0.55rem;
+  color: rgb(255 255 255 / 0.68);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.brrrdle-lunar-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.brrrdle-lunar-metrics div {
+  min-width: 0;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 0.45rem;
+  background: rgb(255 255 255 / 0.045);
+  padding: 0.65rem;
+}
+
+.brrrdle-lunar-metrics strong {
+  display: block;
+  margin-top: 0.2rem;
+  color: white;
+  font-size: 1.1rem;
+}
+
+.brrrdle-lunar-lines {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.brrrdle-lunar-lines p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  padding-bottom: 0.55rem;
+}
+
+.brrrdle-lunar-lines p:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.brrrdle-lunar-line-value {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 900;
+  text-align: right;
+}
+
+.brrrdle-lunar-line-action,
+.brrrdle-lunar-switch,
+.brrrdle-lunar-line-select {
+  border: 1px solid rgb(255 255 255 / 0.13);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.055);
+  color: white;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 900;
+  transition: border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
+}
+
+.brrrdle-lunar-line-action {
+  padding: 0.38rem 0.7rem;
+  cursor: pointer;
+}
+
+.brrrdle-lunar-line-action:hover,
+.brrrdle-lunar-line-action:focus-visible,
+.brrrdle-lunar-switch:hover,
+.brrrdle-lunar-switch:focus-visible,
+.brrrdle-lunar-line-select:hover,
+.brrrdle-lunar-line-select:focus-visible {
+  border-color: color-mix(in srgb, var(--signal-color, #f5fbff), white 34%);
+  background: color-mix(in srgb, var(--signal-color, #f5fbff), black 82%);
+  box-shadow: 0 0 1.6rem color-mix(in srgb, var(--signal-color, #f5fbff), transparent 68%);
+  outline: none;
+}
+
+.brrrdle-lunar-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.28rem 0.52rem;
+  cursor: pointer;
+}
+
+.brrrdle-lunar-switch > span {
+  position: relative;
+  width: 1.75rem;
+  height: 0.95rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.16);
+}
+
+.brrrdle-lunar-switch > span::after {
+  content: '';
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  background: white;
+  box-shadow: 0 0 0.9rem white;
+  transition: transform 160ms ease;
+}
+
+.brrrdle-lunar-switch[aria-checked='true'] > span {
+  background: color-mix(in srgb, var(--signal-color, #f5fbff), #48ff9a 34%);
+}
+
+.brrrdle-lunar-switch[aria-checked='true'] > span::after {
+  transform: translateX(0.8rem);
+}
+
+.brrrdle-lunar-switch strong {
+  font-size: 0.76rem;
+  line-height: 1;
+}
+
+.brrrdle-lunar-line-select {
+  max-width: 8rem;
+  padding: 0.36rem 1.65rem 0.36rem 0.7rem;
+}
+
+.brrrdle-customize-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.brrrdle-lunar-about summary {
+  cursor: pointer;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@media (width >= 1024px) {
+  .brrrdle-lunar-grid {
+    grid-template-columns: minmax(10rem, 13rem) minmax(0, 1fr) minmax(14rem, 18rem);
+  }
+
+  .brrrdle-lunar-rail {
+    position: sticky;
+    top: 1rem;
+    display: grid;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .brrrdle-lunar-playfield {
+    min-height: calc(100svh - 7.25rem);
+  }
+
+  .brrrdle-lunar-side {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+@media (width < 900px) {
+  .brrrdle-lunar-hero {
+    align-self: end;
+    margin-bottom: clamp(7.25rem, 14svh, 10.5rem);
+  }
+}
+
+@media (width < 720px) {
+  .brrrdle-lunar-cursor {
+    display: none;
+  }
+
+  .brrrdle-lunar-interface {
+    padding: max(0.65rem, env(safe-area-inset-top)) max(0.65rem, env(safe-area-inset-right)) max(0.8rem, env(safe-area-inset-bottom)) max(0.65rem, env(safe-area-inset-left));
+  }
+
+  .brrrdle-lunar-topbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .brrrdle-lunar-brand {
+    padding: 0.55rem 0.65rem;
+  }
+
+  .brrrdle-lunar-brand span {
+    font-size: clamp(1.38rem, 7vw, 1.72rem);
+  }
+
+  .brrrdle-lunar-brand small,
+  .brrrdle-lunar-daily-status {
+    font-size: 0.58rem;
+  }
+
+  .brrrdle-lunar-account {
+    min-width: 0;
+  }
+
+  .brrrdle-lunar-account-stack {
+    justify-items: start;
+  }
+
+  .brrrdle-lunar-daily-status {
+    width: 100%;
+    padding: 0.22rem 0.55rem;
+  }
+
+  .brrrdle-lunar-intro {
+    min-height: calc(100svh - 10rem);
+  }
+
+  .brrrdle-lunar-hero {
+    margin-bottom: clamp(8rem, 15svh, 9.75rem);
+  }
+
+  .brrrdle-lunar-hero > span {
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+
+  .brrrdle-lunar-command {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 1rem;
+    min-height: 5rem;
+    padding: 0.9rem;
+  }
+
+  .brrrdle-lunar-command strong {
+    font-size: 1.15rem;
+  }
+
+  .brrrdle-lunar-command small {
+    grid-column: 1;
+    grid-row: auto;
+    width: max-content;
+    padding: 0.48rem 0.75rem;
+  }
+
+  .brrrdle-lunar-dock {
+    right: 0.55rem;
+    bottom: 0.55rem;
+    left: 0.55rem;
+    gap: 0.35rem;
+    justify-content: flex-start;
+  }
+
+  .brrrdle-lunar-dock-chip {
+    min-height: 2rem;
+    padding: 0.3rem 0.52rem;
+    font-size: 0.68rem;
+  }
+
+  .brrrdle-lunar-route-head {
+    flex-direction: column;
+  }
+
+  .brrrdle-lunar-route-head h1 {
+    font-size: 2.25rem;
+  }
+}
+
+@media (width < 420px) and (height < 740px) {
+  .brrrdle-lunar-daily-status {
+    min-height: 1.45rem;
+  }
+
+  .brrrdle-lunar-intro {
+    min-height: calc(100svh - 9.25rem);
+  }
+
+  .brrrdle-lunar-hero {
+    margin-bottom: 7.75rem;
+  }
+
+  .brrrdle-lunar-hero > span {
+    font-size: 0.78rem;
+  }
+
+  .brrrdle-lunar-command {
+    min-height: 4.45rem;
+  }
+}
+
+.brrrdle-prism-shell {
+  position: relative;
+  isolation: isolate;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 72% 18%, rgb(255 77 45 / 0.2), transparent 24rem),
+    radial-gradient(circle at 20% 68%, rgb(108 247 255 / 0.17), transparent 28rem),
+    linear-gradient(180deg, #07050c 0%, #111015 42%, #030204 100%);
+}
+
+.brrrdle-prism-canvas,
+.brrrdle-prism-noise {
+  position: fixed;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.brrrdle-prism-canvas {
+  z-index: 0;
+  cursor: crosshair;
+}
+
+.brrrdle-prism-noise {
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.025) 1px, transparent 1px);
+  background-size: 4.5rem 4.5rem;
+  mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.7), rgb(0 0 0 / 0.16));
+  mix-blend-mode: screen;
+}
+
+.brrrdle-prism-interface {
+  position: relative;
+  z-index: 2;
+  margin-inline: auto;
+  min-height: 100svh;
+  width: min(100%, 104rem);
+  padding: max(0.9rem, env(safe-area-inset-top)) max(0.9rem, env(safe-area-inset-right)) max(1.25rem, env(safe-area-inset-bottom)) max(0.9rem, env(safe-area-inset-left));
+}
+
+.brrrdle-prism-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.brrrdle-prism-brand {
+  display: grid;
+  gap: 0.1rem;
+  border: 1px solid var(--prism-border);
+  border-radius: 0.5rem;
+  background: rgb(5 3 9 / 0.62);
+  padding: 0.75rem 0.9rem;
+  color: white;
+  text-align: left;
+  box-shadow: 0 1rem 3rem rgb(0 0 0 / 0.34), 0 0 3rem rgb(186 255 0 / 0.1);
+  backdrop-filter: blur(18px);
+}
+
+.brrrdle-prism-brand span {
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-weight: 950;
+  line-height: 1;
+}
+
+.brrrdle-prism-brand small,
+.brrrdle-prism-route-head p,
+.brrrdle-prism-beacon small,
+.brrrdle-prism-orb-card p,
+.brrrdle-prism-metrics span,
+.brrrdle-prism-lines span {
+  color: rgb(255 255 255 / 0.58);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.brrrdle-prism-account {
+  min-width: min(100%, 18rem);
+}
+
+.brrrdle-prism-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.brrrdle-prism-intro {
+  position: relative;
+  display: grid;
+  min-height: calc(100svh - 7.25rem);
+  place-items: center;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.brrrdle-prism-intro::before,
+.brrrdle-prism-intro::after {
+  content: '';
+  position: absolute;
+  inset: 11% -10% auto;
+  height: 35%;
+  border-top: 1px dashed rgb(255 255 255 / 0.13);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.brrrdle-prism-intro::after {
+  inset: auto -8% 8%;
+  height: 28%;
+  border-top: 0;
+  border-bottom: 1px dashed rgb(255 255 255 / 0.12);
+}
+
+.brrrdle-prism-intro-copy {
+  position: absolute;
+  top: clamp(3rem, 9vh, 6rem);
+  z-index: 3;
+  width: min(92vw, 62rem);
+  text-align: center;
+  pointer-events: none;
+}
+
+.brrrdle-prism-intro-copy p,
+.brrrdle-prism-stage-orb-label small {
+  color: rgb(255 255 255 / 0.62);
+  font-size: 0.7rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.brrrdle-prism-intro-copy h1 {
+  margin-top: 0.55rem;
+  color: white;
+  font-size: clamp(2.5rem, 5.2vw, 4.5rem);
+  font-weight: 400;
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+
+.brrrdle-prism-intro-copy span {
+  display: block;
+  margin: 1rem auto 0;
+  max-width: 34rem;
+  color: rgb(255 255 255 / 0.72);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.brrrdle-prism-stage-orb {
+  position: absolute;
+  bottom: clamp(3.8rem, 7vh, 5.5rem);
+  z-index: 2;
+  display: grid;
+  width: min(76vw, calc(100svh - 17rem), 36rem);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  transform: translate3d(var(--orb-pull-x, 0), var(--orb-pull-y, 0), 0);
+  transition: transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 300ms ease;
+}
+
+.brrrdle-prism-stage-orb:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 0.75rem;
+}
+
+.brrrdle-prism-stage-orb:hover {
+  filter: saturate(1.28) contrast(1.08);
+}
+
+.brrrdle-prism-organic-orb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter:
+    drop-shadow(0 0 4rem color-mix(in srgb, var(--beam-color), transparent 56%))
+    drop-shadow(0 1.5rem 3rem rgb(0 0 0 / 0.34));
+  pointer-events: none;
+}
+
+.brrrdle-prism-stage-orb-label {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 0.2rem;
+  min-width: 9rem;
+  border: 1px solid rgb(255 255 255 / 0.2);
+  border-radius: 999px;
+  background: rgb(5 3 9 / 0.52);
+  padding: 0.85rem 1rem;
+  text-align: center;
+  box-shadow: 0 1rem 3rem rgb(0 0 0 / 0.36);
+  backdrop-filter: blur(18px);
+}
+
+.brrrdle-prism-stage-orb-label strong {
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 950;
+}
+
+.brrrdle-prism-intro-beams {
+  position: absolute;
+  z-index: 4;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.brrrdle-prism-intro-beam {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 999px;
+  background: rgb(5 3 9 / 0.48);
+  color: white;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 900;
+  box-shadow: 0 0.8rem 2.5rem rgb(0 0 0 / 0.26);
+  backdrop-filter: blur(16px);
+}
+
+.brrrdle-prism-intro-beam span {
+  width: 0.52rem;
+  height: 0.52rem;
+  border-radius: 999px;
+  background: var(--beam-color);
+  box-shadow: 0 0 1.5rem var(--beam-color);
+}
+
+.brrrdle-prism-intro-beam[aria-current='true'],
+.brrrdle-prism-intro-beam:hover,
+.brrrdle-prism-intro-beam:focus-visible {
+  border-color: color-mix(in srgb, var(--beam-color), white 26%);
+  background: color-mix(in srgb, var(--beam-color), black 78%);
+  outline: none;
+}
+
+.brrrdle-prism-beacons {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+}
+
+.brrrdle-prism-beacons::-webkit-scrollbar {
+  display: none;
+}
+
+.brrrdle-prism-beacon {
+  position: relative;
+  display: flex;
+  min-width: max-content;
+  align-items: center;
+  gap: 0.65rem;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 0.5rem;
+  background: rgb(5 3 9 / 0.55);
+  color: white;
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  box-shadow: 0 0.8rem 2.5rem rgb(0 0 0 / 0.28), inset 0 0 0 1px rgb(255 255 255 / 0.03);
+  backdrop-filter: blur(16px);
+}
+
+.brrrdle-prism-beacon::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--beam-color), transparent);
+  opacity: 0.7;
+}
+
+.brrrdle-prism-beacon[aria-current='page'] {
+  border-color: color-mix(in srgb, var(--beam-color), white 25%);
+  background: color-mix(in srgb, var(--beam-color), black 82%);
+  box-shadow: 0 0 3rem color-mix(in srgb, var(--beam-color), transparent 54%);
+}
+
+.brrrdle-prism-beacon-light {
+  position: relative;
+  flex: 0 0 auto;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  background: var(--beam-color);
+  box-shadow: 0 0 1.6rem var(--beam-color);
+}
+
+.brrrdle-prism-beacon strong {
+  display: block;
+  font-size: 0.92rem;
+  line-height: 1.1;
+}
+
+.brrrdle-prism-playfield,
+.brrrdle-prism-side > * {
+  border: 1px solid var(--prism-border);
+  border-radius: 0.5rem;
+  background: linear-gradient(180deg, rgb(6 5 12 / 0.72), rgb(9 8 14 / 0.58));
+  box-shadow: 0 1.25rem 5rem rgb(0 0 0 / 0.42), inset 0 1px 0 rgb(255 255 255 / 0.06);
+  backdrop-filter: blur(22px);
+}
+
+.brrrdle-prism-playfield {
+  overflow: hidden;
+  box-shadow:
+    0 1.5rem 6rem rgb(0 0 0 / 0.46),
+    0 0 5rem color-mix(in srgb, var(--beam-color), transparent 72%),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+.brrrdle-prism-route-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.12);
+  padding: 1rem;
+}
+
+.brrrdle-prism-route-head h1 {
+  margin-top: 0.2rem;
+  color: white;
+  font-size: clamp(1.8rem, 4vw, 4.25rem);
+  font-weight: 950;
+  line-height: 0.94;
+}
+
+.brrrdle-prism-route-head span {
+  display: block;
+  margin-top: 0.6rem;
+  max-width: 48rem;
+  color: rgb(255 255 255 / 0.72);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.brrrdle-prism-live-chip {
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--beam-color), white 20%);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--beam-color), black 78%);
+  color: white !important;
+  padding: 0.5rem 0.75rem;
+  box-shadow: 0 0 2.5rem color-mix(in srgb, var(--beam-color), transparent 58%);
+  font-size: 0.7rem !important;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.brrrdle-prism-route-body {
+  padding: 1rem;
+}
+
+.brrrdle-prism-mode-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent, rgb(186 255 0 / 0.18), transparent) top / 100% 1px no-repeat,
+    radial-gradient(circle at 80% 10%, rgb(255 107 214 / 0.16), transparent 12rem);
+}
+
+.brrrdle-prism-side {
+  display: grid;
+  gap: 1rem;
+}
+
+.brrrdle-prism-side > * {
+  padding: 1rem;
+}
+
+.brrrdle-prism-orb-card {
+  overflow: hidden;
+}
+
+.brrrdle-prism-orb-control {
+  position: relative;
+  display: block;
+  width: min(100%, 11rem);
+  aspect-ratio: 1;
+  margin-inline: auto;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transform: translate3d(0, 0, 0);
+}
+
+.brrrdle-prism-orb-control:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 0.5rem;
+}
+
+.brrrdle-prism-orb {
+  aspect-ratio: 1;
+}
+
+.brrrdle-prism-orb-card h2 {
+  margin-top: 1rem;
+  font-size: 2rem;
+  font-weight: 950;
+}
+
+.brrrdle-prism-orb-card span,
+.brrrdle-prism-about p {
+  color: rgb(255 255 255 / 0.68);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.brrrdle-prism-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.brrrdle-prism-metrics div {
+  min-width: 0;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 0.45rem;
+  background: rgb(255 255 255 / 0.045);
+  padding: 0.65rem;
+}
+
+.brrrdle-prism-metrics strong {
+  display: block;
+  margin-top: 0.2rem;
+  color: white;
+  font-size: 1.1rem;
+}
+
+.brrrdle-prism-lines {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.brrrdle-prism-lines p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  padding-bottom: 0.55rem;
+}
+
+.brrrdle-prism-lines p:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.brrrdle-prism-lines strong {
+  color: white;
+  font-size: 0.9rem;
+}
+
+.brrrdle-prism-about summary {
+  cursor: pointer;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.brrrdle-prism-about p {
+  margin-top: 0.8rem;
+}
+
+@media (width >= 1024px) {
+  .brrrdle-prism-grid {
+    grid-template-columns: minmax(10rem, 13rem) minmax(0, 1fr) minmax(14rem, 18rem);
+  }
+
+  .brrrdle-prism-beacons {
+    position: sticky;
+    top: 1rem;
+    display: grid;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .brrrdle-prism-playfield {
+    min-height: calc(100svh - 7.25rem);
+  }
+
+  .brrrdle-prism-side {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+@media (width < 720px) {
+  .brrrdle-prism-topbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .brrrdle-prism-account {
+    min-width: 0;
+  }
+
+  .brrrdle-prism-route-head {
+    flex-direction: column;
+  }
+
+  .brrrdle-prism-intro {
+    min-height: calc(100svh - 9.25rem);
+  }
+
+  .brrrdle-prism-stage-orb {
+    bottom: 5.8rem;
+    width: min(86vw, calc(100svh - 19rem), 27rem);
+  }
+
+  .brrrdle-prism-intro-copy {
+    top: 2.25rem;
+  }
+
+  .brrrdle-prism-intro-copy h1 {
+    font-size: clamp(2.4rem, 11vw, 4.5rem);
+  }
+
+  .brrrdle-prism-intro-copy span {
+    font-size: 0.85rem;
+  }
 }
 
 button,

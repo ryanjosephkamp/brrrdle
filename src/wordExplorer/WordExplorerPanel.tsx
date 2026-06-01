@@ -21,6 +21,9 @@ function currentIsoDate(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
+const PAGE_SIZE_OPTIONS = [10, 50, 100] as const
+type PageSize = (typeof PAGE_SIZE_OPTIONS)[number]
+
 async function copyToClipboard(text: string): Promise<boolean> {
   try {
     if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
@@ -41,6 +44,8 @@ export function WordExplorerPanel() {
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyTier | 'all'>('all')
   const [sortField, setSortField] = useState<SortField>('word')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
+  const [pageSize, setPageSize] = useState<PageSize>(50)
+  const [pageIndex, setPageIndex] = useState(0)
   const [copiedWord, setCopiedWord] = useState<string | undefined>(undefined)
   const [definitionWord, setDefinitionWord] = useState<string | undefined>(undefined)
   const bundledEntries = useMemo(() => loadWordExplorerEntries(length), [length])
@@ -64,8 +69,18 @@ export function WordExplorerPanel() {
     () => filterAndSortEntries(entries, { searchTerm, showAnswers, showValidGuesses, difficulty: difficultyFilter }, { field: sortField, direction: sortDirection }),
     [entries, searchTerm, showAnswers, showValidGuesses, difficultyFilter, sortField, sortDirection],
   )
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const safePageIndex = Math.min(pageIndex, pageCount - 1)
+  const pageStartIndex = safePageIndex * pageSize
+  const pageEntries = useMemo(
+    () => filtered.slice(pageStartIndex, pageStartIndex + pageSize),
+    [filtered, pageSize, pageStartIndex],
+  )
+  const visibleStart = filtered.length === 0 ? 0 : pageStartIndex + 1
+  const visibleEnd = Math.min(filtered.length, pageStartIndex + pageEntries.length)
 
   const toggleSort = useCallback((field: SortField) => {
+    setPageIndex(0)
     if (field === sortField) {
       setSortDirection((dir) => (dir === 'asc' ? 'desc' : 'asc'))
     } else {
@@ -105,7 +120,10 @@ export function WordExplorerPanel() {
             <select
               aria-label="Word length"
               className="rounded-xl border border-slate-600 bg-slate-950 px-3 py-2 text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
-              onChange={(event) => setLength(Number(event.target.value))}
+              onChange={(event) => {
+                setLength(Number(event.target.value))
+                setPageIndex(0)
+              }}
               value={length}
             >
               {WORD_EXPLORER_LENGTHS.map((value) => (
@@ -118,7 +136,10 @@ export function WordExplorerPanel() {
             <input
               aria-label="Search words"
               className="rounded-xl border border-slate-600 bg-slate-950 px-3 py-2 text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={(event) => {
+                setSearchTerm(event.target.value)
+                setPageIndex(0)
+              }}
               placeholder={`Filter ${length}-letter words…`}
               type="search"
               value={searchTerm}
@@ -129,14 +150,20 @@ export function WordExplorerPanel() {
             <label className="flex items-center gap-2 text-slate-100">
               <input
                 checked={showAnswers}
-                onChange={(event) => setShowAnswers(event.target.checked)}
+                onChange={(event) => {
+                  setShowAnswers(event.target.checked)
+                  setPageIndex(0)
+                }}
                 type="checkbox"
               /> Answers
             </label>
             <label className="flex items-center gap-2 text-slate-100">
               <input
                 checked={showValidGuesses}
-                onChange={(event) => setShowValidGuesses(event.target.checked)}
+                onChange={(event) => {
+                  setShowValidGuesses(event.target.checked)
+                  setPageIndex(0)
+                }}
                 type="checkbox"
               /> Valid Guesses
             </label>
@@ -146,7 +173,10 @@ export function WordExplorerPanel() {
             <select
               aria-label="Filter by difficulty"
               className="rounded-xl border border-slate-600 bg-slate-950 px-3 py-2 text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
-              onChange={(event) => setDifficultyFilter(isDifficultyTier(event.target.value) ? event.target.value : 'all')}
+              onChange={(event) => {
+                setDifficultyFilter(isDifficultyTier(event.target.value) ? event.target.value : 'all')
+                setPageIndex(0)
+              }}
               value={difficultyFilter}
             >
               <option value="all">All answers &amp; guesses</option>
@@ -160,6 +190,43 @@ export function WordExplorerPanel() {
           Showing {filtered.length} of {entries.length} {length}-letter word{entries.length === 1 ? '' : 's'} from {effectiveLoad.source === 'live' ? 'the live manifest' : 'bundled fallback data'}.
           {effectiveLoad.message ? ` ${effectiveLoad.message}` : ''}
         </p>
+        {filtered.length > 0 ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-700/70 bg-slate-950/70 p-3">
+            <p className="text-xs text-slate-300">
+              Rows {visibleStart}-{visibleEnd} of {filtered.length}
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-cyan-100">
+                Rows
+                <select
+                  aria-label="Rows per page"
+                  className="rounded-lg border border-slate-600 bg-slate-950 px-2 py-1 text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
+                  onChange={(event) => {
+                    const next = Number(event.target.value)
+                    if (PAGE_SIZE_OPTIONS.includes(next as PageSize)) {
+                      setPageSize(next as PageSize)
+                      setPageIndex(0)
+                    }
+                  }}
+                  value={pageSize}
+                >
+                  {PAGE_SIZE_OPTIONS.map((value) => (
+                    <option key={value} value={value}>{value}</option>
+                  ))}
+                </select>
+              </label>
+              <Button disabled={safePageIndex === 0} onClick={() => setPageIndex(Math.max(0, safePageIndex - 1))} size="sm" variant="secondary">
+                Previous
+              </Button>
+              <span className="min-w-20 text-center text-xs text-slate-300">
+                {safePageIndex + 1} / {pageCount}
+              </span>
+              <Button disabled={safePageIndex >= pageCount - 1} onClick={() => setPageIndex(Math.min(pageCount - 1, safePageIndex + 1))} size="sm" variant="secondary">
+                Next
+              </Button>
+            </div>
+          </div>
+        ) : null}
       </Panel>
 
       {showEmptyState ? (
@@ -215,7 +282,7 @@ export function WordExplorerPanel() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((entry) => (
+              {pageEntries.map((entry) => (
                 <tr key={entry.word} className="border-t border-slate-800 text-slate-100">
                   <td className="px-4 py-2 font-mono">{entry.word}</td>
                   <td className="px-4 py-2 text-slate-300">{typeBadgeLabel(entry.types)}</td>
@@ -246,7 +313,7 @@ export function WordExplorerPanel() {
           </table>
 
           <ul className="grid gap-2 p-3 md:hidden">
-            {filtered.map((entry) => (
+            {pageEntries.map((entry) => (
               <li key={entry.word} className="rounded-xl border border-slate-800 bg-slate-900/60 p-3 text-sm text-slate-100">
                 <p className="font-mono text-base">{entry.word}</p>
                 <p className="mt-1 text-xs text-slate-300">{typeBadgeLabel(entry.types)}</p>

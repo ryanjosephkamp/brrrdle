@@ -16,7 +16,7 @@ describe('APP_ROUTES', () => {
 
   it('includes minimal play and support navigation groups', () => {
     expect(getRoutesByGroup('play').map((route) => route.id)).toEqual(['home', 'og-daily', 'go-daily', 'practice'])
-    expect(getRoutesByGroup('support').map((route) => route.id)).toEqual(['word-explorer', 'feedback', 'definitions', 'stats', 'settings', 'admin'])
+    expect(getRoutesByGroup('support').map((route) => route.id)).toEqual(['word-explorer', 'feedback', 'definitions', 'stats', 'settings', 'about', 'admin'])
   })
 
   it('keeps the primary navigation in the ADDITIONS-2026-05-27 order and hides admin for non-admins', () => {
@@ -27,6 +27,7 @@ describe('APP_ROUTES', () => {
       'word-explorer',
       'feedback',
       'settings',
+      'about',
     ])
     expect(getPrimaryNavigationRoutes(true).map((route) => route.id)).toEqual([
       'og-daily',
@@ -35,6 +36,7 @@ describe('APP_ROUTES', () => {
       'word-explorer',
       'feedback',
       'settings',
+      'about',
       'admin',
     ])
   })

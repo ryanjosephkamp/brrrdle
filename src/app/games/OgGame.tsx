@@ -166,13 +166,15 @@ function OgGameSession({
     return scope === 'daily' ? createInitialDailySession(setup) : createOgSession(setup)
   })
   const [continuationMessage, setContinuationMessage] = useState<string>()
+  const [revealedAnswer, setRevealedAnswer] = useState(false)
   const completionPercentage = getCompletionPercentage(session)
   const continuationCost = calculatePayToContinueCost({
     completionPercentage,
     continuationCount: session.continuationCount,
     wordLength: session.wordLength,
   })
-  const canAffordContinuation = session.status === 'lost' && coins >= continuationCost
+  const canAffordContinuation = session.status === 'lost' && !revealedAnswer && coins >= continuationCost
+  const canReveal = scope === 'practice' && session.status === 'playing' && session.guesses.length > 0
 
   useEffect(() => {
     if (scope !== 'daily' || !setup.dateKey) {
@@ -254,8 +256,30 @@ function OgGameSession({
     }
 
     setSession((currentSession) => continueAfterLoss(currentSession))
+    setRevealedAnswer(false)
     setContinuationMessage(`Spent ${continuationCost} coins for one more attempt.`)
   }, [continuationCost, onSpendCoins, session.status])
+
+  const handleReveal = useCallback(() => {
+    if (!canReveal) {
+      return
+    }
+
+    if (!onSpendCoins(continuationCost)) {
+      setContinuationMessage(`You need ${continuationCost} coins to reveal this answer.`)
+      return
+    }
+
+    const answer = session.answer.toLocaleUpperCase('en-US')
+    setRevealedAnswer(true)
+    setSession((currentSession) => ({
+      ...currentSession,
+      currentGuess: '',
+      lastValidation: undefined,
+      status: 'lost',
+    }))
+    setContinuationMessage(`Revealed the answer: ${answer}. This puzzle counts as a loss.`)
+  }, [canReveal, continuationCost, onSpendCoins, session.answer])
 
   useKeyboardInput({ disabled: keyboardDisabled, onInput: handleInput })
 
@@ -341,16 +365,30 @@ function OgGameSession({
         </div>
 
         {session.status === 'lost' ? (
-          <div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm leading-6 text-amber-50">
-            <p className="font-bold">Pay to Continue</p>
-            <p>Spend {continuationCost} coins for one more attempt. Current balance: {coins} coins.</p>
-            <Button disabled={!canAffordContinuation} onClick={handlePayToContinue} variant="secondary">
-              {canAffordContinuation ? `Pay ${continuationCost} coins to continue` : `Need ${continuationCost} coins to continue`}
-            </Button>
-            {continuationMessage ? <p className="mt-2 font-semibold">{continuationMessage}</p> : null}
-          </div>
+          !revealedAnswer ? (
+            <div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm leading-6 text-amber-50">
+              <p className="font-bold">Pay to Continue</p>
+              <p>Spend {continuationCost} coins for one more attempt. Current balance: {coins} coins.</p>
+              <Button disabled={!canAffordContinuation} onClick={handlePayToContinue} variant="secondary">
+                {canAffordContinuation ? `Pay ${continuationCost} coins to continue` : `Need ${continuationCost} coins to continue`}
+              </Button>
+              {continuationMessage ? <p className="mt-2 font-semibold">{continuationMessage}</p> : null}
+            </div>
+          ) : continuationMessage ? (
+            <div className="rounded-2xl border border-cyan-300/30 bg-cyan-300/10 p-3 text-sm font-semibold text-cyan-50">{continuationMessage}</div>
+          ) : null
         ) : continuationMessage ? (
           <div className="rounded-2xl border border-cyan-300/30 bg-cyan-300/10 p-3 text-sm font-semibold text-cyan-50">{continuationMessage}</div>
+        ) : null}
+
+        {canReveal ? (
+          <div className="rounded-2xl border border-rose-300/30 bg-rose-300/10 p-4 text-sm leading-6 text-rose-50">
+            <p className="font-bold">Give Up / Reveal Answer</p>
+            <p>Reveal this answer for {continuationCost} coins. This counts as a loss. Current balance: {coins} coins.</p>
+            <Button onClick={handleReveal} variant="secondary">
+              Reveal answer ({continuationCost} coins)
+            </Button>
+          </div>
         ) : null}
 
         <Keyboard disabled={session.status !== 'playing'} letterStates={letterStates} onInput={handleInput} />

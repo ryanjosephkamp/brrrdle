@@ -4,16 +4,17 @@ import { DEFAULT_GO_PUZZLE_COUNT, normalizeGoPuzzleCount, type GoPuzzleCount } f
 import { DEFAULT_THEME, normalizeTheme, type Theme } from '../theme/theme'
 import { createEmptyStatistics } from '../stats/statistics'
 import type { StatisticsState } from '../stats/types'
-import type { ResumeSlot } from './resumeSlot'
+import type { ResumeSlot, ResumeSlotCollection } from './resumeSlot'
 /**
  * Bumped to 2 in Phase 18.3 when `GuestSettingsState.difficultyDefault` was
  * added, and to 3 in Phase 19.2 when `GuestSettingsState.goPuzzleCountDefault`
  * was added. Older payloads (v1/v2) are upgraded by `migrateGuestProgress`
  * (see `guestStorage.ts`), which preserves all existing
  * coins/XP/history/stats and backfills any missing setting with its safe
- * default via `normalizeGuestSettings` — no data loss.
+ * default via `normalizeGuestSettings`; bumped to 4 in Phase 20 Variant 03 so
+ * each play lane can remember its own unfinished puzzle.
  */
-export const GUEST_PROGRESS_SCHEMA_VERSION = 3
+export const GUEST_PROGRESS_SCHEMA_VERSION = 4
 
 export interface GuestProgressionState {
   readonly coins: number
@@ -78,13 +79,18 @@ export interface GuestProgressState {
   readonly settings: GuestSettingsState
   readonly stats: StatisticsState
   /**
-   * Phase 18.8 reserved a forward-compatible slot for "resume most recent
-   * unfinished game"; Phase 19.3 gives it a concrete typed shape and activates
-   * it. Populated only while a game is in progress and cleared on completion,
-   * so it is omitted/undefined for everyone who is not mid-game (no behaviour
-   * change). Validated on load via `normalizeResumeSlot` (untrusted-input safe).
+   * Legacy most-recent unfinished game slot. Kept for backward compatibility
+   * with existing saved guest progress and cloud payloads; new play flow reads
+   * from `resumeSlots` so daily og, daily go, practice og, and practice go can
+   * be preserved independently.
    */
   readonly resumeSlot?: ResumeSlot
+  /**
+   * Phase 20 Variant 03: independent in-progress slots for the four playable
+   * lanes. Each entry is validated on load and removed when that lane finishes
+   * or is replaced with a fresh puzzle.
+   */
+  readonly resumeSlots?: ResumeSlotCollection
 }
 
 export function createDefaultGuestSettings(): GuestSettingsState {

@@ -3,7 +3,7 @@ import type { DifficultyTier } from '../data/difficulty'
 import { updateStatistics } from '../stats/statistics'
 import type { CompletedGameStatsInput } from '../stats/types'
 import { createDefaultGuestProgress, GUEST_PROGRESS_SCHEMA_VERSION, normalizeGuestSettings, type GameHistoryEntry, type GuestProgressState } from './storageSchema'
-import { normalizeResumeSlot } from './resumeSlot'
+import { getLatestResumeSlot, getResumeSlotKey, normalizeResumeSlot, normalizeResumeSlots, type ResumeSlotCollection } from './resumeSlot'
 
 export interface KeyValueStorage {
   readonly getItem: (key: string) => string | null
@@ -27,7 +27,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 export function isGuestProgressState(value: unknown): value is GuestProgressState {
   return isRecord(value)
-    && (value.schemaVersion === 1 || value.schemaVersion === 2 || value.schemaVersion === GUEST_PROGRESS_SCHEMA_VERSION)
+    && (value.schemaVersion === 1 || value.schemaVersion === 2 || value.schemaVersion === 3 || value.schemaVersion === GUEST_PROGRESS_SCHEMA_VERSION)
     && isRecord(value.progression)
     && typeof value.progression.xp === 'number'
     && typeof value.progression.level === 'number'
@@ -36,6 +36,16 @@ export function isGuestProgressState(value: unknown): value is GuestProgressStat
     && isRecord(value.stats)
     && Array.isArray(value.history)
     && Array.isArray(value.completedGameIds)
+}
+
+function migrateResumeSlots(value: GuestProgressState): ResumeSlotCollection | undefined {
+  const slots = normalizeResumeSlots(value.resumeSlots)
+  const legacySlot = normalizeResumeSlot(value.resumeSlot)
+  if (legacySlot) {
+    slots[getResumeSlotKey(legacySlot)] ??= legacySlot
+  }
+
+  return Object.keys(slots).length > 0 ? slots : undefined
 }
 
 /**
@@ -54,6 +64,7 @@ export function migrateGuestProgress(value: unknown): GuestProgressState | undef
   return {
     ...value,
     resumeSlot: normalizeResumeSlot(value.resumeSlot),
+    resumeSlots: migrateResumeSlots(value),
     schemaVersion: GUEST_PROGRESS_SCHEMA_VERSION,
     settings: normalizeGuestSettings(value.settings),
   }
@@ -119,6 +130,9 @@ export function recordCompletedGame(
     wordLength: input.wordLength,
     xpAward,
   }
+  const resumeSlots = normalizeResumeSlots(currentProgress.resumeSlots)
+  delete resumeSlots[getResumeSlotKey(input)]
+  const nextResumeSlots = Object.keys(resumeSlots).length > 0 ? resumeSlots : undefined
 
   return {
     ...currentProgress,
@@ -130,6 +144,8 @@ export function recordCompletedGame(
       level: getLevelForXp(xp),
       xp,
     },
+    resumeSlot: getLatestResumeSlot(nextResumeSlots ?? {}),
+    resumeSlots: nextResumeSlots,
     stats: updateStatistics(currentProgress.stats, input),
   }
 }

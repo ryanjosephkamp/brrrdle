@@ -1,22 +1,38 @@
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AccountBadge, AuthModal, ProfilePanel, classifyAuthError, createBrrrdleSupabaseClient, createResumeSlot, createSyncStatus, describeResumeSlot, getCurrentAuthState, isCaptureInProgress, loadGuestProgress, normalizeResumeSlot, recordCompletedGame, sendPasswordResetEmail, resetGuestProgress, saveGuestProgress, sendMagicLink, Settings, signInWithPassword, signOut, signUpWithPassword, subscribeToAuthChanges, updateProfile, type AuthState, type CompletedGameInput, type ProfileAccentColor, type ResumeCapture, type ResumeSlot } from '../account'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AccountBadge, AuthModal, ProfilePanel, classifyAuthError, createBrrrdleSupabaseClient, createResumeSlot, createSupabaseProgressRepository, createSyncStatus, getCurrentAuthState, getLatestResumeSlot, getResumeSlotKey, isCaptureInProgress, loadGuestProgress, normalizeResumeSlots, recordCompletedGame, sendPasswordResetEmail, resetGuestProgress, saveGuestProgress, sendMagicLink, Settings, signInWithPassword, signOut, signUpWithPassword, subscribeToAuthChanges, syncGuestProgress, updateProfile, type AuthState, type CompletedGameInput, type ProfileAccentColor, type ResumeCapture, type ResumeSlot, type ResumeSlotCollection } from '../account'
 import { BUNDLED_WORD_LIST_LENGTHS, type DifficultyTier } from '../data'
 import { DAILY_WORD_LENGTH, MAX_PRACTICE_WORD_LENGTH, MIN_PRACTICE_WORD_LENGTH, type GoPuzzleCount } from '../game/constants'
-import { Button, Layout, Navigation, Panel } from '../ui'
+import { Button, Panel } from '../ui'
 import { AdminPanel } from '../admin'
 import { StatsDashboard } from '../stats'
 import { WordExplorerPanel } from '../wordExplorer'
 import { FeedbackPanel } from '../feedback'
 import { SoundProvider, useSound } from '../sound'
-import { applyTheme } from '../theme'
+import { applyTheme, getThemeMeta, isTheme, THEMES, type Theme } from '../theme'
 import { GoGame } from './games/GoGame'
 import { OgGame } from './games/OgGame'
-import { DEFAULT_ROUTE_ID, getPrimaryNavigationRoutes, getRouteById, getRoutesByGroup, type AppRoute } from './routes'
+import { LunarSignalStage } from './LunarSignalStage'
+import { APP_ROUTES, DEFAULT_ROUTE_ID, getRouteById, getRoutesByGroup, type AppRoute } from './routes'
+
+type PracticeMode = 'og' | 'go'
+
+function isSameResumeSlot(left: ResumeSlot | undefined, right: ResumeSlot): boolean {
+  if (!left) {
+    return false
+  }
+
+  return left.difficulty === right.difficulty
+    && left.mode === right.mode
+    && left.scope === right.scope
+    && left.wordLength === right.wordLength
+    && (left.mode !== 'go' || (right.mode === 'go' && left.goPuzzleCount === right.goPuzzleCount))
+    && JSON.stringify(left.serializedSession) === JSON.stringify(right.serializedSession)
+}
 
 function ModeCard({ route, onSelect }: { readonly route: AppRoute; readonly onSelect: (route: AppRoute) => void }) {
   return (
     <button
-      className="group relative overflow-hidden rounded-lg border border-white/10 bg-slate-950/75 p-5 text-left shadow-2xl shadow-slate-950/40 transition before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-[linear-gradient(90deg,transparent,var(--color-ice-300),transparent)] hover:border-[var(--color-ice-300)]/60 hover:bg-slate-900/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] motion-safe:hover:-translate-y-0.5"
+      className="brrrdle-prism-mode-card group relative overflow-hidden rounded-lg border border-white/10 bg-black/42 p-5 text-left shadow-2xl shadow-black/40 transition hover:border-[var(--color-ice-300)]/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] motion-safe:hover:-translate-y-0.5"
       onClick={() => onSelect(route)}
       type="button"
     >
@@ -35,65 +51,42 @@ function PracticeGameSwitcher({
   coins,
   defaultDifficulty,
   defaultGoPuzzleCount,
-  initialResume,
   keyboardDisabled,
   onGameComplete,
+  onPracticeModeChange,
   onResumeCapture,
   onSaveDifficultyDefault,
   onSaveGoPuzzleCountDefault,
   onSpendCoins,
+  practiceMode,
+  resumeSlots,
 }: {
   readonly coins: number
   readonly defaultDifficulty: DifficultyTier
   readonly defaultGoPuzzleCount: GoPuzzleCount
-  readonly initialResume?: ResumeSlot
   readonly keyboardDisabled?: boolean
   readonly onGameComplete: (input: CompletedGameInput) => void
+  readonly onPracticeModeChange: (mode: PracticeMode) => void
   readonly onResumeCapture: (capture: ResumeCapture) => void
   readonly onSaveDifficultyDefault: (tier: DifficultyTier) => void
   readonly onSaveGoPuzzleCountDefault: (count: GoPuzzleCount) => void
   readonly onSpendCoins: (amount: number) => boolean
+  readonly practiceMode: PracticeMode
+  readonly resumeSlots: ResumeSlotCollection
 }) {
-  const resumeMode = initialResume?.scope === 'practice' ? initialResume.mode : undefined
-  const [practiceMode, setPracticeMode] = useState<'og' | 'go'>(resumeMode ?? 'og')
+  const practiceOgResume = resumeSlots['practice-og']
+  const practiceGoResume = resumeSlots['practice-go']
 
   return (
     <section className="space-y-5" aria-label="Practice mode selector">
       <div className="flex flex-wrap gap-2 rounded-lg border border-white/10 bg-slate-950/75 p-2 shadow-inner shadow-white/5">
-        <Button onClick={() => setPracticeMode('og')} variant={practiceMode === 'og' ? 'primary' : 'secondary'}>og practice</Button>
-        <Button onClick={() => setPracticeMode('go')} variant={practiceMode === 'go' ? 'primary' : 'secondary'}>go practice</Button>
+        <Button onClick={() => onPracticeModeChange('og')} variant={practiceMode === 'og' ? 'primary' : 'secondary'}>og practice</Button>
+        <Button onClick={() => onPracticeModeChange('go')} variant={practiceMode === 'go' ? 'primary' : 'secondary'}>go practice</Button>
       </div>
       {practiceMode === 'og'
-        ? <OgGame coins={coins} defaultDifficulty={defaultDifficulty} initialResume={initialResume?.scope === 'practice' && initialResume.mode === 'og' ? initialResume : undefined} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onResumeCapture={onResumeCapture} onSaveDifficultyDefault={onSaveDifficultyDefault} onSpendCoins={onSpendCoins} scope="practice" />
-        : <GoGame coins={coins} defaultDifficulty={defaultDifficulty} defaultGoPuzzleCount={defaultGoPuzzleCount} initialResume={initialResume?.scope === 'practice' && initialResume.mode === 'go' ? initialResume : undefined} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onResumeCapture={onResumeCapture} onSaveDifficultyDefault={onSaveDifficultyDefault} onSaveGoPuzzleCountDefault={onSaveGoPuzzleCountDefault} onSpendCoins={onSpendCoins} scope="practice" />}
+        ? <OgGame coins={coins} defaultDifficulty={defaultDifficulty} initialResume={practiceOgResume?.mode === 'og' ? practiceOgResume : undefined} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onResumeCapture={onResumeCapture} onSaveDifficultyDefault={onSaveDifficultyDefault} onSpendCoins={onSpendCoins} scope="practice" />
+        : <GoGame coins={coins} defaultDifficulty={defaultDifficulty} defaultGoPuzzleCount={defaultGoPuzzleCount} initialResume={practiceGoResume?.mode === 'go' ? practiceGoResume : undefined} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onResumeCapture={onResumeCapture} onSaveDifficultyDefault={onSaveDifficultyDefault} onSaveGoPuzzleCountDefault={onSaveGoPuzzleCountDefault} onSpendCoins={onSpendCoins} scope="practice" />}
     </section>
-  )
-}
-
-function HudCard({ children, className = '', title }: { readonly children: ReactNode; readonly className?: string; readonly title: string }) {
-  return (
-    <section className={`brrrdle-hud-card rounded-lg border border-white/10 bg-slate-950/75 p-4 shadow-2xl shadow-slate-950/40 backdrop-blur-xl ${className}`}>
-      <h2 className="text-xs font-black uppercase text-[var(--color-ice-200)]">{title}</h2>
-      {children}
-    </section>
-  )
-}
-
-function MetricTile({ label, value }: { readonly label: string; readonly value: ReactNode }) {
-  return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-      <p className="text-xs font-semibold uppercase text-slate-400">{label}</p>
-      <p className="mt-1 text-lg font-black text-white">{value}</p>
-    </div>
-  )
-}
-
-function SystemLine({ label, value }: { readonly label: string; readonly value: ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-3 border-b border-white/10 py-3 last:border-b-0">
-      <span className="text-sm text-slate-300">{label}</span>
-      <span className="text-right text-sm font-bold text-white">{value}</span>
-    </div>
   )
 }
 
@@ -109,6 +102,35 @@ function getAuthDisplay(authState: AuthState): string {
   return 'Guest'
 }
 
+function AboutBrrrdlePanel() {
+  return (
+    <section className="space-y-5" aria-labelledby="about-brrrdle-title">
+      <div className="space-y-2">
+        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-ice-200)]">About</p>
+        <h2 id="about-brrrdle-title" className="text-3xl font-bold text-white">About Brrrdle</h2>
+        <p className="max-w-3xl text-base leading-7 text-slate-300">
+          Brrrdle is a word-game playground built around og single boards, go chains, daily puzzles, and wide-range practice lengths.
+        </p>
+      </div>
+
+      <Panel className="grid gap-4 text-sm leading-6 text-slate-300 md:grid-cols-3" tone="muted">
+        <div>
+          <p className="font-semibold text-cyan-100">Game modes</p>
+          <p>Notes about og, go, daily, and practice rules can live here as the interface settles.</p>
+        </div>
+        <div>
+          <p className="font-semibold text-cyan-100">Word lists</p>
+          <p>Future copy can explain how answer banks, valid guesses, difficulty tiers, and definitions work.</p>
+        </div>
+        <div>
+          <p className="font-semibold text-cyan-100">Credits</p>
+          <p>Credits, release notes, design notes, and contact details can move here from temporary surfaces.</p>
+        </div>
+      </Panel>
+    </section>
+  )
+}
+
 function RoutePanel({
   route,
   keyboardDisabled,
@@ -117,7 +139,6 @@ function RoutePanel({
   authState,
   authMessage,
   onResetProgress,
-  onResume,
   onResumeCapture,
   onSelectRoute,
   onSendMagicLink,
@@ -127,8 +148,9 @@ function RoutePanel({
   onSignOut,
   onOpenAuthModal,
   onOpenProfilePanel,
-  pendingResume,
-  resumeSlot,
+  onPracticeModeChange,
+  practiceMode,
+  resumeSlots,
   soundEnabled,
   onToggleSound,
   onUpdateSettings,
@@ -141,16 +163,16 @@ function RoutePanel({
   readonly keyboardDisabled?: boolean
   readonly onGameComplete: (input: CompletedGameInput) => void
   readonly onResetProgress: () => void
-  readonly onResume: () => void
   readonly onResumeCapture: (capture: ResumeCapture) => void
+  readonly onPracticeModeChange: (mode: PracticeMode) => void
   readonly onSendMagicLink: (email: string) => void
   readonly onSignInWithPassword: (email: string, password: string) => void
   readonly onSignUpWithPassword: (email: string, password: string) => void
   readonly onSignOut: () => void
   readonly onOpenAuthModal: () => void
   readonly onOpenProfilePanel: () => void
-  readonly pendingResume?: ResumeSlot
-  readonly resumeSlot?: ResumeSlot
+  readonly practiceMode: PracticeMode
+  readonly resumeSlots: ResumeSlotCollection
   readonly route: AppRoute
   readonly onSelectRoute: (routeId: AppRoute['id']) => void
   readonly soundEnabled: boolean
@@ -163,15 +185,6 @@ function RoutePanel({
   if (route.id === 'home') {
     return (
       <div className="space-y-4">
-        {resumeSlot ? (
-          <Panel className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" tone="muted">
-            <div>
-              <p className="text-sm font-semibold uppercase text-[var(--color-ice-200)]">Pick up where you left off</p>
-              <p className="mt-1 text-base text-slate-200">You have an unfinished game in progress.</p>
-            </div>
-            <Button onClick={onResume} variant="primary">{describeResumeSlot(resumeSlot)}</Button>
-          </Panel>
-        ) : null}
         <div className="grid gap-4 md:grid-cols-3">
           {getRoutesByGroup('play')
             .filter((playRoute) => playRoute.id !== 'home')
@@ -192,7 +205,7 @@ function RoutePanel({
   }
 
   if (route.id === 'practice') {
-    return <PracticeGameSwitcher coins={guestProgress.progression.coins} defaultDifficulty={guestProgress.settings.difficultyDefault} defaultGoPuzzleCount={guestProgress.settings.goPuzzleCountDefault} initialResume={pendingResume} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onResumeCapture={onResumeCapture} onSaveDifficultyDefault={(tier) => onUpdateSettings({ difficultyDefault: tier })} onSaveGoPuzzleCountDefault={(count) => onUpdateSettings({ goPuzzleCountDefault: count })} onSpendCoins={onSpendCoins} />
+    return <PracticeGameSwitcher coins={guestProgress.progression.coins} defaultDifficulty={guestProgress.settings.difficultyDefault} defaultGoPuzzleCount={guestProgress.settings.goPuzzleCountDefault} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onPracticeModeChange={onPracticeModeChange} onResumeCapture={onResumeCapture} onSaveDifficultyDefault={(tier) => onUpdateSettings({ difficultyDefault: tier })} onSaveGoPuzzleCountDefault={(count) => onUpdateSettings({ goPuzzleCountDefault: count })} onSpendCoins={onSpendCoins} practiceMode={practiceMode} resumeSlots={resumeSlots} />
   }
 
   if (route.id === 'word-explorer') {
@@ -226,6 +239,10 @@ function RoutePanel({
         syncStatus={syncStatus}
       />
     )
+  }
+
+  if (route.id === 'about') {
+    return <AboutBrrrdlePanel />
   }
 
   if (route.id === 'admin') {
@@ -266,74 +283,67 @@ function AppInner() {
   const [profilePanelOpen, setProfilePanelOpen] = useState(false)
   const [profileMessage, setProfileMessage] = useState<string | undefined>(undefined)
   const [profileBusy, setProfileBusy] = useState(false)
-  const [syncStatus] = useState(() => createSyncStatus(supabaseClient ? 'idle' : 'error'))
-  const [pendingResume, setPendingResume] = useState<ResumeSlot | undefined>(undefined)
+  const [syncStatus, setSyncStatus] = useState(() => createSyncStatus(supabaseClient ? 'idle' : 'error'))
+  const [practiceMode, setPracticeMode] = useState<PracticeMode>('og')
   const autoResumedRef = useRef(false)
   const guestProgressRef = useRef(guestProgress)
   const activeRoute = getRouteById(activeRouteId)
-  const resumeSlot = useMemo(() => normalizeResumeSlot(guestProgress.resumeSlot), [guestProgress.resumeSlot])
-  const navigationRoutes = useMemo(() => getPrimaryNavigationRoutes(authState.user?.roles.includes('admin') ?? false), [authState.user?.roles])
+  const resumeSlots = useMemo(() => normalizeResumeSlots(guestProgress.resumeSlots), [guestProgress.resumeSlots])
+  const isAdmin = authState.user?.roles.includes('admin') ?? false
+  const prismRoutes = useMemo(() => APP_ROUTES.filter((route) => route.id !== 'home' && (route.id !== 'admin' || isAdmin)), [isAdmin])
   const handleNavigate = useCallback((routeId: AppRoute['id']) => {
-    setPendingResume(undefined)
     setActiveRouteId(routeId)
   }, [])
   const handleResumeCapture = useCallback((capture: ResumeCapture) => {
     setGuestProgress((currentProgress) => {
-      const currentSlot = currentProgress.resumeSlot
+      const slotKey = getResumeSlotKey(capture)
+      const currentSlots = normalizeResumeSlots(currentProgress.resumeSlots)
+      const currentSlot = currentSlots[slotKey]
       if (isCaptureInProgress(capture)) {
         const nextSlot = createResumeSlot(capture)
-        if (currentSlot && currentSlot.mode === nextSlot.mode && currentSlot.scope === nextSlot.scope && JSON.stringify(currentSlot.serializedSession) === JSON.stringify(nextSlot.serializedSession)) {
+        if (isSameResumeSlot(currentSlot, nextSlot)) {
           return currentProgress
         }
-        const nextProgress = { ...currentProgress, resumeSlot: nextSlot }
+        const nextSlots = { ...currentSlots, [slotKey]: nextSlot }
+        const nextProgress = { ...currentProgress, resumeSlot: getLatestResumeSlot(nextSlots), resumeSlots: nextSlots }
         saveGuestProgress(nextProgress)
         return nextProgress
       }
-      // Not in progress: only clear the slot it corresponds to (same mode/scope/length),
-      // so peeking at an unrelated finished game never wipes a real resume slot.
-      const matchesTrackedGame = currentSlot
-        && currentSlot.mode === capture.mode
-        && currentSlot.scope === capture.scope
-        && currentSlot.wordLength === capture.wordLength
-      if (!matchesTrackedGame) {
+      if (!currentSlot) {
         return currentProgress
       }
-      const nextProgress = { ...currentProgress, resumeSlot: undefined }
+      const nextSlots = { ...currentSlots }
+      delete nextSlots[slotKey]
+      const resumeSlotsForSave = Object.keys(nextSlots).length > 0 ? nextSlots : undefined
+      const nextProgress = { ...currentProgress, resumeSlot: getLatestResumeSlot(resumeSlotsForSave ?? {}), resumeSlots: resumeSlotsForSave }
       saveGuestProgress(nextProgress)
       return nextProgress
     })
   }, [])
-  const handleResume = useCallback(() => {
-    const slot = normalizeResumeSlot(guestProgress.resumeSlot)
+  const navigateToResumeSlot = useCallback((slot: ResumeSlot | undefined) => {
     if (!slot) {
       return
     }
     if (slot.scope === 'practice') {
-      setPendingResume(slot)
+      setPracticeMode(slot.mode)
       setActiveRouteId('practice')
       return
     }
-    setPendingResume(undefined)
     setActiveRouteId(slot.mode === 'og' ? 'og-daily' : 'go-daily')
-  }, [guestProgress.resumeSlot])
+  }, [])
   // Auto-resume the most recent unfinished game once per signed-in load (spec §2).
   // Called from async auth callbacks (not synchronously in an effect body).
   const maybeAutoResume = useCallback((nextAuthState: AuthState) => {
     if (nextAuthState.status !== 'authenticated' || autoResumedRef.current) {
       return
     }
-    const slot = normalizeResumeSlot(guestProgressRef.current.resumeSlot)
+    const slot = getLatestResumeSlot(normalizeResumeSlots(guestProgressRef.current.resumeSlots))
     if (!slot) {
       return
     }
     autoResumedRef.current = true
-    if (slot.scope === 'practice') {
-      setPendingResume(slot)
-      setActiveRouteId('practice')
-    } else {
-      setActiveRouteId(slot.mode === 'og' ? 'og-daily' : 'go-daily')
-    }
-  }, [])
+    navigateToResumeSlot(slot)
+  }, [navigateToResumeSlot])
   const handleGameComplete = useCallback((input: CompletedGameInput) => {
     setGuestProgress((currentProgress) => {
       const nextProgress = recordCompletedGame(input, currentProgress)
@@ -464,6 +474,43 @@ function AppInner() {
   const handleCloseProfilePanel = useCallback(() => {
     setProfilePanelOpen(false)
   }, [])
+  const handleAccountHudClick = useCallback(() => {
+    if (authState.status === 'authenticated') {
+      handleOpenProfilePanel()
+      return
+    }
+
+    if (authState.status === 'anonymous') {
+      handleOpenAuthModal()
+      return
+    }
+
+    handleNavigate('settings')
+  }, [authState.status, handleNavigate, handleOpenAuthModal, handleOpenProfilePanel])
+  const handleSyncNow = useCallback(() => {
+    if (authState.status !== 'authenticated' || !authState.user || !supabaseClient) {
+      if (authState.status === 'anonymous') {
+        handleOpenAuthModal()
+      } else {
+        handleNavigate('settings')
+      }
+      setSyncStatus(createSyncStatus(supabaseClient ? 'idle' : 'error'))
+      return
+    }
+
+    setSyncStatus(createSyncStatus('syncing'))
+    void syncGuestProgress({
+      isOnline: typeof navigator === 'undefined' ? true : navigator.onLine,
+      localProgress: guestProgressRef.current,
+      localUpdatedAt: new Date().toISOString(),
+      repository: createSupabaseProgressRepository(supabaseClient),
+      userId: authState.user.id,
+    }).then((result) => {
+      setGuestProgress(result.progress)
+      saveGuestProgress(result.progress)
+      setSyncStatus(result.status)
+    })
+  }, [authState, handleNavigate, handleOpenAuthModal, supabaseClient])
   const handleSaveProfile = useCallback(async (input: { readonly displayName?: string; readonly accentColor?: ProfileAccentColor; readonly avatarUrl?: string }) => {
     if (!supabaseClient) {
       return
@@ -513,65 +560,71 @@ function AppInner() {
   }, [maybeAutoResume, supabaseClient])
 
   return (
-    <Layout
-      description="Polar-night word missions with daily runs, practice chains, stats, and sync."
-      eyebrow="Arctic word command"
-      navigation={(
-        <div className="flex flex-col gap-3 lg:items-end">
-          <AccountBadge authState={authState} onOpenAuthModal={handleOpenAuthModal} onOpenProfile={handleOpenProfilePanel} />
-          <Navigation activeRouteId={activeRoute.id} onNavigate={handleNavigate} routes={navigationRoutes} />
-        </div>
-      )}
-      title="brrrdle"
-    >
-      <div className="grid gap-4 xl:grid-cols-[minmax(12rem,16rem)_minmax(0,1fr)_minmax(12rem,16rem)] xl:items-start">
-        <aside aria-label="Mission status" className="order-2 grid gap-4 md:grid-cols-2 xl:order-1 xl:grid-cols-1">
-          <HudCard title="Daily Challenge">
-            <div className="mt-4 grid gap-3">
-              <MetricTile label="og and go" value={`${DAILY_WORD_LENGTH} letters`} />
-              <MetricTile label="practice" value={`${MIN_PRACTICE_WORD_LENGTH}-${MAX_PRACTICE_WORD_LENGTH} letters`} />
-              <MetricTile label="go chain" value={`${guestProgress.settings.goPuzzleCountDefault} boards`} />
-            </div>
-          </HudCard>
-
-          <HudCard title="Word Banks">
-            <p className="mt-4 text-sm leading-6 text-slate-300">
-              Seeded dictionaries are loaded across {BUNDLED_WORD_LIST_LENGTHS.length} supported lengths.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {BUNDLED_WORD_LIST_LENGTHS.slice(0, 12).map((length) => (
-                <span key={length} className="rounded-md border border-[var(--color-ice-300)]/25 bg-cyan-300/10 px-2 py-1 text-xs font-bold text-cyan-100">
-                  {length}
-                </span>
-              ))}
-              {BUNDLED_WORD_LIST_LENGTHS.length > 12 ? (
-                <span className="rounded-md border border-white/10 bg-white/[0.03] px-2 py-1 text-xs font-bold text-slate-300">
-                  +{BUNDLED_WORD_LIST_LENGTHS.length - 12}
-                </span>
-              ) : null}
-            </div>
-          </HudCard>
-
-          <HudCard title="About Brrrdle">
-            <p className="mt-4 text-sm leading-6 text-slate-300">
-              Daily og, go chains, practice ladders, definitions, stats, and local-first progress in one frozen word game.
-            </p>
-          </HudCard>
-        </aside>
-
-        <section aria-labelledby="active-route-title" className="brrrdle-play-bay order-1 rounded-lg border border-[var(--color-ice-300)]/25 bg-slate-950/70 p-4 shadow-[0_0_80px_rgb(8_145_178/0.18)] backdrop-blur-xl md:p-5 xl:order-2">
-          <div className="mb-5 flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <p className="text-xs font-black uppercase text-[var(--color-ice-200)]">Active Mission</p>
-              <h2 id="active-route-title" className="mt-1 text-3xl font-black text-white">{activeRoute.label}</h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">{activeRoute.description}</p>
-            </div>
-            <span className="inline-flex w-fit items-center gap-2 rounded-lg border border-[var(--color-ice-300)]/30 bg-cyan-300/10 px-3 py-2 text-xs font-bold text-cyan-100">
-              <span aria-hidden="true" className="h-2 w-2 rounded-full bg-[var(--color-ice-300)] shadow-[0_0_12px_var(--color-ice-300)]" />
-              Live
-            </span>
-          </div>
-
+    <>
+      <LunarSignalStage
+        accountControls={<AccountBadge authState={authState} onOpenAuthModal={handleOpenAuthModal} onOpenProfile={handleOpenProfilePanel} />}
+        activeRoute={activeRoute}
+        metrics={[
+          { label: 'daily', value: `${DAILY_WORD_LENGTH} letters` },
+          { label: 'practice', value: `${MIN_PRACTICE_WORD_LENGTH}-${MAX_PRACTICE_WORD_LENGTH}` },
+          { label: 'go chain', value: `${guestProgress.settings.goPuzzleCountDefault} boards` },
+          { label: 'banks', value: BUNDLED_WORD_LIST_LENGTHS.length },
+        ]}
+        onNavigate={handleNavigate}
+        routes={prismRoutes}
+        statusLines={[
+          {
+            label: 'Account',
+            value: (
+              <button className="brrrdle-lunar-line-action" onClick={handleAccountHudClick} type="button">
+                {getAuthDisplay(authState)}
+              </button>
+            ),
+          },
+          {
+            label: 'Sync',
+            value: (
+              <button className="brrrdle-lunar-line-action" onClick={handleSyncNow} type="button">
+                {syncStatus.kind}
+              </button>
+            ),
+          },
+          {
+            label: 'Sound',
+            value: (
+              <button
+                aria-checked={sound.enabled}
+                className="brrrdle-lunar-switch"
+                onClick={() => sound.setEnabled(!sound.enabled)}
+                role="switch"
+                type="button"
+              >
+                <span aria-hidden="true" />
+                <strong>{sound.enabled ? 'On' : 'Off'}</strong>
+              </button>
+            ),
+          },
+          {
+            label: 'Theme',
+            value: (
+              <select
+                aria-label="Theme"
+                className="brrrdle-lunar-line-select"
+                onChange={(event) => {
+                  if (isTheme(event.target.value)) {
+                    handleUpdateSettings({ themeDefault: event.target.value as Theme })
+                  }
+                }}
+                value={guestProgress.settings.themeDefault}
+              >
+                {THEMES.map((theme) => (
+                  <option key={theme} value={theme}>{getThemeMeta(theme).label}</option>
+                ))}
+              </select>
+            ),
+          },
+        ]}
+      >
           <RoutePanel
             authMessage={authMessage}
             authState={authState}
@@ -579,8 +632,8 @@ function AppInner() {
             onGameComplete={handleGameComplete}
             onOpenAuthModal={handleOpenAuthModal}
             onOpenProfilePanel={handleOpenProfilePanel}
+            onPracticeModeChange={setPracticeMode}
             onResetProgress={handleResetProgress}
-            onResume={handleResume}
             onResumeCapture={handleResumeCapture}
             onSelectRoute={handleNavigate}
             onSendMagicLink={handleSendMagicLink}
@@ -590,45 +643,14 @@ function AppInner() {
             onSpendCoins={handleSpendCoins}
             onToggleSound={sound.setEnabled}
             onUpdateSettings={handleUpdateSettings}
-            pendingResume={pendingResume}
-            resumeSlot={resumeSlot}
+            practiceMode={practiceMode}
+            resumeSlots={resumeSlots}
             route={activeRoute}
             soundEnabled={sound.enabled}
             supabaseClient={supabaseClient}
             syncStatus={syncStatus}
           />
-        </section>
-
-        <aside aria-label="System status" className="order-3 grid gap-4 md:grid-cols-2 xl:grid-cols-1">
-          <HudCard title="Pilot Profile">
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <MetricTile label="level" value={guestProgress.progression.level} />
-              <MetricTile label="xp" value={guestProgress.progression.xp} />
-              <MetricTile label="coins" value={guestProgress.progression.coins} />
-              <MetricTile label="games" value={guestProgress.history.length} />
-            </div>
-          </HudCard>
-
-          <HudCard title="Systems">
-            <div className="mt-2">
-              <SystemLine label="Account" value={getAuthDisplay(authState)} />
-              <SystemLine label="Sync" value={syncStatus.kind} />
-              <SystemLine label="Sound" value={sound.enabled ? 'On' : 'Off'} />
-              <SystemLine label="Hard mode" value={guestProgress.settings.hardModeDefault ? 'On' : 'Off'} />
-              <SystemLine label="Theme" value={guestProgress.settings.themeDefault} />
-            </div>
-          </HudCard>
-
-          <HudCard title="Resume">
-            <p className="mt-4 text-sm leading-6 text-slate-300">
-              {resumeSlot ? 'An unfinished game is ready.' : 'No unfinished game is parked.'}
-            </p>
-            {resumeSlot ? (
-              <Button className="mt-4 w-full" onClick={handleResume} variant="primary">{describeResumeSlot(resumeSlot)}</Button>
-            ) : null}
-          </HudCard>
-        </aside>
-      </div>
+      </LunarSignalStage>
 
       <AuthModal
         authenticated={authState.status === 'authenticated'}
@@ -652,7 +674,7 @@ function AppInner() {
         statusMessage={profileMessage}
         supabaseClient={supabaseClient}
       />
-    </Layout>
+    </>
   )
 }
 

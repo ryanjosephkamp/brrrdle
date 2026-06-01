@@ -72,4 +72,41 @@ describe('guest transfer', () => {
     expect(mergeGuestProgressIntoCloud(cloud, local).resumeSlot).toEqual(slot)
     expect(mergeGuestProgressIntoCloud(cloud, cloud).resumeSlot).toBeUndefined()
   })
+
+  it('merges lane-based resume slots without collapsing practice modes', () => {
+    const practiceOg = {
+      difficulty: 'expert',
+      mode: 'og',
+      scope: 'practice',
+      serializedSession: { answer: 'crane', continuationCount: 0, currentGuess: 'cr', guesses: [], hardMode: false, maxAttempts: 6 },
+      updatedAt: '2026-05-30T06:00:00.000Z',
+      wordLength: 5,
+    } as const
+    const practiceGo = {
+      difficulty: 'expert',
+      goPuzzleCount: 5,
+      mode: 'go',
+      scope: 'practice',
+      serializedSession: {
+        currentPuzzleIndex: 1,
+        hardMode: false,
+        priorAnswers: ['crane'],
+        puzzles: [
+          { answer: 'crane', continuationCount: 0, currentGuess: '', guesses: ['crane'], maxAttempts: 6, prefilledGuesses: [] },
+          { answer: 'plumb', continuationCount: 0, currentGuess: 'pl', guesses: [], maxAttempts: 6, prefilledGuesses: ['crane'] },
+        ],
+      },
+      updatedAt: '2026-05-30T07:00:00.000Z',
+      wordLength: 5,
+    } as const
+    const local = { ...createDefaultGuestProgress(), resumeSlots: { 'practice-og': practiceOg } }
+    const cloud = { ...createDefaultGuestProgress(), resumeSlots: { 'practice-go': practiceGo } }
+    const merged = mergeGuestProgressIntoCloud(local, cloud)
+
+    expect(merged.resumeSlots).toEqual({
+      'practice-go': practiceGo,
+      'practice-og': practiceOg,
+    })
+    expect(merged.resumeSlot).toEqual(practiceGo)
+  })
 })

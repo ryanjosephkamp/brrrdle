@@ -4,6 +4,17 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Phase 20 Complete - Final Lunar Signal Deck Layout + All Refinements
+
+Phase 20 is finalized with **Variant 03 - Lunar Signal Deck** selected as the official layout direction. This completes the dramatic UI/layout exploration phase with a production-ready lunar command-deck shell, preserved gameplay mechanics, responsive landing/play surfaces, and the final refinement set captured in `PHASE-20-VARIANT-03-REFINEMENT-NOTES.md`.
+
+#### 20 Finalization - Selected winner and release gate (`phase_id = 58`)
+- **Selected final layout**: marked Variant 03 as **Selected Winner & Finalized** in `PHASE-20-LAYOUT-VARIANTS.md`.
+- **Lunar Signal Deck shell**: preserves the full existing app surface while presenting the game through the finalized lunar landing deck, colored route chips, route-aware play shell, contextual rail labels, and dedicated About tab.
+- **Gameplay-preserving refinements**: retained independent resume slots for daily og, daily go, practice og, and practice go; collapsed Customize panels by default; kept practice reveal controls gated to puzzles with at least one submitted guess; preserved all existing daily/practice rules, difficulty tiers, stats, definitions, auth, sounds, and theme behavior.
+- **Interactive HUD and Words polish**: finalized clickable Account/Sync/Sound/Theme HUD controls, removed the HUD Hard Mode row only, kept Settings/per-game hard-mode controls intact, and retained paginated Word Explorer rendering with sorting, filtering, copy, request-word, and Define pop-up behavior preserved.
+- **Release gate**: final verification for the selected layout included lint, tests, build, API type-check, whitespace diff check, and desktop/mobile browser smoke testing before PR creation and merge.
+
 ### Phase 20.1 - First Layout Variant: Frozen Command Center
 
 First single Phase 20 layout variant, implemented for preview and user feedback only. This variant reframes the existing brrrdle app as an arctic command-deck HUD with a central mission bay, left mission-status rail, right systems/profile rail, sharper glass panels, grid/aurora depth, and responsive mobile collapse. **No game logic, word-list filtering, stats math, auth mechanics, monetization, commit, merge, or production release changed in this step.**

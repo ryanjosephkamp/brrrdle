@@ -35,6 +35,11 @@ export type ResumeSlot = OgResumeSlot | GoResumeSlot
 /** A resume slot without its timestamp, as captured by a live game component. */
 export type ResumeCapture = Omit<OgResumeSlot, 'updatedAt'> | Omit<GoResumeSlot, 'updatedAt'>
 
+export type ResumeSlotKey = 'daily-og' | 'daily-go' | 'practice-og' | 'practice-go'
+export type ResumeSlotCollection = Partial<Record<ResumeSlotKey, ResumeSlot>>
+
+const RESUME_SLOT_KEYS = ['daily-og', 'daily-go', 'practice-og', 'practice-go'] as const
+
 function isScope(value: unknown): value is PlayScope {
   return value === 'daily' || value === 'practice'
 }
@@ -75,6 +80,14 @@ export function isCaptureInProgress(capture: ResumeCapture): boolean {
 /** Stamp a capture with a timestamp to produce a persisted resume slot. */
 export function createResumeSlot(capture: ResumeCapture, updatedAt: string = new Date().toISOString()): ResumeSlot {
   return { ...capture, updatedAt }
+}
+
+export function getResumeSlotKey(slot: Pick<ResumeSlot, 'mode' | 'scope'>): ResumeSlotKey {
+  return `${slot.scope}-${slot.mode}` as ResumeSlotKey
+}
+
+function isResumeSlotKey(value: string): value is ResumeSlotKey {
+  return RESUME_SLOT_KEYS.includes(value as ResumeSlotKey)
 }
 
 function isSerializedOgSession(value: unknown): value is SerializedOgSession {
@@ -162,6 +175,45 @@ export function normalizeResumeSlot(value: unknown): ResumeSlot | undefined {
   }
 
   return undefined
+}
+
+export function normalizeResumeSlots(value: unknown): ResumeSlotCollection {
+  if (typeof value !== 'object' || value === null) {
+    return {}
+  }
+
+  const record = value as Record<string, unknown>
+  return Object.fromEntries(RESUME_SLOT_KEYS.flatMap((key) => {
+    const slot = normalizeResumeSlot(record[key])
+    if (!slot || getResumeSlotKey(slot) !== key) {
+      return []
+    }
+    return [[key, slot]]
+  })) as ResumeSlotCollection
+}
+
+export function getLatestResumeSlot(slots: ResumeSlotCollection): ResumeSlot | undefined {
+  return Object.values(slots)
+    .filter((slot): slot is ResumeSlot => Boolean(slot))
+    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0]
+}
+
+export function mergeResumeSlots(left: ResumeSlotCollection | undefined, right: ResumeSlotCollection | undefined): ResumeSlotCollection | undefined {
+  const merged: ResumeSlotCollection = {}
+  const leftSlots = normalizeResumeSlots(left)
+  const rightSlots = normalizeResumeSlots(right)
+
+  for (const key of RESUME_SLOT_KEYS) {
+    const leftSlot = leftSlots[key]
+    const rightSlot = rightSlots[key]
+    if (leftSlot && rightSlot) {
+      merged[key] = leftSlot.updatedAt >= rightSlot.updatedAt ? leftSlot : rightSlot
+    } else if (leftSlot || rightSlot) {
+      merged[key] = leftSlot ?? rightSlot
+    }
+  }
+
+  return Object.keys(merged).some(isResumeSlotKey) ? merged : undefined
 }
 
 /** Human-readable summary used for the home-screen Resume button. */

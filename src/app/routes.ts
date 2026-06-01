@@ -1,6 +1,6 @@
 import type { GameMode, PlayScope } from '../game/types'
 
-export type AppRouteId = 'home' | 'og-daily' | 'go-daily' | 'practice' | 'word-explorer' | 'feedback' | 'definitions' | 'stats' | 'settings' | 'admin'
+export type AppRouteId = 'home' | 'og-daily' | 'go-daily' | 'practice' | 'word-explorer' | 'feedback' | 'definitions' | 'stats' | 'settings' | 'about' | 'admin'
 
 export interface AppRoute {
   readonly id: AppRouteId
@@ -85,6 +85,13 @@ export const APP_ROUTES = [
     navigationGroup: 'support',
   },
   {
+    id: 'about',
+    label: 'About Brrrdle',
+    shortLabel: 'About',
+    description: 'Project notes, rules context, credits, and release details for brrrdle.',
+    navigationGroup: 'support',
+  },
+  {
     id: 'admin',
     label: 'Admin',
     shortLabel: 'Admin',
@@ -109,6 +116,6 @@ export function getPrimaryNavigationRoutes(isAdmin: boolean): readonly AppRoute[
       return isAdmin
     }
 
-    return ['og-daily', 'go-daily', 'practice', 'word-explorer', 'feedback', 'settings'].includes(route.id)
+    return ['og-daily', 'go-daily', 'practice', 'word-explorer', 'feedback', 'settings', 'about'].includes(route.id)
   })
 }

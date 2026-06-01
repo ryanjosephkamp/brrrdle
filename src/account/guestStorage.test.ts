@@ -22,12 +22,12 @@ describe('guest storage', () => {
     saveGuestProgress({ ...progress, progression: { ...progress.progression, coins: 12 } }, storage)
 
     expect(loadGuestProgress(storage).progression.coins).toBe(12)
-    expect(JSON.parse(exportGuestProgress(loadGuestProgress(storage))).schemaVersion).toBe(3)
+    expect(JSON.parse(exportGuestProgress(loadGuestProgress(storage))).schemaVersion).toBe(4)
     expect(resetGuestProgress(storage).progression.coins).toBe(0)
   })
 
   it('falls back to defaults for corrupted or incompatible data', () => {
-    expect(loadGuestProgress(createMemoryStorage('{broken')).schemaVersion).toBe(3)
+    expect(loadGuestProgress(createMemoryStorage('{broken')).schemaVersion).toBe(4)
     expect(loadGuestProgress(createMemoryStorage(JSON.stringify({ schemaVersion: 99 }))).progression.level).toBe(1)
   })
 
@@ -41,7 +41,7 @@ describe('guest storage', () => {
     })
     const migrated = loadGuestProgress(createMemoryStorage(legacyPayload))
 
-    expect(migrated.schemaVersion).toBe(3)
+    expect(migrated.schemaVersion).toBe(4)
     expect(migrated.progression.coins).toBe(42)
     expect(migrated.progression.xp).toBe(120)
     expect(migrated.progression.level).toBe(3)
@@ -79,5 +79,73 @@ describe('guest storage', () => {
     expect(progress.progression.xp).toBeGreaterThan(0)
     expect(progress.progression.coins).toBeGreaterThan(0)
     expect(duplicate).toBe(progress)
+  })
+
+  it('migrates the legacy single resume slot into the lane-based resume collection', () => {
+    const legacySlot = {
+      difficulty: 'expert',
+      mode: 'og',
+      scope: 'practice',
+      serializedSession: { answer: 'crane', continuationCount: 0, currentGuess: 'cr', guesses: [], hardMode: false, maxAttempts: 6 },
+      updatedAt: '2026-05-30T06:00:00.000Z',
+      wordLength: 5,
+    } as const
+    const migrated = loadGuestProgress(createMemoryStorage(JSON.stringify({
+      ...createDefaultGuestProgress(),
+      resumeSlot: legacySlot,
+      schemaVersion: 3,
+    })))
+
+    expect(migrated.resumeSlot).toEqual(legacySlot)
+    expect(migrated.resumeSlots?.['practice-og']).toEqual(legacySlot)
+  })
+
+  it('clears only the completed lane from the resume collection', () => {
+    const practiceOg = {
+      difficulty: 'expert',
+      mode: 'og',
+      scope: 'practice',
+      serializedSession: { answer: 'crane', continuationCount: 0, currentGuess: 'cr', guesses: [], hardMode: false, maxAttempts: 6 },
+      updatedAt: '2026-05-30T06:00:00.000Z',
+      wordLength: 5,
+    } as const
+    const practiceGo = {
+      difficulty: 'expert',
+      goPuzzleCount: 5,
+      mode: 'go',
+      scope: 'practice',
+      serializedSession: {
+        currentPuzzleIndex: 1,
+        hardMode: false,
+        priorAnswers: ['crane'],
+        puzzles: [
+          { answer: 'crane', continuationCount: 0, currentGuess: '', guesses: ['crane'], maxAttempts: 6, prefilledGuesses: [] },
+          { answer: 'plumb', continuationCount: 0, currentGuess: 'pl', guesses: [], maxAttempts: 6, prefilledGuesses: ['crane'] },
+        ],
+      },
+      updatedAt: '2026-05-30T07:00:00.000Z',
+      wordLength: 5,
+    } as const
+    const progress = recordCompletedGame({
+      attemptsUsed: 3,
+      gameId: 'practice-og-2026-05-26',
+      maxAttempts: 6,
+      mode: 'og',
+      scope: 'practice',
+      status: 'won',
+      word: 'crane',
+      wordLength: 5,
+    }, {
+      ...createDefaultGuestProgress(),
+      resumeSlot: practiceGo,
+      resumeSlots: {
+        'practice-go': practiceGo,
+        'practice-og': practiceOg,
+      },
+    })
+
+    expect(progress.resumeSlots?.['practice-og']).toBeUndefined()
+    expect(progress.resumeSlots?.['practice-go']).toEqual(practiceGo)
+    expect(progress.resumeSlot).toEqual(practiceGo)
   })
 })

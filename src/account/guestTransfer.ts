@@ -1,6 +1,7 @@
 import { getLevelForXp } from '../progression'
 import type { GameStatsBucket, StatisticsState } from '../stats/types'
 import { normalizeGuestSettings, type GuestProgressState } from './storageSchema'
+import { getLatestResumeSlot, mergeResumeSlots } from './resumeSlot'
 
 function mergeStatsBucket(local: GameStatsBucket, cloud: GameStatsBucket): GameStatsBucket {
   const lengthKeys = new Set([...Object.keys(local.byLength), ...Object.keys(cloud.byLength)].map(Number))
@@ -51,9 +52,8 @@ export function mergeGuestProgressIntoCloud(local: GuestProgressState, cloud: Gu
   // recency proxy. Normalize the winner so a tier (or any newer field) is always
   // present and migration-safe through cloud round-trips (Phase 18.8).
   const settings = normalizeGuestSettings(local.history.length >= cloud.history.length ? local.settings : cloud.settings)
-  // Forward-compatible resume slot: keep whichever side reserved one. Always
-  // undefined today; preserving it avoids a future migration (Phase 18.8).
-  const resumeSlot = local.resumeSlot ?? cloud.resumeSlot
+  const resumeSlots = mergeResumeSlots(local.resumeSlots, cloud.resumeSlots)
+  const resumeSlot = getLatestResumeSlot(resumeSlots ?? {}) ?? local.resumeSlot ?? cloud.resumeSlot
 
   return {
     ...cloud,
@@ -69,6 +69,7 @@ export function mergeGuestProgressIntoCloud(local: GuestProgressState, cloud: Gu
       xp,
     },
     resumeSlot,
+    resumeSlots,
     settings,
     stats: mergeStats(local.stats, cloud.stats),
   }

@@ -198,7 +198,7 @@ function GoGameSession({
     continuationCount: currentPuzzle.continuationCount,
     wordLength: currentPuzzle.wordLength,
   })
-  const canReveal = scope === 'practice' && session.status === 'playing'
+  const canReveal = scope === 'practice' && session.status === 'playing' && currentPuzzle.guesses.length > 0
   const solvedPuzzles = session.puzzles.filter((puzzle) => puzzle.status === 'won')
 
   useEffect(() => {
