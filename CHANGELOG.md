@@ -4,7 +4,19 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
-### Phase 21 Prompt 3 — Full Execution: UI Polish & Theming Foundation (PHASE-21-UI-POLISH-AND-THEMING-FOUNDATION-SPEC-2026-06-01)
+### Phase 21 Addendum – Theme Proposal Templates spec uploaded and incorporated (Governance Step) (PHASE-21-THEME-PROPOSAL-TEMPLATES-SPEC-2026-06-02)
+
+Governance/documentation-only step that incorporates the newly uploaded `PHASE-21-THEME-PROPOSAL-TEMPLATES-SPEC-2026-06-02.md` as a Phase 21 addendum before the final Phase 21 PR is merged. **No theme code, no proposal Markdown files, no CSV population, and no folder creation were performed in this step.** The finalized Phase 21 surface foundation and every existing mechanic remain 100% intact.
+
+#### Addendum Prompt 2 — Spec incorporated into plan, changelog, progress, and proposals README (`phase_id = 62`)
+- **`AGENT-IMPLEMENTATION-PLAN.md`**: bumped Plan Version 2.6 → 2.7; extended the amendment history; added a Current Phase Index row for the addendum; appended §26.8 "Phase 21 Addendum – Theme Proposal Templates (Governance Step)" referencing the spec, recording the target `themes/proposals/template_proposals/` + `full_proposals/` + `theme_proposals.csv` + `themes/themes.csv` structure, the planned deliverables, strict rules, and the addendum prompt workflow. (The user-requested "§26.1" addendum is recorded as §26.8 because §26.1–§26.7 were already occupied, and the version advances to v2.7 because v2.6 was already consumed by the Phase 21 Prompt 3 full-execution amendment.)
+- **`themes/proposals/README.md`**: populated the previously empty placeholder with a short note acknowledging the new `template_proposals/` (Markdown templates), `full_proposals/` (reserved/empty), `theme_proposals.csv` (proposal index), and `themes/themes.csv` (reserved) structure and its governance status.
+- **`progress/PROGRESS.csv`**: appended `phase_id = 62` for this governance-only step.
+- **`progress/PROGRESS-STEP-62.md`**: new report documenting this governance step.
+- **Verification**: `git diff --check` clean; `PROGRESS.csv` parse check (all rows 12 columns, last row `phase_id = 62`); no source, test, or build-config changes, so the lint/test/build baseline is unchanged from Phase 21 Prompt 3 (338/338).
+- **Gate**: halt here for explicit user approval before the template-proposal execution step (authoring 5–10 templates and populating the CSV). About Brrrdle remains a dedicated page.
+
+
 
 Full execution of Phase 21. Polishes the finalized Phase 20 "Lunar Signal Deck" layout into a sophisticated, theming-ready foundation **with the layout and tab structure preserved**, adopts a very minimalist default background, and captures the original heavier Lunar Signal Deck visual style as **one individual, opt-in surface theme** to be enabled in Phase 22. Every gameplay mechanic, accent theme, and supporting feature is preserved 100% intact, and the Phase 22 dramatic theming system itself is intentionally **not** implemented.
 
