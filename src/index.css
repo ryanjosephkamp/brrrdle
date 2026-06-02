@@ -127,10 +127,22 @@ body {
   z-index: 1;
 }
 
+/*
+ * Phase 21 — The Lunar Signal Deck *layout* is the permanent base, but its
+ * heavy visual treatment (signal glow, animated canvas, scan grid, custom
+ * cursor) is now a single opt-in surface theme. The default surface is a very
+ * minimalist near-black backdrop; the original look is restored only when
+ * `data-surface='lunar-signal'` is present (enabled in Phase 22).
+ */
 .brrrdle-lunar-shell {
   position: relative;
   isolation: isolate;
   overflow-x: hidden;
+  /* Minimalist default: a plain, calm near-black surface. */
+  background: var(--surface-base, #05070e);
+}
+
+.brrrdle-lunar-shell[data-surface='lunar-signal'] {
   background:
     radial-gradient(circle at var(--signal-x, 62%) var(--signal-y, 54%), color-mix(in srgb, var(--signal-color, #f5fbff), transparent 82%), transparent 24rem),
     radial-gradient(circle at 14% 82%, rgb(255 77 69 / 0.14), transparent 22rem),
@@ -166,6 +178,15 @@ body {
 .brrrdle-lunar-noise {
   z-index: 1;
   pointer-events: none;
+  /* Minimalist default: a faint, static grid that fades toward the edges. */
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.022) 1px, transparent 1px);
+  background-size: 4rem 4rem;
+  mask-image: radial-gradient(circle at 50% -10%, rgb(0 0 0 / 0.85), rgb(0 0 0 / 0.28) 62%, transparent);
+}
+
+.brrrdle-lunar-shell[data-surface='lunar-signal'] .brrrdle-lunar-noise {
   background-image:
     linear-gradient(rgb(255 255 255 / 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgb(255 255 255 / 0.018) 1px, transparent 1px);

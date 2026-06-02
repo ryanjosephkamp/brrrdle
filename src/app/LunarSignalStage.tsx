@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from 'react'
+import { DEFAULT_SURFACE_THEME, type SurfaceTheme } from '../theme'
 import type { AppRoute, AppRouteId } from './routes'
 
 interface SignalMetric {
@@ -14,6 +15,12 @@ interface LunarSignalStageProps {
   readonly onNavigate: (routeId: AppRouteId) => void
   readonly routes: readonly AppRoute[]
   readonly statusLines: readonly SignalMetric[]
+  /**
+   * Surface theme controlling the shell backdrop. Defaults to the minimalist
+   * surface; `lunar-signal` restores the animated Lunar Signal Deck treatment
+   * (Phase 22 will let players select it).
+   */
+  readonly surfaceTheme?: SurfaceTheme
 }
 
 const signalColors = ['#f5fbff', '#ff4d45', '#55f4ff', '#ff66d4', '#8f7cff', '#ffe766', '#48ff9a', '#b8c4ff', '#ff9657']
@@ -252,7 +259,9 @@ export function LunarSignalStage({
   onNavigate,
   routes,
   statusLines,
+  surfaceTheme = DEFAULT_SURFACE_THEME,
 }: LunarSignalStageProps) {
+  const isLunarSurface = surfaceTheme === 'lunar-signal'
   const initialFocus = useMemo(() => routes.find((route) => route.id === activeRoute.id)?.id ?? routes[0]?.id ?? activeRoute.id, [activeRoute.id, routes])
   const [focusedRouteId, setFocusedRouteId] = useState<AppRouteId>(initialFocus)
   const [isAwake, setIsAwake] = useState(false)
@@ -278,6 +287,9 @@ export function LunarSignalStage({
   }
 
   const handleShellPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (!isLunarSurface) {
+      return
+    }
     const rect = event.currentTarget.getBoundingClientRect()
     const x = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100))
     const y = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100))
@@ -312,9 +324,13 @@ export function LunarSignalStage({
   } as CSSProperties
 
   return (
-    <div className={`brrrdle-lunar-shell min-h-svh min-h-dvh text-white ${isAwake ? 'is-awake' : 'is-dormant'}`} onPointerMove={handleShellPointerMove} ref={shellRef} style={shellStyle}>
-      <SignalCanvas activeRouteId={activeRoute.id} focusedRouteId={focusedRoute.id} isAwake={isAwake} onActivateRoute={activateRoute} onFocusRoute={focusRoute} routes={routes} />
-      <div className="brrrdle-lunar-cursor" aria-hidden="true" />
+    <div className={`brrrdle-lunar-shell min-h-svh min-h-dvh text-white ${isAwake ? 'is-awake' : 'is-dormant'}`} data-surface={isLunarSurface ? 'lunar-signal' : undefined} onPointerMove={handleShellPointerMove} ref={shellRef} style={shellStyle}>
+      {isLunarSurface ? (
+        <>
+          <SignalCanvas activeRouteId={activeRoute.id} focusedRouteId={focusedRoute.id} isAwake={isAwake} onActivateRoute={activateRoute} onFocusRoute={focusRoute} routes={routes} />
+          <div className="brrrdle-lunar-cursor" aria-hidden="true" />
+        </>
+      ) : null}
       <div className="brrrdle-lunar-noise" aria-hidden="true" />
 
       <div className="brrrdle-lunar-interface">
@@ -347,7 +363,9 @@ export function LunarSignalStage({
           <main className="brrrdle-lunar-intro" aria-label="Brrrdle route selector">
             <section className="brrrdle-lunar-hero">
               <span>
-                Glide across the lunar field to preview a destination, then click a colored tab below to open {focusedRoute.label}.
+                {isLunarSurface
+                  ? `Glide across the lunar field to preview a destination, then click a colored tab below to open ${focusedRoute.label}.`
+                  : `Pick a colored tab below to open ${focusedRoute.label}.`}
               </span>
             </section>
 
