@@ -4,7 +4,19 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
-### Phase 21 Addendum – Theme Proposal Templates authored (Full Execution, Prompt 3) (PHASE-21-THEME-PROPOSAL-TEMPLATES-SPEC-2026-06-02)
+### Phase 22 Prompt 1 — Planning & Governance Addendum: Advanced Calendar / Midnight Handling + Timezone-Aware Daily Reset (PHASE-22-CALENDAR-MIDNIGHT-AND-BUGFIXES-SPEC-2026-06-02)
+
+Planning + governance-only step that binds the newly uploaded Phase 22 spec into the implementation plan and makes Phase 22 the active next phase, ahead of full execution. **No daily-rollover, timezone, anti-gaming, countdown, reset-alert, sound, dev-tool, modular-refactor, or bug-fix source code was implemented in this step.** The finalized Phase 21 surface foundation and every existing mechanic remain 100% intact.
+
+#### 22 Prompt 1 — Plan addendum §27 + progress tracking (`phase_id = 64`)
+- **`AGENT-IMPLEMENTATION-PLAN.md`**: bumped Plan Version 2.7 → 2.8; extended the amendment history; updated the Current Phase Index to add a **Phase 22 (active next phase) → §27** row and refreshed the upcoming-roadmap note (Phases 23–26); appended §27 "Phase 22 – Advanced Calendar / Midnight Handling + Timezone-Aware Daily Reset" referencing `PHASE-22-CALENDAR-MIDNIGHT-AND-BUGFIXES-SPEC-2026-06-02.md` and recording the goals, balanced anti-gaming policy, "what to do first" exploration steps, in/out-of-scope summary, deliverables, two-prompt workflow (Prompt 1 governance at `phase_id = 64`; Prompt 2 full execution at `phase_id = 65+`), success criteria/verification gate, and exit checklist.
+- **Reviewed (no changes)**: `PHASE-22-CALENDAR-MIDNIGHT-AND-BUGFIXES-SPEC-2026-06-02.md` (binding spec), `CONSTITUTION.md` v3.3, and the existing daily system (`src/data/daily.ts` currently derives the daily `dateKey` from UTC via `toISOString().slice(0, 10)` — the primary surface Phase 22 must make timezone-aware).
+- **`progress/PROGRESS.csv`**: appended `phase_id = 64` for this governance-only step.
+- **`progress/PROGRESS-STEP-64.md`**: new report documenting this planning/governance step.
+- **Verification**: `git diff --check` clean; `progress/PROGRESS.csv` parse check (all rows 12 columns, last row `phase_id = 64`); no source, test, or build-config changes, so the lint/test/build baseline is unchanged from the prior phase.
+- **Gate**: halt here for explicit user approval before Phase 22 Prompt 2 (full execution). The strict invariants remain in force (daily = 5 letters; practice 2–35; no multiplayer/marketplace/economy changes; guest/signed-in sync consistent).
+
+
 
 Execution of the Phase 21 addendum template-proposal step. Authored the proposal documentation set described by the spec (plan §26.8) so a later, separately approved phase (Phase 22+) has Codex-ready blueprints for sophisticated themes. **Planning artifacts only — no theme code, no CSS, no surface/accent/sound modules were changed; `themes/proposals/full_proposals/` and `themes/themes.csv` are untouched; the minimalist default surface and the Lunar Signal Deck layout/tab structure remain intact.**
 
