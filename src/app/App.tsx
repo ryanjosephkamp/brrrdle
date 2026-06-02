@@ -8,7 +8,7 @@ import { StatsDashboard } from '../stats'
 import { WordExplorerPanel } from '../wordExplorer'
 import { FeedbackPanel } from '../feedback'
 import { SoundProvider, useSound } from '../sound'
-import { applyTheme, getThemeMeta, isTheme, THEMES, type Theme } from '../theme'
+import { applySurfaceTheme, applyTheme, DEFAULT_SURFACE_THEME, getThemeMeta, isTheme, THEMES, type Theme } from '../theme'
 import { GoGame } from './games/GoGame'
 import { OgGame } from './games/OgGame'
 import { LunarSignalStage } from './LunarSignalStage'
@@ -538,6 +538,12 @@ function AppInner() {
     applyTheme(guestProgress.settings.themeDefault)
   }, [guestProgress.settings.themeDefault])
 
+  // Phase 21: the minimalist surface is the baseline. The Lunar Signal Deck
+  // backdrop becomes a selectable surface theme in Phase 22.
+  useEffect(() => {
+    applySurfaceTheme(DEFAULT_SURFACE_THEME)
+  }, [])
+
   useEffect(() => {
     let isMounted = true
     void getCurrentAuthState(supabaseClient).then((nextAuthState) => {
@@ -564,6 +570,7 @@ function AppInner() {
       <LunarSignalStage
         accountControls={<AccountBadge authState={authState} onOpenAuthModal={handleOpenAuthModal} onOpenProfile={handleOpenProfilePanel} />}
         activeRoute={activeRoute}
+        surfaceTheme={DEFAULT_SURFACE_THEME}
         metrics={[
           { label: 'daily', value: `${DAILY_WORD_LENGTH} letters` },
           { label: 'practice', value: `${MIN_PRACTICE_WORD_LENGTH}-${MAX_PRACTICE_WORD_LENGTH}` },
