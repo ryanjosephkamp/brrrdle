@@ -4,6 +4,27 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Phase 21 Addendum – Theme Proposal Templates authored (Full Execution, Prompt 3) (PHASE-21-THEME-PROPOSAL-TEMPLATES-SPEC-2026-06-02)
+
+Execution of the Phase 21 addendum template-proposal step. Authored the proposal documentation set described by the spec (plan §26.8) so a later, separately approved phase (Phase 22+) has Codex-ready blueprints for sophisticated themes. **Planning artifacts only — no theme code, no CSS, no surface/accent/sound modules were changed; `themes/proposals/full_proposals/` and `themes/themes.csv` are untouched; the minimalist default surface and the Lunar Signal Deck layout/tab structure remain intact.**
+
+#### Addendum Prompt 3 — README, 8 template proposals, and populated CSV (`phase_id = 63`)
+- **`themes/proposals/README.md`**: rewritten to fully document the folder structure with a table (`template_proposals/`, `full_proposals/`, `theme_proposals.csv`, `themes/themes.csv`), the template-vs-full-proposal distinction, how a template maps onto the existing theming foundation (`src/theme/theme.ts` accent tokens, `src/theme/surface.ts` `data-surface`, `src/sound/soundEngine.ts`), the tile-state invariant (correct=emerald / present=amber / absent=slate preserved), and an index table of all eight templates.
+- **8 Markdown templates in `themes/proposals/template_proposals/`** (each with the consistent header: Theme Name, Category/Type, Author, Date, Status, Description, Visual Style, Special Effects & Animations, Sound Theme, Component/CSS Changes Needed, Implementation Notes for Codex, Future Extensibility Notes):
+  1. `command-center.md` — upgraded Command Center / Frozen Command Center (tactical HUD), re-expressed as a pure surface+accent theme so it no longer touches layout.
+  2. `country-nationality.md` — reusable, placeholder-driven Country / Nationality template (data-only per-country additions).
+  3. `holiday-special-event.md` — reusable, placeholder-driven Holiday / Special Event template with an active date window.
+  4. `sci-fi-stellar-cartography.md` — Sci-Fi / Deep Space.
+  5. `nature-verdant-grove.md` — Nature / Organic.
+  6. `retro-arcade-crt.md` — Retro / 8-bit CRT.
+  7. `cyberpunk-neon.md` — Cyberpunk / Neon.
+  8. `fantasy-arcane-athenaeum.md` — Fantasy / Mystical.
+- **`themes/proposals/theme_proposals.csv`**: populated with all eight templates (columns: Template Name, Category/Type, Proposed Date, Status (Template), Markdown File, Description/Notes).
+- **Preserved exactly**: `themes/proposals/full_proposals/` (empty/reserved) and `themes/themes.csv` (untouched); all source, tests, and build config; the Phase 21 surface foundation; the Lunar Signal Deck layout/tab structure; and every gameplay/word/daily/practice/difficulty/definition/stats/economy/auth/resume/sharing behavior. About Brrrdle remains a dedicated page.
+- **Verification**: `git diff --check` clean; `theme_proposals.csv` parse check (header + 8 rows, all 6 columns); `git status` confirms `themes/themes.csv` and `full_proposals/` unchanged; no source/test/build-config changes, so the lint/test/build baseline is unchanged from Phase 21 Prompt 3 (338/338).
+- **Gate**: halt after authoring; do **not** create or merge a PR in this step. The final Phase 21 PR is ready to be created/merged on explicit user instruction.
+- **Docs/tracking**: updated `progress/PROGRESS.csv` (`phase_id = 63`) and added `progress/PROGRESS-STEP-63.md`.
+
 ### Phase 21 Addendum – Theme Proposal Templates spec uploaded and incorporated (Governance Step) (PHASE-21-THEME-PROPOSAL-TEMPLATES-SPEC-2026-06-02)
 
 Governance/documentation-only step that incorporates the newly uploaded `PHASE-21-THEME-PROPOSAL-TEMPLATES-SPEC-2026-06-02.md` as a Phase 21 addendum before the final Phase 21 PR is merged. **No theme code, no proposal Markdown files, no CSV population, and no folder creation were performed in this step.** The finalized Phase 21 surface foundation and every existing mechanic remain 100% intact.
