@@ -26,7 +26,7 @@ import {
   formatGoShare,
 } from '../../game'
 import { clearDailyGoStoredSession, loadDailyGoStoredSession, saveDailyGoStoredSession } from '../../game/storage/dailyGoStorage'
-import { getActiveDailyDate } from '../../daily'
+import { dateKeyToLocalDate, getActiveDailyDate } from '../../daily'
 import { calculatePayToContinueCost } from '../../progression'
 import { Button, Keyboard, Panel, ShareButton } from '../../ui'
 import { useSound } from '../../sound'
@@ -45,6 +45,14 @@ interface GoGameProps {
   readonly onSaveGoPuzzleCountDefault?: (count: GoPuzzleCount) => void
   readonly onSpendCoins: (amount: number) => boolean
   readonly scope: 'daily' | 'practice'
+  /**
+   * Phase 22 Addendum (§27.10) — when set, this daily renders a specific *past*
+   * day instead of today's granted daily. Puzzle, persistence, and stats are
+   * keyed to this date so it is a full daily experience.
+   */
+  readonly pastDailyDateKey?: string
+  /** Invoked on the first guess of a past daily so the caller can permanently unlock it. */
+  readonly onMarkDailyUnlocked?: () => void
 }
 
 type GridTileState = TileState | 'empty' | 'current'
@@ -57,8 +65,8 @@ const tileStateClasses: Record<GridTileState, string> = {
   present: 'border-amber-300/70 bg-amber-300/20 text-amber-50',
 }
 
-function createInitialDailySession(setup: ReturnType<typeof createDailyGoSetup>): GoSessionState {
-  const stored = loadDailyGoStoredSession()
+function createInitialDailySession(setup: ReturnType<typeof createDailyGoSetup>, pastDailyDateKey?: string): GoSessionState {
+  const stored = loadDailyGoStoredSession(undefined, pastDailyDateKey)
   if (
     stored &&
     stored.dateKey === setup.dateKey &&
@@ -68,7 +76,7 @@ function createInitialDailySession(setup: ReturnType<typeof createDailyGoSetup>)
     return restoreGoSession(stored.session, setup.validGuesses)
   }
 
-  clearDailyGoStoredSession()
+  clearDailyGoStoredSession(undefined, pastDailyDateKey)
   return createGoSession(setup)
 }
 
@@ -147,6 +155,8 @@ function GoGameSession({
   onPracticeLengthChange,
   onPracticeSeedChange,
   onResumeCapture,
+  onMarkDailyUnlocked,
+  pastDailyDateKey,
   onSaveDifficultyDefault,
   onSaveGoPuzzleCountDefault,
   onSpendCoins,
@@ -168,6 +178,8 @@ function GoGameSession({
   readonly onPracticeLengthChange: (length: number) => void
   readonly onPracticeSeedChange: () => void
   readonly onResumeCapture?: (capture: ResumeCapture) => void
+  readonly onMarkDailyUnlocked?: () => void
+  readonly pastDailyDateKey?: string
   readonly onSaveDifficultyDefault?: (tier: DifficultyTier) => void
   readonly onSaveGoPuzzleCountDefault?: (count: GoPuzzleCount) => void
   readonly onSpendCoins: (amount: number) => boolean
@@ -181,7 +193,7 @@ function GoGameSession({
     if (restoreFrom) {
       return restoreGoSession(restoreFrom, setup.validGuesses)
     }
-    return scope === 'daily' ? createInitialDailySession(setup) : createGoSession(setup)
+    return scope === 'daily' ? createInitialDailySession(setup, pastDailyDateKey) : createGoSession(setup)
   })
   const [continuationMessage, setContinuationMessage] = useState<string>()
   const [showDefinitions, setShowDefinitions] = useState(true)
@@ -210,8 +222,17 @@ function GoGameSession({
     saveDailyGoStoredSession({
       dateKey: setup.dateKey,
       session: serializeGoSession(session),
-    })
-  }, [scope, session, setup.dateKey])
+    }, undefined, pastDailyDateKey)
+  }, [pastDailyDateKey, scope, session, setup.dateKey])
+
+  // Phase 22 Addendum (§27.10): the first guess on a past daily permanently
+  // unlocks it, so the player never has to pay the coin cost again.
+  const hasAnyGoGuess = session.puzzles.some((puzzle) => puzzle.guesses.length > 0)
+  useEffect(() => {
+    if (pastDailyDateKey && hasAnyGoGuess) {
+      onMarkDailyUnlocked?.()
+    }
+  }, [hasAnyGoGuess, onMarkDailyUnlocked, pastDailyDateKey])
 
   useEffect(() => {
     onResumeCapture?.({
@@ -247,8 +268,9 @@ function GoGameSession({
       status: session.status,
       word: session.status === 'won' ? session.puzzles.map((puzzle) => puzzle.answer).join(',') : session.puzzles[session.currentPuzzleIndex].answer,
       wordLength: session.wordLength,
+      ...(pastDailyDateKey ? { affectsStreak: false } : {}),
     })
-  }, [canAffordContinuation, difficulty, onGameComplete, practiceLength, scope, session.currentPuzzleIndex, session.puzzles, session.status, session.wordLength, setup.dateKey, setup.puzzles])
+  }, [canAffordContinuation, difficulty, onGameComplete, pastDailyDateKey, practiceLength, scope, session.currentPuzzleIndex, session.puzzles, session.status, session.wordLength, setup.dateKey, setup.puzzles])
 
   const sound = useSound()
   const handleInput = useCallback((input: KeyboardInput) => {
@@ -489,7 +511,7 @@ function GoGameSession({
   )
 }
 
-export function GoGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, defaultGoPuzzleCount = DEFAULT_GO_PUZZLE_COUNT, initialResume, keyboardDisabled = false, onGameComplete, onResumeCapture, onSaveDifficultyDefault, onSaveGoPuzzleCountDefault, onSpendCoins, scope }: GoGameProps) {
+export function GoGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, defaultGoPuzzleCount = DEFAULT_GO_PUZZLE_COUNT, initialResume, keyboardDisabled = false, onGameComplete, onResumeCapture, onSaveDifficultyDefault, onSaveGoPuzzleCountDefault, onSpendCoins, scope, pastDailyDateKey, onMarkDailyUnlocked }: GoGameProps) {
   const resumePractice = initialResume?.scope === 'practice' ? initialResume : undefined
   const practiceLengths = useMemo(() => getAvailableGoPracticeLengths(), [])
   const [practiceLength, setPracticeLength] = useState(() => resumePractice?.wordLength ?? 5)
@@ -498,9 +520,13 @@ export function GoGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, def
   const [goPuzzleCount, setGoPuzzleCount] = useState<GoPuzzleCount>(resumePractice?.goPuzzleCount ?? defaultGoPuzzleCount)
   const [resumeConsumed, setResumeConsumed] = useState(false)
   const activeResume = resumePractice && !resumeConsumed ? resumePractice : undefined
+  const dailyDate = useMemo(
+    () => pastDailyDateKey ? dateKeyToLocalDate(pastDailyDateKey) : getActiveDailyDate(),
+    [pastDailyDateKey],
+  )
   const setup = useMemo(
-    () => scope === 'daily' ? createDailyGoSetup(getActiveDailyDate(), difficulty, goPuzzleCount) : createPracticeGoSetup(practiceLength, practiceSeed, difficulty, goPuzzleCount),
-    [difficulty, goPuzzleCount, practiceLength, practiceSeed, scope],
+    () => scope === 'daily' ? createDailyGoSetup(dailyDate, difficulty, goPuzzleCount) : createPracticeGoSetup(practiceLength, practiceSeed, difficulty, goPuzzleCount),
+    [dailyDate, difficulty, goPuzzleCount, practiceLength, practiceSeed, scope],
   )
   const sessionKey = scope === 'daily'
     ? `${scope}-${difficulty}-${goPuzzleCount}-${setup.dateKey}`
@@ -518,12 +544,14 @@ export function GoGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, def
       onDifficultyChange={(tier) => { setResumeConsumed(true); setDifficulty(tier) }}
       onGameComplete={onGameComplete}
       onGoPuzzleCountChange={(count) => { setResumeConsumed(true); setGoPuzzleCount(count) }}
+      onMarkDailyUnlocked={onMarkDailyUnlocked}
       onPracticeLengthChange={(length) => { setResumeConsumed(true); setPracticeLength(length) }}
       onPracticeSeedChange={() => { setResumeConsumed(true); setPracticeSeed((seed) => seed + 1) }}
-      onResumeCapture={onResumeCapture}
+      onResumeCapture={pastDailyDateKey ? undefined : onResumeCapture}
       onSaveDifficultyDefault={onSaveDifficultyDefault}
       onSaveGoPuzzleCountDefault={onSaveGoPuzzleCountDefault}
       onSpendCoins={onSpendCoins}
+      pastDailyDateKey={pastDailyDateKey}
       practiceLength={practiceLength}
       practiceLengths={practiceLengths}
       restoreFrom={activeResume?.serializedSession}

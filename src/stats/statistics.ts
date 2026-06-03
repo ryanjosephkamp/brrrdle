@@ -28,6 +28,9 @@ export function getStatsBucket(stats: StatisticsState, mode: GameMode, scope: Pl
 export function updateStatistics(stats: StatisticsState, input: CompletedGameStatsInput): StatisticsState {
   const bucket = getStatsBucket(stats, input.mode, input.scope)
   const won = input.status === 'won'
+  // Past dailies (affectsStreak === false) record full stats but must not
+  // patch streak continuity, which reflects natural current-day play only.
+  const affectsStreak = input.affectsStreak ?? true
   const lengthStats = bucket.byLength[input.wordLength] ?? { played: 0, won: 0 }
   const updatedBucket: GameStatsBucket = {
     bestAttempts: won ? Math.min(bucket.bestAttempts ?? input.attemptsUsed, input.attemptsUsed) : bucket.bestAttempts,
@@ -38,9 +41,9 @@ export function updateStatistics(stats: StatisticsState, input: CompletedGameSta
         won: lengthStats.won + (won ? 1 : 0),
       },
     },
-    currentStreak: won ? bucket.currentStreak + 1 : 0,
+    currentStreak: affectsStreak ? (won ? bucket.currentStreak + 1 : 0) : bucket.currentStreak,
     lost: bucket.lost + (won ? 0 : 1),
-    maxStreak: won ? Math.max(bucket.maxStreak, bucket.currentStreak + 1) : bucket.maxStreak,
+    maxStreak: affectsStreak && won ? Math.max(bucket.maxStreak, bucket.currentStreak + 1) : bucket.maxStreak,
     played: bucket.played + 1,
     totalAttempts: bucket.totalAttempts + input.attemptsUsed,
     won: bucket.won + (won ? 1 : 0),

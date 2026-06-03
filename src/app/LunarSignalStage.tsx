@@ -11,6 +11,12 @@ interface LunarSignalStageProps {
   readonly accountControls: ReactNode
   readonly activeRoute: AppRoute
   readonly children: ReactNode
+  /**
+   * Phase 22 Addendum (§27.10) — the daily countdown indicator, rendered at the
+   * top of the shell (inside the account stack) in a context-aware, non-intrusive
+   * position instead of the previous fixed bottom-corner overlay.
+   */
+  readonly dailyCountdown?: ReactNode
   readonly metrics: readonly SignalMetric[]
   readonly onNavigate: (routeId: AppRouteId) => void
   readonly routes: readonly AppRoute[]
@@ -35,6 +41,8 @@ function getRouteIndex(routeId: AppRouteId, routes: readonly AppRoute[]): number
 
 function getRouteEyebrow(route: AppRoute): string {
   switch (route.id) {
+    case 'calendar':
+      return 'Daily'
     case 'og-daily':
     case 'go-daily':
       return 'Daily'
@@ -255,6 +263,7 @@ export function LunarSignalStage({
   accountControls,
   activeRoute,
   children,
+  dailyCountdown,
   metrics,
   onNavigate,
   routes,
@@ -350,6 +359,7 @@ export function LunarSignalStage({
             <div className="brrrdle-lunar-account">
               {accountControls}
             </div>
+            {dailyCountdown}
             {!isAwake ? (
               <span className="brrrdle-lunar-daily-status">
                 <span aria-hidden="true" />

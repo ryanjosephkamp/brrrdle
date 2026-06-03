@@ -2,6 +2,7 @@ import { calculateCoinAward, calculateXpAward, getLevelForXp } from '../progress
 import type { DifficultyTier } from '../data/difficulty'
 import { updateStatistics } from '../stats/statistics'
 import type { CompletedGameStatsInput } from '../stats/types'
+import { normalizeUnlockedDailies } from '../daily/pastDailies'
 import { createDefaultGuestProgress, GUEST_PROGRESS_SCHEMA_VERSION, normalizeGuestSettings, type GameHistoryEntry, type GuestProgressState } from './storageSchema'
 import { getLatestResumeSlot, getResumeSlotKey, normalizeResumeSlot, normalizeResumeSlots, type ResumeSlotCollection } from './resumeSlot'
 
@@ -67,6 +68,7 @@ export function migrateGuestProgress(value: unknown): GuestProgressState | undef
     resumeSlots: migrateResumeSlots(value),
     schemaVersion: GUEST_PROGRESS_SCHEMA_VERSION,
     settings: normalizeGuestSettings(value.settings),
+    unlockedDailies: normalizeUnlockedDailies(value.unlockedDailies),
   }
 }
 

@@ -99,6 +99,14 @@ export interface GuestProgressState {
    * or is replaced with a fresh puzzle.
    */
   readonly resumeSlots?: ResumeSlotCollection
+  /**
+   * Phase 22 Addendum (§27.10) — past dailies the player has permanently
+   * unlocked by making at least one guess after paying the fixed coin cost.
+   * Each entry is a `${mode}:${dateKey}` key (e.g. `og:2025-03-04`). Additive
+   * and optional: legacy payloads simply lack it and start empty. Synced to the
+   * cloud as part of the guest-progress payload (union-merged on transfer).
+   */
+  readonly unlockedDailies?: readonly string[]
 }
 
 export function createDefaultGuestSettings(): GuestSettingsState {
@@ -145,5 +153,6 @@ export function createDefaultGuestProgress(): GuestProgressState {
     schemaVersion: GUEST_PROGRESS_SCHEMA_VERSION,
     settings: createDefaultGuestSettings(),
     stats: createEmptyStatistics(),
+    unlockedDailies: [],
   }
 }

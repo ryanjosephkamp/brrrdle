@@ -72,5 +72,6 @@ export function mergeGuestProgressIntoCloud(local: GuestProgressState, cloud: Gu
     resumeSlots,
     settings,
     stats: mergeStats(local.stats, cloud.stats),
+    unlockedDailies: Array.from(new Set([...(cloud.unlockedDailies ?? []), ...(local.unlockedDailies ?? [])])),
   }
 }

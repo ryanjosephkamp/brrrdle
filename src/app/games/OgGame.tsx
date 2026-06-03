@@ -22,7 +22,7 @@ import {
   formatOgShare,
 } from '../../game'
 import { clearDailyOgStoredSession, loadDailyOgStoredSession, saveDailyOgStoredSession } from '../../game/storage/dailyOgStorage'
-import { getActiveDailyDate } from '../../daily'
+import { dateKeyToLocalDate, getActiveDailyDate } from '../../daily'
 import { calculatePayToContinueCost } from '../../progression'
 import { useSound } from '../../sound'
 import { Button, Keyboard, Panel, ShareButton } from '../../ui'
@@ -39,6 +39,17 @@ interface OgGameProps {
   readonly onSaveDifficultyDefault?: (tier: DifficultyTier) => void
   readonly onSpendCoins: (amount: number) => boolean
   readonly scope: 'daily' | 'practice'
+  /**
+   * Phase 22 Addendum (§27.10) — when set, this daily renders a specific *past*
+   * day (instead of today's granted daily). The puzzle, persistence, and stats
+   * are all keyed to this date so it behaves as a full daily experience.
+   */
+  readonly pastDailyDateKey?: string
+  /**
+   * Invoked once the player makes their first guess on a past daily, so the
+   * caller can mark it permanently unlocked.
+   */
+  readonly onMarkDailyUnlocked?: () => void
 }
 
 type GridTileState = TileState | 'empty' | 'current'
@@ -51,13 +62,13 @@ const tileStateClasses: Record<GridTileState, string> = {
   present: 'border-amber-300/70 bg-amber-300/20 text-amber-50',
 }
 
-function createInitialDailySession(setup: ReturnType<typeof createDailyOgSetup>): PuzzleSessionState {
-  const stored = loadDailyOgStoredSession()
+function createInitialDailySession(setup: ReturnType<typeof createDailyOgSetup>, pastDailyDateKey?: string): PuzzleSessionState {
+  const stored = loadDailyOgStoredSession(undefined, pastDailyDateKey)
   if (stored && stored.dateKey === setup.dateKey && stored.session.answer === setup.answer) {
     return restoreOgSession(stored.session, setup.validGuesses)
   }
 
-  clearDailyOgStoredSession()
+  clearDailyOgStoredSession(undefined, pastDailyDateKey)
   return createOgSession(setup)
 }
 
@@ -133,6 +144,8 @@ function OgGameSession({
   onPracticeLengthChange,
   onPracticeSeedChange,
   onResumeCapture,
+  onMarkDailyUnlocked,
+  pastDailyDateKey,
   onSaveDifficultyDefault,
   onSpendCoins,
   practiceLength,
@@ -151,6 +164,8 @@ function OgGameSession({
   readonly onPracticeLengthChange: (length: number) => void
   readonly onPracticeSeedChange: () => void
   readonly onResumeCapture?: (capture: ResumeCapture) => void
+  readonly onMarkDailyUnlocked?: () => void
+  readonly pastDailyDateKey?: string
   readonly onSaveDifficultyDefault?: (tier: DifficultyTier) => void
   readonly onSpendCoins: (amount: number) => boolean
   readonly practiceLength: number
@@ -164,7 +179,7 @@ function OgGameSession({
     if (restoreFrom) {
       return restoreOgSession(restoreFrom, setup.validGuesses)
     }
-    return scope === 'daily' ? createInitialDailySession(setup) : createOgSession(setup)
+    return scope === 'daily' ? createInitialDailySession(setup, pastDailyDateKey) : createOgSession(setup)
   })
   const [continuationMessage, setContinuationMessage] = useState<string>()
   const [revealedAnswer, setRevealedAnswer] = useState(false)
@@ -185,8 +200,16 @@ function OgGameSession({
     saveDailyOgStoredSession({
       dateKey: setup.dateKey,
       session: serializeOgSession(session),
-    })
-  }, [scope, session, setup.dateKey])
+    }, undefined, pastDailyDateKey)
+  }, [pastDailyDateKey, scope, session, setup.dateKey])
+
+  // Phase 22 Addendum (§27.10): the first guess on a past daily permanently
+  // unlocks it, so the player never has to pay the coin cost again.
+  useEffect(() => {
+    if (pastDailyDateKey && session.guesses.length > 0) {
+      onMarkDailyUnlocked?.()
+    }
+  }, [onMarkDailyUnlocked, pastDailyDateKey, session.guesses.length])
 
   useEffect(() => {
     onResumeCapture?.({
@@ -217,8 +240,9 @@ function OgGameSession({
       status: session.status,
       word: session.answer,
       wordLength: session.wordLength,
+      ...(pastDailyDateKey ? { affectsStreak: false } : {}),
     })
-  }, [canAffordContinuation, difficulty, onGameComplete, practiceLength, practiceSeed, scope, session.answer, session.guesses.length, session.maxAttempts, session.status, session.wordLength, setup.answer, setup.dateKey])
+  }, [canAffordContinuation, difficulty, onGameComplete, pastDailyDateKey, practiceLength, practiceSeed, scope, session.answer, session.guesses.length, session.maxAttempts, session.status, session.wordLength, setup.answer, setup.dateKey])
 
   const sound = useSound()
   const handleInput = useCallback((input: KeyboardInput) => {
@@ -421,7 +445,7 @@ function OgGameSession({
   )
 }
 
-export function OgGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, initialResume, keyboardDisabled = false, onGameComplete, onResumeCapture, onSaveDifficultyDefault, onSpendCoins, scope }: OgGameProps) {
+export function OgGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, initialResume, keyboardDisabled = false, onGameComplete, onResumeCapture, onSaveDifficultyDefault, onSpendCoins, scope, pastDailyDateKey, onMarkDailyUnlocked }: OgGameProps) {
   const resumePractice = initialResume?.scope === 'practice' ? initialResume : undefined
   const practiceLengths = useMemo(() => getAvailableOgPracticeLengths(), [])
   const [practiceLength, setPracticeLength] = useState(() => resumePractice?.wordLength ?? 5)
@@ -429,9 +453,13 @@ export function OgGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, ini
   const [difficulty, setDifficulty] = useState<DifficultyTier>(resumePractice?.difficulty ?? defaultDifficulty)
   const [resumeConsumed, setResumeConsumed] = useState(false)
   const activeResume = resumePractice && !resumeConsumed ? resumePractice : undefined
+  const dailyDate = useMemo(
+    () => pastDailyDateKey ? dateKeyToLocalDate(pastDailyDateKey) : getActiveDailyDate(),
+    [pastDailyDateKey],
+  )
   const setup = useMemo(
-    () => scope === 'daily' ? createDailyOgSetup(getActiveDailyDate(), difficulty) : createPracticeOgSetup(practiceLength, practiceSeed, difficulty),
-    [difficulty, practiceLength, practiceSeed, scope],
+    () => scope === 'daily' ? createDailyOgSetup(dailyDate, difficulty) : createPracticeOgSetup(practiceLength, practiceSeed, difficulty),
+    [dailyDate, difficulty, practiceLength, practiceSeed, scope],
   )
   const sessionKey = scope === 'daily'
     ? `${scope}-${difficulty}-${setup.dateKey}`
@@ -446,11 +474,13 @@ export function OgGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, ini
       keyboardDisabled={keyboardDisabled}
       onDifficultyChange={(tier) => { setResumeConsumed(true); setDifficulty(tier) }}
       onGameComplete={onGameComplete}
+      onMarkDailyUnlocked={onMarkDailyUnlocked}
       onPracticeLengthChange={(length) => { setResumeConsumed(true); setPracticeLength(length) }}
       onPracticeSeedChange={() => { setResumeConsumed(true); setPracticeSeed((seed) => seed + 1) }}
-      onResumeCapture={onResumeCapture}
+      onResumeCapture={pastDailyDateKey ? undefined : onResumeCapture}
       onSaveDifficultyDefault={onSaveDifficultyDefault}
       onSpendCoins={onSpendCoins}
+      pastDailyDateKey={pastDailyDateKey}
       practiceLength={practiceLength}
       practiceLengths={practiceLengths}
       practiceSeed={practiceSeed}

@@ -15,14 +15,19 @@ describe('APP_ROUTES', () => {
   })
 
   it('includes minimal play and support navigation groups', () => {
-    expect(getRoutesByGroup('play').map((route) => route.id)).toEqual(['home', 'og-daily', 'go-daily', 'practice'])
+    expect(getRoutesByGroup('play').map((route) => route.id)).toEqual(['home', 'calendar', 'og-daily', 'go-daily', 'practice'])
     expect(getRoutesByGroup('support').map((route) => route.id)).toEqual(['word-explorer', 'feedback', 'definitions', 'stats', 'settings', 'about', 'admin'])
   })
 
-  it('keeps the primary navigation in the ADDITIONS-2026-05-27 order and hides admin for non-admins', () => {
+  it('keeps the legacy daily routes defined but hidden from primary navigation', () => {
+    expect(getRouteById('og-daily').hidden).toBe(true)
+    expect(getRouteById('go-daily').hidden).toBe(true)
+    expect(getRouteById('calendar')).toMatchObject({ scope: 'daily' })
+  })
+
+  it('keeps the primary navigation Calendar-first and hides admin for non-admins', () => {
     expect(getPrimaryNavigationRoutes(false).map((route) => route.id)).toEqual([
-      'og-daily',
-      'go-daily',
+      'calendar',
       'practice',
       'word-explorer',
       'feedback',
@@ -30,8 +35,7 @@ describe('APP_ROUTES', () => {
       'about',
     ])
     expect(getPrimaryNavigationRoutes(true).map((route) => route.id)).toEqual([
-      'og-daily',
-      'go-daily',
+      'calendar',
       'practice',
       'word-explorer',
       'feedback',

@@ -19,4 +19,12 @@ export interface CompletedGameStatsInput {
   readonly scope: PlayScope
   readonly status: Exclude<GameStatus, 'playing'>
   readonly wordLength: number
+  /**
+   * Phase 22 Addendum (§27.10) — whether this completion participates in streak
+   * continuity. Defaults to `true`. Unlocked *past* dailies set this to `false`
+   * so they still record full stats (played/won/lost/attempts/per-length) but
+   * never retroactively patch the current or longest streak, which must keep
+   * reflecting natural current-day daily play only.
+   */
+  readonly affectsStreak?: boolean
 }

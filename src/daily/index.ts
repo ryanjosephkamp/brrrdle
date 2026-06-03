@@ -49,6 +49,14 @@ export {
   subscribeSimulatedClock,
   type DailyNow,
 } from './simulatedClock'
+export {
+  CALENDAR_START_DATE_KEY,
+  PAST_DAILY_UNLOCK_COST,
+  isDailyUnlocked,
+  isPastDailyDateKey,
+  normalizeUnlockedDailies,
+  pastDailyKey,
+} from './pastDailies'
 export { useDailyCycle, type DailyCycleState, type DailyResetInfo, type UseDailyCycleOptions } from './useDailyCycle'
 export { DailyCountdown, type DailyCountdownProps } from './DailyCountdown'
 export { SimulateTimePanel } from './SimulateTimePanel'

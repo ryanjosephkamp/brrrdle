@@ -1,6 +1,6 @@
 import type { GameMode, PlayScope } from '../game/types'
 
-export type AppRouteId = 'home' | 'og-daily' | 'go-daily' | 'practice' | 'word-explorer' | 'feedback' | 'definitions' | 'stats' | 'settings' | 'about' | 'admin'
+export type AppRouteId = 'home' | 'calendar' | 'og-daily' | 'go-daily' | 'practice' | 'word-explorer' | 'feedback' | 'definitions' | 'stats' | 'settings' | 'about' | 'admin'
 
 export interface AppRoute {
   readonly id: AppRouteId
@@ -11,6 +11,12 @@ export interface AppRoute {
   readonly mode?: GameMode
   readonly scope?: PlayScope
   readonly wordLength?: number
+  /**
+   * Phase 22 Addendum (§27.10) — routes kept only for backward-compatible deep
+   * links (the dedicated `og-daily`/`go-daily` routes now redirect into the
+   * Calendar). Hidden routes are excluded from the primary navigation rail.
+   */
+  readonly hidden?: boolean
 }
 
 export const APP_ROUTES = [
@@ -22,6 +28,14 @@ export const APP_ROUTES = [
     navigationGroup: 'play',
   },
   {
+    id: 'calendar',
+    label: 'Calendar',
+    shortLabel: 'Calendar',
+    description: 'Play today\u2019s daily puzzles or unlock and replay any past daily back to January 1, 2025.',
+    navigationGroup: 'play',
+    scope: 'daily',
+  },
+  {
     id: 'og-daily',
     label: 'og Daily',
     shortLabel: 'og',
@@ -30,6 +44,7 @@ export const APP_ROUTES = [
     mode: 'og',
     scope: 'daily',
     wordLength: 5,
+    hidden: true,
   },
   {
     id: 'go-daily',
@@ -40,6 +55,7 @@ export const APP_ROUTES = [
     mode: 'go',
     scope: 'daily',
     wordLength: 5,
+    hidden: true,
   },
   {
     id: 'practice',
@@ -116,6 +132,6 @@ export function getPrimaryNavigationRoutes(isAdmin: boolean): readonly AppRoute[
       return isAdmin
     }
 
-    return ['og-daily', 'go-daily', 'practice', 'word-explorer', 'feedback', 'settings', 'about'].includes(route.id)
+    return ['calendar', 'practice', 'word-explorer', 'feedback', 'settings', 'about'].includes(route.id)
   })
 }

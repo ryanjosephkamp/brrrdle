@@ -931,10 +931,9 @@ textarea {
 }
 
 .brrrdle-daily-countdown-region {
-  position: fixed;
-  inset-block-end: max(0.75rem, env(safe-area-inset-bottom));
-  inset-inline-end: max(0.75rem, env(safe-area-inset-right));
-  z-index: 55;
+  display: inline-flex;
+  justify-content: flex-end;
+  width: max-content;
   pointer-events: none;
 }
 
