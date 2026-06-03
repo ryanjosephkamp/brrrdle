@@ -94,6 +94,15 @@ describe('createSoundEngine', () => {
     expect(mock.oscillators.length).toBeGreaterThanOrEqual(3)
   })
 
+  it('plays the unique multi-tone daily-reset chime', () => {
+    const mock = createMockContext()
+    const engine = createSoundEngine({ enabled: true, audioContextFactory: () => mock.context })
+    engine.play('daily-reset')
+    // The reset chime is a distinct ascending four-note arpeggio.
+    expect(mock.oscillators.length).toBe(4)
+    expect(mock.events).toContain('oscillator.start')
+  })
+
   it('stops creating new audio activity after setEnabled(false)', () => {
     const mock = createMockContext()
     const engine = createSoundEngine({ enabled: true, audioContextFactory: () => mock.context })

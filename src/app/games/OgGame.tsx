@@ -22,6 +22,7 @@ import {
   formatOgShare,
 } from '../../game'
 import { clearDailyOgStoredSession, loadDailyOgStoredSession, saveDailyOgStoredSession } from '../../game/storage/dailyOgStorage'
+import { getActiveDailyDate } from '../../daily'
 import { calculatePayToContinueCost } from '../../progression'
 import { useSound } from '../../sound'
 import { Button, Keyboard, Panel, ShareButton } from '../../ui'
@@ -429,7 +430,7 @@ export function OgGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, ini
   const [resumeConsumed, setResumeConsumed] = useState(false)
   const activeResume = resumePractice && !resumeConsumed ? resumePractice : undefined
   const setup = useMemo(
-    () => scope === 'daily' ? createDailyOgSetup(new Date(), difficulty) : createPracticeOgSetup(practiceLength, practiceSeed, difficulty),
+    () => scope === 'daily' ? createDailyOgSetup(getActiveDailyDate(), difficulty) : createPracticeOgSetup(practiceLength, practiceSeed, difficulty),
     [difficulty, practiceLength, practiceSeed, scope],
   )
   const sessionKey = scope === 'daily'

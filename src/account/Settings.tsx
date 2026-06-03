@@ -42,7 +42,7 @@ export function Settings({
   onUpdateSettings,
   syncStatus,
 }: SettingsProps) {
-  const { difficultyDefault, goPuzzleCountDefault, hardModeDefault, themeDefault } = guestProgress.settings
+  const { difficultyDefault, goPuzzleCountDefault, hardModeDefault, themeDefault, dailyCountdownEnabled } = guestProgress.settings
   return (
     <section className="space-y-4" aria-labelledby="settings-title">
       <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-ice-200)]">account and persistence</p>
@@ -122,6 +122,22 @@ export function Settings({
               </span>
             </label>
             <p className="text-xs text-slate-400">Applies to new games. You can still change it per game until your first guess.</p>
+          </div>
+          <div className="space-y-2">
+            <label className="flex items-center gap-3 text-slate-100">
+              <input
+                checked={dailyCountdownEnabled}
+                onChange={(event) => onUpdateSettings({ dailyCountdownEnabled: event.target.checked })}
+                type="checkbox"
+              />
+              <span className="flex items-center gap-2">
+                Show the daily countdown and reset alerts
+                <Tooltip label="More information about the daily countdown">
+                  Shows a small, non-intrusive countdown to the next daily reset (at your local midnight) on every page. Tap it to jump to the daily game. When a new daily is ready you get a subtle glow and a short unique chime. Turn this off to hide the countdown everywhere and silence the reset alert.
+                </Tooltip>
+              </span>
+            </label>
+            <p className="text-xs text-slate-400">The daily still rolls over at your local midnight; this only controls the countdown and its alerts.</p>
           </div>
         </Panel>
       ) : null}

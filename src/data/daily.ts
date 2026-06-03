@@ -12,8 +12,26 @@ export interface DailyPuzzle {
 
 const MS_PER_DAY = 86_400_000
 
+/**
+ * The calendar day key (`YYYY-MM-DD`) that identifies the active daily puzzle.
+ *
+ * Phase 22 (PHASE-22-CALENDAR-MIDNIGHT-AND-BUGFIXES-SPEC-2026-06-02): the daily
+ * puzzle now rolls over at **local midnight in the player's device timezone**
+ * instead of UTC midnight. We therefore read the *local* calendar fields of the
+ * `Date` (`getFullYear`/`getMonth`/`getDate`) rather than `toISOString()`,
+ * which is fixed to UTC. The returned key is still a stable, sortable
+ * `YYYY-MM-DD` string, so every downstream consumer (answer index, go seed,
+ * daily storage, completion ids, sharing) keeps working unchanged.
+ *
+ * `getDailyAnswerIndex` / `getDailyGoSeedIndex` continue to treat the key as a
+ * timezone-agnostic discriminator (they hash `${dateKey}T00:00:00.000Z`), so
+ * answer selection stays fully deterministic per local calendar day.
+ */
 export function getDailyDateKey(date = new Date()): string {
-  return date.toISOString().slice(0, 10)
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 export function getDailyAnswerIndex(dateKey: string, answerCount: number): number {

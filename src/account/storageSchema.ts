@@ -49,6 +49,14 @@ export interface GuestSettingsState {
    * Supabase profile alongside other preferences when signed in.
    */
   readonly themeDefault: Theme
+  /**
+   * Phase 22 — global toggle for the cross-page daily countdown indicator and
+   * its reset alerts (subtle visual cue + unique reset sound). Additive;
+   * defaults to `true` so existing players see the new countdown. Disabling it
+   * hides the countdown everywhere and suppresses the reset visual + sound.
+   * Synced to the Supabase profile alongside other preferences when signed in.
+   */
+  readonly dailyCountdownEnabled: boolean
 }
 
 export interface GameHistoryEntry {
@@ -100,6 +108,7 @@ export function createDefaultGuestSettings(): GuestSettingsState {
     difficultyDefault: DEFAULT_DIFFICULTY_TIER,
     goPuzzleCountDefault: DEFAULT_GO_PUZZLE_COUNT,
     themeDefault: DEFAULT_THEME,
+    dailyCountdownEnabled: true,
   }
 }
 
@@ -116,6 +125,7 @@ export function normalizeGuestSettings(raw: unknown): GuestSettingsState {
     difficultyDefault: normalizeDifficultyTier(record.difficultyDefault),
     goPuzzleCountDefault: normalizeGoPuzzleCount(record.goPuzzleCountDefault),
     themeDefault: normalizeTheme(record.themeDefault),
+    dailyCountdownEnabled: typeof record.dailyCountdownEnabled === 'boolean' ? record.dailyCountdownEnabled : true,
   }
 }
 

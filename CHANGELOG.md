@@ -4,7 +4,33 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
-### Phase 22 Prompt 1 — Planning & Governance Addendum: Advanced Calendar / Midnight Handling + Timezone-Aware Daily Reset (PHASE-22-CALENDAR-MIDNIGHT-AND-BUGFIXES-SPEC-2026-06-02)
+### Phase 22 Prompt 2 — Full Execution: Timezone-Aware Local-Midnight Daily Reset + Countdown + Reset Alert + Dev Simulate-Time Tool (PHASE-22-CALENDAR-MIDNIGHT-AND-BUGFIXES-SPEC-2026-06-02)
+
+Full autonomous implementation of Phase 22 per the bound spec and plan §27. Adds timezone-aware local-midnight daily rollover with a balanced anti-gaming guard, a cross-page clickable theme-ready countdown indicator, a subtle non-modal reset alert with a brand-new unique sound, a global Settings toggle, and a hidden dev-only "Simulate Time" tool — all as additive changes. **Strict invariants preserved: daily puzzles remain exactly 5 letters; practice still supports 2–35; no changes to multiplayer/marketplace/economy; guest and signed-in settings sync stay consistent. No actual multiplayer daily functionality was implemented (only a modular seam).**
+
+#### 22 Prompt 2 — Daily-cycle implementation (`phase_id = 65`)
+- **`src/data/daily.ts`**: `getDailyDateKey` now derives the daily `dateKey` from the **local** calendar day (`getFullYear`/`getMonth`/`getDate`) instead of UTC (`toISOString().slice(0, 10)`), so the daily rolls over at the player's local midnight. Answer/seed selection still hashes the dateKey string deterministically (unchanged sequence semantics).
+- **New modular `src/daily/` service** (framework-agnostic, multiplayer-ready seam — no multiplayer implemented):
+  - `dailyClock.ts` — timezone helpers (`getDeviceTimeZone`, `getNextLocalMidnight`, `getMillisUntilNextLocalMidnight`, `formatCountdown`, MS constants).
+  - `antiGaming.ts` — balanced guard comparing wall-clock vs monotonic (`performance.now`) advance; a forward "clock jump" ≥ 12h within one live session is clamped (the previous daily is held until the clock is consistent again); cold loads trust the wall clock; backward moves never regress.
+  - `dailyVariant.ts` — `DailyVariant` registry (`'solo'`) providing per-variant storage namespaces for a future multiplayer daily.
+  - `simulatedClock.ts` — dev time-offset store (offset applied to **both** wall and monotonic readings so simulated jumps exercise the real rollover path, not the clamp).
+  - `dailyCycle.ts` — `resolveDaily` / `getActiveDailyDate` core shared by the hook and the daily game surfaces (so a clamped/granted day actually gates the generated puzzle); keeps an in-memory live anchor so the monotonic baseline survives within a page session.
+  - `useDailyCycle.ts` — React hook ticking once a second; fires `onReset` exactly once per genuine rollover.
+  - `DailyCountdown.tsx` — fixed, non-intrusive, clickable, theme-ready countdown pill with a subtle reset-alert state and an `aria-live` announcement.
+  - `SimulateTimePanel.tsx` — dev-only floating tool (set/jump/reset time, jump to next local midnight, `Shift+Alt+T` toggle) that renders **nothing** unless `import.meta.env.DEV`.
+- **`src/app/App.tsx`**: wires `useDailyCycle`; on rollover plays the new sound and briefly glows the countdown; renders `<DailyCountdown>` (when enabled) and `<SimulateTimePanel>` only under `import.meta.env.DEV`.
+- **`src/app/games/OgGame.tsx` / `GoGame.tsx`**: daily setup uses `getActiveDailyDate()` instead of `new Date()` so the anti-gaming clamp and dev simulation gate the actual puzzle.
+- **`src/sound/soundEngine.ts`**: adds a brand-new unique `daily-reset` sound (ascending four-note bell-like arpeggio, not reused from any existing event).
+- **`src/account/storageSchema.ts`**: additive `dailyCountdownEnabled` setting (default `true`); no schema bump — `normalizeGuestSettings` backfills it and `guestTransfer` syncs it to Supabase.
+- **`src/account/Settings.tsx`**: global toggle to disable the countdown + reset alerts.
+- **`src/index.css`**: theme-ready countdown + reset-glow CSS (with reduced-motion fallback) and dev Simulate-Time tool styling.
+- **Tests**: new `dailyClock.test.ts`, `antiGaming.test.ts`, `dailyCycle.test.ts`, `simulatedClock.test.ts`, `DailyCountdown.test.tsx` (time-mocking for rollover/clamp scenarios) + a `daily-reset` case in `soundEngine.test.ts`; rewrote `daily.test.ts` to be timezone-robust (local Date construction).
+- **Bug/robustness fix discovered during work**: the persisted guard anchor loses its monotonic baseline across reloads, so an in-memory live anchor is now shared by the countdown hook and the daily game surfaces; without it the wall-vs-monotonic clamp could never fire within a session.
+- **Verification**: `npm run lint` clean; `npm run test` 370/370 pass; `npm run build` succeeds; `npx tsc -p tsconfig.api.json --noEmit` clean; `git diff --check` clean; production bundle confirmed free of the dev Simulate-Time tool.
+- **Gate**: halt for explicit user approval before creating the Phase 22 PR.
+
+
 
 Planning + governance-only step that binds the newly uploaded Phase 22 spec into the implementation plan and makes Phase 22 the active next phase, ahead of full execution. **No daily-rollover, timezone, anti-gaming, countdown, reset-alert, sound, dev-tool, modular-refactor, or bug-fix source code was implemented in this step.** The finalized Phase 21 surface foundation and every existing mechanic remain 100% intact.
 

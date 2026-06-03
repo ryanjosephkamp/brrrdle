@@ -26,6 +26,7 @@ import {
   formatGoShare,
 } from '../../game'
 import { clearDailyGoStoredSession, loadDailyGoStoredSession, saveDailyGoStoredSession } from '../../game/storage/dailyGoStorage'
+import { getActiveDailyDate } from '../../daily'
 import { calculatePayToContinueCost } from '../../progression'
 import { Button, Keyboard, Panel, ShareButton } from '../../ui'
 import { useSound } from '../../sound'
@@ -498,7 +499,7 @@ export function GoGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, def
   const [resumeConsumed, setResumeConsumed] = useState(false)
   const activeResume = resumePractice && !resumeConsumed ? resumePractice : undefined
   const setup = useMemo(
-    () => scope === 'daily' ? createDailyGoSetup(new Date(), difficulty, goPuzzleCount) : createPracticeGoSetup(practiceLength, practiceSeed, difficulty, goPuzzleCount),
+    () => scope === 'daily' ? createDailyGoSetup(getActiveDailyDate(), difficulty, goPuzzleCount) : createPracticeGoSetup(practiceLength, practiceSeed, difficulty, goPuzzleCount),
     [difficulty, goPuzzleCount, practiceLength, practiceSeed, scope],
   )
   const sessionKey = scope === 'daily'

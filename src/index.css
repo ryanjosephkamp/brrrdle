@@ -897,3 +897,236 @@ textarea {
   20%, 60% { transform: translateX(-0.25rem); }
   40%, 80% { transform: translateX(0.25rem); }
 }
+
+/*
+ * Phase 22 — Daily countdown indicator, reset alert, and dev Simulate Time tool.
+ *
+ * Theme-ready by design: all colors flow through dedicated `--brrrdle-countdown-*`
+ * variables that default to the shared accent tokens, so any current or future
+ * theme can restyle the countdown by overriding these variables (and the
+ * `[data-alerting]` / `[data-clamped]` data-attribute hooks) without touching
+ * the component markup. Non-intrusive and mobile-friendly: a small pill pinned
+ * to the bottom edge, clear of the account controls and primary navigation.
+ */
+:root {
+  --brrrdle-countdown-bg: rgb(2 6 23 / 0.82);
+  --brrrdle-countdown-border: var(--color-ice-300);
+  --brrrdle-countdown-label: var(--color-ice-200);
+  --brrrdle-countdown-value: #ffffff;
+  --brrrdle-countdown-dot: var(--color-ice-300);
+  --brrrdle-countdown-glow: var(--color-aurora-glow);
+}
+
+.brrrdle-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.brrrdle-daily-countdown-region {
+  position: fixed;
+  inset-block-end: max(0.75rem, env(safe-area-inset-bottom));
+  inset-inline-end: max(0.75rem, env(safe-area-inset-right));
+  z-index: 55;
+  pointer-events: none;
+}
+
+.brrrdle-daily-countdown {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--brrrdle-countdown-border) 55%, transparent);
+  background: var(--brrrdle-countdown-bg);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.35);
+  color: var(--brrrdle-countdown-value);
+  font-variant-numeric: tabular-nums;
+  backdrop-filter: blur(6px);
+  transition: border-color 150ms ease, box-shadow 200ms ease, transform 150ms ease;
+}
+
+.brrrdle-daily-countdown:hover,
+.brrrdle-daily-countdown:focus-visible {
+  border-color: var(--brrrdle-countdown-border);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.brrrdle-daily-countdown:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-focus-ring);
+}
+
+.brrrdle-daily-countdown-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--brrrdle-countdown-dot);
+  box-shadow: 0 0 8px var(--brrrdle-countdown-dot);
+}
+
+.brrrdle-daily-countdown-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+
+.brrrdle-daily-countdown-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--brrrdle-countdown-label);
+}
+
+.brrrdle-daily-countdown-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.brrrdle-daily-countdown[data-clamped='true'] {
+  border-color: color-mix(in srgb, #f59e0b 60%, transparent);
+}
+
+.brrrdle-daily-countdown[data-alerting='true'] {
+  border-color: var(--brrrdle-countdown-border);
+  animation: brrrdle-daily-reset-glow 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brrrdle-daily-countdown[data-alerting='true'] {
+    animation: none;
+    box-shadow: 0 0 0 2px var(--brrrdle-countdown-border), 0 6px 20px rgb(0 0 0 / 0.35);
+  }
+}
+
+@keyframes brrrdle-daily-reset-glow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--brrrdle-countdown-glow) 70%, transparent), 0 6px 20px rgb(0 0 0 / 0.35); }
+  50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--brrrdle-countdown-glow) 10%, transparent), 0 6px 24px rgb(0 0 0 / 0.4); }
+}
+
+/* Developer-only Simulate Time tool (never rendered in production builds). */
+.brrrdle-sim-time {
+  position: fixed;
+  inset-block-end: max(0.75rem, env(safe-area-inset-bottom));
+  inset-inline-start: max(0.75rem, env(safe-area-inset-left));
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.brrrdle-sim-time-fab {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgb(148 163 184 / 0.5);
+  background: rgb(2 6 23 / 0.85);
+  color: #e2e8f0;
+  font-size: 1.1rem;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.4);
+  cursor: pointer;
+}
+
+.brrrdle-sim-time-fab[data-active='true'] {
+  border-color: #f59e0b;
+  color: #fbbf24;
+}
+
+.brrrdle-sim-time-panel {
+  width: min(20rem, calc(100vw - 1.5rem));
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.9rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgb(148 163 184 / 0.4);
+  background: rgb(2 6 23 / 0.94);
+  color: #e2e8f0;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.5);
+  font-size: 0.8rem;
+}
+
+.brrrdle-sim-time-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brrrdle-sim-time-header button {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.brrrdle-sim-time-readout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.brrrdle-sim-time-readout span[data-active='true'] {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.brrrdle-sim-time-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.brrrdle-sim-time-field input {
+  border-radius: 0.5rem;
+  border: 1px solid rgb(71 85 105 / 0.8);
+  background: #020617;
+  color: #e2e8f0;
+  padding: 0.35rem 0.5rem;
+}
+
+.brrrdle-sim-time-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.35rem;
+}
+
+.brrrdle-sim-time-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.brrrdle-sim-time-grid button,
+.brrrdle-sim-time-actions button {
+  flex: 1 1 auto;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(71 85 105 / 0.8);
+  background: rgb(15 23 42 / 0.9);
+  color: #e2e8f0;
+  padding: 0.4rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.brrrdle-sim-time-actions button[data-variant='reset']:not(:disabled) {
+  border-color: #f59e0b;
+  color: #fbbf24;
+}
+
+.brrrdle-sim-time-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

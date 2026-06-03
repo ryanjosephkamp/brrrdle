@@ -8,6 +8,7 @@ import { StatsDashboard } from '../stats'
 import { WordExplorerPanel } from '../wordExplorer'
 import { FeedbackPanel } from '../feedback'
 import { SoundProvider, useSound } from '../sound'
+import { DailyCountdown, SimulateTimePanel, useDailyCycle } from '../daily'
 import { applySurfaceTheme, applyTheme, DEFAULT_SURFACE_THEME, getThemeMeta, isTheme, THEMES, type Theme } from '../theme'
 import { GoGame } from './games/GoGame'
 import { OgGame } from './games/OgGame'
@@ -285,6 +286,8 @@ function AppInner() {
   const [profileBusy, setProfileBusy] = useState(false)
   const [syncStatus, setSyncStatus] = useState(() => createSyncStatus(supabaseClient ? 'idle' : 'error'))
   const [practiceMode, setPracticeMode] = useState<PracticeMode>('og')
+  const [dailyAlerting, setDailyAlerting] = useState(false)
+  const dailyAlertTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const autoResumedRef = useRef(false)
   const guestProgressRef = useRef(guestProgress)
   const activeRoute = getRouteById(activeRouteId)
@@ -294,6 +297,22 @@ function AppInner() {
   const handleNavigate = useCallback((routeId: AppRoute['id']) => {
     setActiveRouteId(routeId)
   }, [])
+  const countdownEnabled = guestProgress.settings.dailyCountdownEnabled
+  const handleDailyReset = useCallback(() => {
+    // Subtle, non-modal alert: play the unique reset chime (respects the master
+    // sound toggle inside the engine) and glow the countdown for a few seconds.
+    sound.play('daily-reset')
+    setDailyAlerting(true)
+    if (dailyAlertTimeoutRef.current) {
+      clearTimeout(dailyAlertTimeoutRef.current)
+    }
+    dailyAlertTimeoutRef.current = setTimeout(() => setDailyAlerting(false), 12_000)
+  }, [sound])
+  const daily = useDailyCycle({ alertsEnabled: countdownEnabled, onReset: handleDailyReset })
+  const handleCountdownActivate = useCallback(() => {
+    setDailyAlerting(false)
+    handleNavigate('og-daily')
+  }, [handleNavigate])
   const handleResumeCapture = useCallback((capture: ResumeCapture) => {
     setGuestProgress((currentProgress) => {
       const slotKey = getResumeSlotKey(capture)
@@ -534,6 +553,12 @@ function AppInner() {
     guestProgressRef.current = guestProgress
   }, [guestProgress])
 
+  useEffect(() => () => {
+    if (dailyAlertTimeoutRef.current) {
+      clearTimeout(dailyAlertTimeoutRef.current)
+    }
+  }, [])
+
   useEffect(() => {
     applyTheme(guestProgress.settings.themeDefault)
   }, [guestProgress.settings.themeDefault])
@@ -658,6 +683,18 @@ function AppInner() {
             syncStatus={syncStatus}
           />
       </LunarSignalStage>
+
+      {countdownEnabled ? (
+        <DailyCountdown
+          alerting={dailyAlerting}
+          clamped={daily.clamped}
+          countdownLabel={daily.countdownLabel}
+          onActivate={handleCountdownActivate}
+          timeZone={daily.timeZone}
+        />
+      ) : null}
+
+      {import.meta.env.DEV ? <SimulateTimePanel /> : null}
 
       <AuthModal
         authenticated={authState.status === 'authenticated'}

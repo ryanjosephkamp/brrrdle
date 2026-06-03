@@ -14,6 +14,7 @@ export type SoundEvent =
   | 'game-over-loss'
   | 'keyboard-click'
   | 'invalid-guess'
+  | 'daily-reset'
 
 /**
  * Phase 19.4 — coarse categories layered over the individual sound events. They
@@ -25,6 +26,7 @@ export type SoundCategory = 'keypress' | 'submit' | 'win' | 'loss' | 'ui'
 
 export const SOUND_CATEGORIES: Record<SoundEvent, SoundCategory> = {
   'correct-guess': 'submit',
+  'daily-reset': 'ui',
   'game-over-loss': 'loss',
   'game-over-win': 'win',
   'invalid-guess': 'ui',
@@ -95,6 +97,16 @@ const TONE_SPECS: Record<SoundEvent, readonly ToneSpec[]> = {
   ],
   'keyboard-click': [{ frequency: 440, type: 'square', duration: 0.03, peakGain: 0.03 }],
   'invalid-guess': [{ frequency: 180, type: 'square', duration: 0.12, peakGain: 0.05 }],
+  // Phase 22 — brand-new unique "new daily is available" chime. Intentionally
+  // distinct from every other event: a bright, bell-like ascending arpeggio
+  // (D5 → G5 → C6 → E6) on triangle waves with a final high shimmer accent, so
+  // players immediately recognise it as the daily-reset signal.
+  'daily-reset': [
+    { frequency: 587.33, type: 'triangle', duration: 0.12, peakGain: 0.05 },
+    { frequency: 783.99, type: 'triangle', duration: 0.12, peakGain: 0.055 },
+    { frequency: 1046.5, type: 'triangle', duration: 0.14, peakGain: 0.06 },
+    { frequency: 1318.51, type: 'sine', duration: 0.22, peakGain: 0.05 },
+  ],
 }
 
 function defaultAudioContextFactory(): AudioContextLike | undefined {
