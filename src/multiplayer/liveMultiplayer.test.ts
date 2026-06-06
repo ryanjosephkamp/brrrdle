@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   MAX_LIVE_MULTIPLAYER_GAMES,
   addLiveMultiplayerLobby,
+  acknowledgeLiveMultiplayerEntry,
   canCreateLiveMultiplayerLobby,
   canViewerCancelLiveLobby,
   cancelLiveMultiplayerLobby,
@@ -31,22 +32,45 @@ function createMatchedPracticeState() {
   })
   return matchLiveMultiplayerLobby(
     { lobbies: [lobby], matches: [] },
-    { lobbyId: lobby.id, now: '2026-06-04T12:00:05.000Z', seed: 2 },
+    { joiningUserId: 'rival-user', lobbyId: lobby.id, now: '2026-06-04T12:00:05.000Z', playerUserIds: { 'player-one': 'host-user', 'player-two': 'rival-user' }, seed: 2 },
   )
 }
 
+function enterHost(state: LiveMultiplayerState, matchId: string, now = '2026-06-04T12:00:06.000Z'): LiveMultiplayerState {
+  return acknowledgeLiveMultiplayerEntry(state, {
+    actorUserId: 'host-user',
+    matchId,
+    now,
+    playerId: 'player-one',
+  }).state
+}
+
+function createEnteredPracticeState(): LiveMultiplayerState {
+  const matched = createMatchedPracticeState()
+  return enterHost(matched.state, matched.state.matches[0].id)
+}
+
 describe('live multiplayer foundation', () => {
-  it('matches a practice lobby into the required word-length selection phase', () => {
+  it('matches a practice lobby, then arms word-length selection after both clients enter', () => {
     const result = createMatchedPracticeState()
 
     expect(result.error).toBeUndefined()
     expect(result.match?.phase).toBe('word-length-selection')
-    expect(result.match?.selection?.endsAt).toBe('2026-06-04T12:01:05.000Z')
+    expect(result.match?.selection?.endsAt).toBeUndefined()
     expect(result.match?.firstPlayerId).toBe('player-one')
+
+    const entered = acknowledgeLiveMultiplayerEntry(result.state, {
+      actorUserId: 'host-user',
+      matchId: result.state.matches[0].id,
+      now: '2026-06-04T12:00:06.000Z',
+      playerId: 'player-one',
+    })
+    expect(entered.error).toBeUndefined()
+    expect(entered.match?.selection?.endsAt).toBe('2026-06-04T12:01:06.000Z')
   })
 
   it('resolves different practice length choices with a non-skippable animation before countdown', () => {
-    let state = createMatchedPracticeState().state
+    let state = createEnteredPracticeState()
     const matchId = state.matches[0].id
     state = chooseLivePracticeWordLength(state, {
       matchId,
@@ -82,10 +106,10 @@ describe('live multiplayer foundation', () => {
   })
 
   it('aborts practice live when neither player chooses within the minute', () => {
-    const result = createMatchedPracticeState()
-    const resolved = resolveLivePracticeWordLength(result.state, {
-      matchId: result.state.matches[0].id,
-      now: '2026-06-04T12:01:06.000Z',
+    const state = createEnteredPracticeState()
+    const resolved = resolveLivePracticeWordLength(state, {
+      matchId: state.matches[0].id,
+      now: '2026-06-04T12:01:07.000Z',
     })
 
     expect(resolved.match?.phase).toBe('aborted')
@@ -100,7 +124,7 @@ describe('live multiplayer foundation', () => {
     })
     const result = matchLiveMultiplayerLobby(
       { lobbies: [lobby], matches: [] },
-      { lobbyId: lobby.id, now: '2026-06-04T23:31:00.000Z', seed: 3 },
+      { joiningUserId: 'rival-user', lobbyId: lobby.id, now: '2026-06-04T23:31:00.000Z', seed: 3 },
     )
 
     expect(result.error).toBeUndefined()
@@ -108,7 +132,15 @@ describe('live multiplayer foundation', () => {
     expect(result.match?.dailyDateKey).toBe('2026-06-04')
     expect(result.match?.deadlineAt).toBe('2026-06-05T00:00:00.000Z')
     expect(result.match?.wordLength).toBe(5)
+    expect(result.match?.countdownEndsAt).toBeUndefined()
     expect(hasDailyLiveMultiplayerMatch(result.state, '2026-06-04', 'go')).toBe(true)
+
+    const entered = acknowledgeLiveMultiplayerEntry(result.state, {
+      matchId: result.state.matches[0].id,
+      now: '2026-06-04T23:31:01.000Z',
+      playerId: 'player-one',
+    })
+    expect(entered.match?.countdownEndsAt).toBe('2026-06-04T23:31:04.000Z')
   })
 
   it('rejects a second Daily Live claim for the same user, day, and mode', () => {
@@ -282,6 +314,7 @@ describe('live multiplayer foundation', () => {
     let state = matchLiveMultiplayerLobby(
       { lobbies: [lobby], matches: [] },
       {
+        joiningUserId: 'rival-user',
         lobbyId: lobby.id,
         now: '2026-06-04T12:00:01.000Z',
         playerUserIds: { 'player-one': 'host-user', 'player-two': 'rival-user' },
@@ -289,6 +322,7 @@ describe('live multiplayer foundation', () => {
       },
     ).state
     const matchId = state.matches[0].id
+    state = enterHost(state, matchId, '2026-06-04T12:00:02.000Z')
     state = startLiveMultiplayerMatch(state, matchId, '2026-06-04T12:00:05.000Z').state
     const answer = getLiveMultiplayerAnswerWords(state.matches[0])[0]
     const first = submitLiveMultiplayerGuess(state, {
@@ -312,6 +346,7 @@ describe('live multiplayer foundation', () => {
     let state = matchLiveMultiplayerLobby(
       { lobbies: [lobby], matches: [] },
       {
+        joiningUserId: 'rival-user',
         lobbyId: lobby.id,
         now: '2026-06-04T12:00:01.000Z',
         playerUserIds: { 'player-one': 'host-user', 'player-two': 'rival-user' },
@@ -319,6 +354,7 @@ describe('live multiplayer foundation', () => {
       },
     ).state
     const matchId = state.matches[0].id
+    state = enterHost(state, matchId, '2026-06-04T12:00:02.000Z')
     state = startLiveMultiplayerMatch(state, matchId, '2026-06-04T12:00:05.000Z').state
     const forfeited = forfeitLiveMultiplayerMatch(state, {
       matchId,
@@ -351,6 +387,7 @@ describe('live multiplayer foundation', () => {
       },
     ).state
     const matchId = state.matches[0].id
+    state = enterHost(state, matchId, '2026-06-04T12:00:02.000Z')
     state = startLiveMultiplayerMatch(state, matchId, '2026-06-04T12:00:05.000Z').state
     const spectating = joinLiveMultiplayerMatchAsSpectator(state, {
       matchId,

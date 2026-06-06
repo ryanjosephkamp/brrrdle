@@ -419,6 +419,7 @@ function GoGameSession({
           <input
             checked={session.hardMode}
             className="h-4 w-4 accent-cyan-300"
+            disabled={session.puzzles.some((puzzle) => puzzle.guesses.length > 0)}
             onChange={(event) => setSession((currentSession) => setGoHardMode(currentSession, event.target.checked))}
             type="checkbox"
           />

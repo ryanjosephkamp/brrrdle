@@ -395,6 +395,7 @@ function OgGameSession({
           <input
             checked={session.hardMode}
             className="h-4 w-4 accent-cyan-300"
+            disabled={session.guesses.length > 0}
             onChange={(event) => setSession((currentSession) => ({ ...currentSession, hardMode: event.target.checked, lastValidation: undefined }))}
             type="checkbox"
           />
