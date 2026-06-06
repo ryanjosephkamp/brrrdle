@@ -4,6 +4,28 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Phase 23 Stage 7 — Whole-Game Bug Bash & Stabilization
+
+#### 23 Stage 7 execution start and test matrix (`phase_id = 92`)
+- **Execution authorized**: began the broad Stage 7 bug-fix and stabilization pass from the PR #16 safety-backup state on GitHub `main`.
+- **Known priority bugs**: Live lobby creator auto-entry, Practice Live word-length selection timing/visibility, and remaining Live Multiplayer phase instability.
+- **Audit matrix**: recorded a Stage 7 test matrix covering solo gameplay, Calendar/Daily, Async Multiplayer, Live Multiplayer, auth/sync, stats/economy/history, Words/definitions/admin, and responsive/accessibility/performance.
+- **Scope guard**: no PR, merge, release, dedicated Multiplayer tab, spectator expansion, redesign, or deferred feature work is authorized during Stage 7.
+
+#### 23 Stage 7 core stabilization fixes (`phase_id = 93`)
+- **Live entry synchronization**: Live matches now record per-player entry acknowledgement before Practice word-length selection or Daily countdown clocks arm, preventing creators and rivals from being outrun by phase timers before their clients enter the match surface.
+- **Creator auto-entry**: the Live panel now promotes a creator's selected lobby to its matched game when a rival joins, improving no-refresh entry into Practice Live and Daily Live.
+- **Countdown guardrails**: Live countdowns cannot start gameplay until the countdown exists and has elapsed.
+- **DailyVariant isolation**: solo local-midnight and multiplayer UTC daily anti-gaming anchors are isolated in memory so the two variants cannot cross-contaminate during one page session.
+- **Small stability fixes**: Hard Mode toggles lock after the first submitted solo guess, Word Explorer live-load responses are keyed by requested length, and dialogs gain mobile-safe max-height scrolling.
+- **Focused verification**: focused multiplayer, DailyVariant, and Word Explorer regression tests pass; full Stage 7 verification remains pending.
+
+#### 23 Stage 7 final verification and handoff (`phase_id = 94`)
+- **Real multiplayer E2E**: verified Practice Async, Daily Async, Practice Live, and Daily Live with two isolated authenticated browser contexts against the configured Supabase project, including lobby discovery/joining, entry transitions, selection/countdown behavior where applicable, board/history updates, turn ownership, and Daily claim gating.
+- **Remote Supabase probes**: confirmed durable async moves, matched live lobbies/matches, live participant rows, both-player live entry acknowledgements, and Daily claim rows; temporary Stage 7 auth users and exact related test rows were cleaned up afterward.
+- **Responsive smoke**: desktop Words pagination and definition modal, tablet Settings, and 390px mobile Calendar smoke checks passed with zero console errors and no horizontal overflow.
+- **Scope guard**: no PR, merge, release, dedicated Multiplayer tab, spectator expansion, redesign, or deferred feature work was introduced.
+
 ### Phase 23 Stage 6 Safety Backup Merge
 
 #### 23 Stage 6 safety backup (`phase_id = 91`)

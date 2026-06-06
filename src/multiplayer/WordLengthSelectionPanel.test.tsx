@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { WordLengthSelectionPanel } from './WordLengthSelectionPanel'
 import {
+  acknowledgeLiveMultiplayerEntry,
   chooseLivePracticeWordLength,
   createLiveMultiplayerLobby,
   matchLiveMultiplayerLobby,
@@ -14,9 +15,20 @@ function createSelectionMatch() {
   const lobby = createLiveMultiplayerLobby({ createdAt: '2026-06-04T12:00:00.000Z', mode: 'og', scope: 'practice' })
   let state = matchLiveMultiplayerLobby(
     { lobbies: [lobby], matches: [] },
-    { lobbyId: lobby.id, now: '2026-06-04T12:00:05.000Z' },
+    {
+      joiningUserId: 'rival-user',
+      lobbyId: lobby.id,
+      now: '2026-06-04T12:00:05.000Z',
+      playerUserIds: { 'player-one': 'host-user', 'player-two': 'rival-user' },
+    },
   ).state
   const matchId = state.matches[0].id
+  state = acknowledgeLiveMultiplayerEntry(state, {
+    actorUserId: 'host-user',
+    matchId,
+    now: '2026-06-04T12:00:05.000Z',
+    playerId: 'player-one',
+  }).state
   state = chooseLivePracticeWordLength(state, { matchId, playerId: 'player-one', wordLength: 5 }).state
   state = chooseLivePracticeWordLength(state, { matchId, playerId: 'player-two', wordLength: 8 }).state
   return state.matches[0]

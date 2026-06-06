@@ -49,13 +49,13 @@ export function WordExplorerPanel() {
   const [copiedWord, setCopiedWord] = useState<string | undefined>(undefined)
   const [definitionWord, setDefinitionWord] = useState<string | undefined>(undefined)
   const bundledEntries = useMemo(() => loadWordExplorerEntries(length), [length])
-  const [liveLoad, setLiveLoad] = useState<WordExplorerLoadResult | undefined>(undefined)
+  const [liveLoad, setLiveLoad] = useState<{ readonly length: number; readonly result: WordExplorerLoadResult } | undefined>(undefined)
 
   useEffect(() => {
     let isMounted = true
     void loadWordExplorerEntriesFromLive(length).then((result) => {
       if (isMounted) {
-        setLiveLoad(result)
+        setLiveLoad({ length, result })
       }
     })
     return () => {
@@ -63,7 +63,9 @@ export function WordExplorerPanel() {
     }
   }, [length])
 
-  const effectiveLoad = liveLoad ?? { entries: bundledEntries, source: 'bundled' as const, message: 'Checking live word list…' }
+  const effectiveLoad = liveLoad?.length === length
+    ? liveLoad.result
+    : { entries: bundledEntries, source: 'bundled' as const, message: 'Checking live word list…' }
   const entries = effectiveLoad.entries
   const filtered = useMemo(
     () => filterAndSortEntries(entries, { searchTerm, showAnswers, showValidGuesses, difficulty: difficultyFilter }, { field: sortField, direction: sortDirection }),

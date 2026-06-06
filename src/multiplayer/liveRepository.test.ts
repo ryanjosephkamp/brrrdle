@@ -8,6 +8,7 @@ import {
   saveLiveMultiplayerState,
 } from './liveRepository'
 import {
+  acknowledgeLiveMultiplayerEntry,
   chooseLivePracticeWordLength,
   createLiveMultiplayerLobby,
   getLiveMultiplayerAnswerWords,
@@ -216,6 +217,18 @@ describe('live multiplayer repository seam', () => {
     expect(tables.live_match_participants).toHaveLength(1)
     expect((tables.live_match_participants[0] as { readonly player_id: string }).player_id).toBe('player-two')
 
+    const hostEntered = acknowledgeLiveMultiplayerEntry(hostLoaded.state, {
+      actorUserId: 'host-user',
+      matchId: hostLoaded.state.matches[0].id,
+      now: '2026-06-04T12:00:06.000Z',
+      playerId: 'player-one',
+    })
+    await hostRepository.save(hostEntered.state)
+    const armedForRival = await rivalRepository.load()
+
+    expect(tables.live_match_participants).toHaveLength(2)
+    expect(armedForRival.state.matches[0].selection?.endsAt).toBe('2026-06-04T12:01:06.000Z')
+
     const spectatorRepository = createSupabaseLiveMultiplayerRepository({ client: createClient(), userId: 'spectator-user' })
     const spectatorSnapshot = await spectatorRepository.joinSpectator(hostLoaded.state.matches[0].id, {
       profile: { initials: 'SP', label: 'Spectator Pilot' },
@@ -309,27 +322,35 @@ describe('live multiplayer repository seam', () => {
     await rivalRepository.save(matched.state)
 
     const hostSnapshot = await hostRepository.load()
-    let rivalSnapshot = await rivalRepository.load()
     const matchId = hostSnapshot.state.matches[0].id
-    await hostRepository.save(chooseLivePracticeWordLength(hostSnapshot.state, {
+    await hostRepository.save(acknowledgeLiveMultiplayerEntry(hostSnapshot.state, {
       actorUserId: 'host-user',
       matchId,
+      now: '2026-06-04T12:00:06.000Z',
+      playerId: 'player-one',
+    }).state)
+    await hostRepository.save(chooseLivePracticeWordLength((await hostRepository.load()).state, {
+      actorUserId: 'host-user',
+      matchId,
+      now: '2026-06-04T12:00:10.000Z',
       playerId: 'player-one',
       wordLength: 5,
     }).state)
-    rivalSnapshot = await rivalRepository.save(chooseLivePracticeWordLength(rivalSnapshot.state, {
+    const rivalSnapshot = await rivalRepository.load()
+    const rivalChoiceSnapshot = await rivalRepository.save(chooseLivePracticeWordLength(rivalSnapshot.state, {
       actorUserId: 'rival-user',
       matchId,
+      now: '2026-06-04T12:00:11.000Z',
       playerId: 'player-two',
       wordLength: 5,
     }).state)
-    const resolved = resolveLivePracticeWordLength(rivalSnapshot.state, {
+    const resolved = resolveLivePracticeWordLength(rivalChoiceSnapshot.state, {
       matchId,
-      now: '2026-06-04T12:00:10.000Z',
+      now: '2026-06-04T12:00:12.000Z',
       randomSeed: 2,
     })
     await rivalRepository.save(resolved.state)
-    const started = startLiveMultiplayerMatch((await hostRepository.load()).state, matchId, '2026-06-04T12:00:14.000Z')
+    const started = startLiveMultiplayerMatch((await hostRepository.load()).state, matchId, '2026-06-04T12:00:15.000Z')
     await hostRepository.save(started.state)
 
     const playingForHost = await hostRepository.load()
