@@ -36,7 +36,7 @@ export function WordLengthSelectionPanel({
     'player-one': selection?.choices.find((choice) => choice.playerId === 'player-one')?.wordLength ?? match.wordLength ?? 5,
     'player-two': selection?.choices.find((choice) => choice.playerId === 'player-two')?.wordLength ?? match.wordLength ?? 5,
   })
-  const remainingMs = selection ? Date.parse(selection.endsAt) - now.getTime() : LIVE_WORD_LENGTH_SELECTION_MS
+  const remainingMs = selection?.endsAt ? Date.parse(selection.endsAt) - now.getTime() : LIVE_WORD_LENGTH_SELECTION_MS
   const animationRemainingMs = selection?.animationEndsAt ? Date.parse(selection.animationEndsAt) - now.getTime() : 0
   const isAnimating = Boolean(selection?.animationEndsAt && animationRemainingMs > 0)
   const selectedLength = selection?.selectedWordLength
@@ -56,14 +56,14 @@ export function WordLengthSelectionPanel({
           </p>
         </div>
         <p className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs font-bold uppercase tracking-wide text-cyan-100" aria-live="polite">
-          {selectedLength ? `Locked ${selectedLength}` : `Ends in ${formatSeconds(remainingMs)}`}
+          {selectedLength ? `Locked ${selectedLength}` : selection?.endsAt ? `Ends in ${formatSeconds(remainingMs)}` : 'Waiting'}
         </p>
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
         {match.players.map((player) => {
           const playerChoice = choicesByPlayer.get(player.id)
-          const canChooseForPlayer = !readOnly && viewerPlayerId === player.id && !selection?.resolvedAt
+          const canChooseForPlayer = !readOnly && viewerPlayerId === player.id && Boolean(selection?.endsAt) && !selection?.resolvedAt
           return (
             <div className="rounded-lg border border-white/10 bg-black/30 p-3" key={player.id}>
               <label className="grid gap-2 text-sm font-semibold text-cyan-100">
@@ -123,7 +123,7 @@ export function WordLengthSelectionPanel({
       ) : null}
 
       <div className="flex flex-wrap justify-end gap-2">
-        <Button disabled={readOnly || Boolean(selection?.resolvedAt)} onClick={onResolve} variant="primary">
+        <Button disabled={readOnly || !selection?.endsAt || Boolean(selection?.resolvedAt)} onClick={onResolve} variant="primary">
           Resolve selection
         </Button>
         {selection?.animationEndsAt ? (

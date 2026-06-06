@@ -376,11 +376,22 @@ function mergeWordLengthSelection(
     animationEndsAt: maxIso(remote.animationEndsAt, local.animationEndsAt),
     animationStartedAt: maxIso(remote.animationStartedAt, local.animationStartedAt),
     choices: mergeWordLengthChoices(remote.choices, local.choices),
-    endsAt: parseTime(local.endsAt) >= parseTime(remote.endsAt) ? local.endsAt : remote.endsAt,
+    endsAt: maxIso(remote.endsAt, local.endsAt),
     resolvedAt: maxIso(remote.resolvedAt, local.resolvedAt),
     selectedWordLength: local.selectedWordLength ?? remote.selectedWordLength,
     selectionCandidates: local.selectionCandidates ?? remote.selectionCandidates,
   }
+}
+
+function mergePlayerEntryAt(
+  remote: LiveMultiplayerMatch['playerEntryAt'],
+  local: LiveMultiplayerMatch['playerEntryAt'],
+): LiveMultiplayerMatch['playerEntryAt'] {
+  const merged = {
+    'player-one': maxIso(remote?.['player-one'], local?.['player-one']),
+    'player-two': maxIso(remote?.['player-two'], local?.['player-two']),
+  }
+  return merged['player-one'] || merged['player-two'] ? merged : undefined
 }
 
 function getMergedWinner(
@@ -448,6 +459,7 @@ function mergeLiveMatchForSave(
       ...base,
       endedAt,
       phase,
+      playerEntryAt: mergePlayerEntryAt(remote.playerEntryAt, local.playerEntryAt),
       playerProgress,
       playerProfiles: {
         ...remote.playerProfiles,
@@ -860,6 +872,10 @@ export function createSupabaseLiveMultiplayerRepository({ client, userId }: Supa
     subscribe: (listener) => {
       listeners.add(listener)
       listener(snapshot)
+      void refresh()
+      const refreshInterval = globalThis.setInterval(() => {
+        void refresh()
+      }, 2_000)
       const channel = client.channel(channelName)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'live_lobbies' }, () => {
           void refresh()
@@ -882,6 +898,7 @@ export function createSupabaseLiveMultiplayerRepository({ client, userId }: Supa
         .subscribe()
       return () => {
         listeners.delete(listener)
+        globalThis.clearInterval(refreshInterval)
         void client.removeChannel(channel)
       }
     },

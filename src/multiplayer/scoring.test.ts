@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createAsyncMultiplayerGame, forfeitAsyncMultiplayerGame, submitAsyncMultiplayerGuess } from './asyncMultiplayer'
 import {
+  acknowledgeLiveMultiplayerEntry,
   createLiveMultiplayerLobby,
   getLiveMultiplayerAnswerWords,
   matchLiveMultiplayerLobby,
@@ -69,6 +70,7 @@ describe('multiplayer scoring projections', () => {
     let state = matchLiveMultiplayerLobby(
       { lobbies: [lobby], matches: [] },
       {
+        joiningUserId: 'user-b',
         lobbyId: lobby.id,
         now: '2026-06-04T12:00:01.000Z',
         playerUserIds: { 'player-one': 'user-a', 'player-two': 'user-b' },
@@ -76,6 +78,12 @@ describe('multiplayer scoring projections', () => {
       },
     ).state
     const matchId = state.matches[0].id
+    state = acknowledgeLiveMultiplayerEntry(state, {
+      actorUserId: 'user-a',
+      matchId,
+      now: '2026-06-04T12:00:02.000Z',
+      playerId: 'player-one',
+    }).state
     state = startLiveMultiplayerMatch(state, matchId, '2026-06-04T12:00:05.000Z').state
     const answer = getLiveMultiplayerAnswerWords(state.matches[0])[0]
     const submitted = submitLiveMultiplayerGuess(state, {

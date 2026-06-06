@@ -107,7 +107,7 @@ export interface LiveWordLengthSelection {
   readonly animationEndsAt?: string
   readonly animationStartedAt?: string
   readonly choices: readonly LiveWordLengthChoice[]
-  readonly endsAt: string
+  readonly endsAt?: string
   readonly resolvedAt?: string
   readonly selectionCandidates?: readonly number[]
   readonly selectedWordLength?: number
@@ -129,6 +129,7 @@ export interface LiveMultiplayerMatch {
   readonly matchmakingRequestId?: string
   readonly mode: GameMode
   readonly phase: LiveMultiplayerMatchPhase
+  readonly playerEntryAt?: Partial<Record<LiveMultiplayerPlayerId, string>>
   readonly playerUserIds?: Partial<Record<LiveMultiplayerPlayerId, string>>
   readonly playerProgress: readonly LiveMultiplayerPlayerProgress[]
   readonly playerProfiles?: Partial<Record<LiveMultiplayerPlayerId, MultiplayerProfileSummary>>
@@ -214,6 +215,13 @@ export interface JoinLiveMultiplayerSpectatorInput {
   readonly now?: string
   readonly profile?: MultiplayerProfileSummary
   readonly userId: string
+}
+
+export interface AcknowledgeLiveMultiplayerEntryInput {
+  readonly actorUserId?: string
+  readonly matchId: string
+  readonly now?: string
+  readonly playerId: LiveMultiplayerPlayerId
 }
 
 export interface LiveMultiplayerCommandResult {
@@ -319,6 +327,16 @@ function normalizePlayerUserIds(value: unknown): Partial<Record<LiveMultiplayerP
   return playerOne || playerTwo ? { 'player-one': playerOne, 'player-two': playerTwo } : undefined
 }
 
+function normalizePlayerEntryAt(value: unknown): Partial<Record<LiveMultiplayerPlayerId, string>> | undefined {
+  if (typeof value !== 'object' || value === null) {
+    return undefined
+  }
+  const record = value as Record<string, unknown>
+  const playerOne = typeof record['player-one'] === 'string' && record['player-one'].trim() ? record['player-one'] : undefined
+  const playerTwo = typeof record['player-two'] === 'string' && record['player-two'].trim() ? record['player-two'] : undefined
+  return playerOne || playerTwo ? { 'player-one': playerOne, 'player-two': playerTwo } : undefined
+}
+
 function profileLabel(profile: MultiplayerProfileSummary | undefined, fallback: string): string {
   return profile?.label ?? fallback
 }
@@ -399,14 +417,11 @@ function normalizeSelection(value: unknown): LiveWordLengthSelection | undefined
     return undefined
   }
   const record = value as Record<string, unknown>
-  if (typeof record.endsAt !== 'string') {
-    return undefined
-  }
   return {
     animationEndsAt: typeof record.animationEndsAt === 'string' ? record.animationEndsAt : undefined,
     animationStartedAt: typeof record.animationStartedAt === 'string' ? record.animationStartedAt : undefined,
     choices: Array.isArray(record.choices) ? record.choices.flatMap((choice) => normalizeChoice(choice) ?? []) : [],
-    endsAt: record.endsAt,
+    endsAt: typeof record.endsAt === 'string' ? record.endsAt : undefined,
     resolvedAt: typeof record.resolvedAt === 'string' ? record.resolvedAt : undefined,
     selectionCandidates: Array.isArray(record.selectionCandidates) ? record.selectionCandidates.flatMap((candidate): number[] => {
       if (typeof candidate !== 'number' || !isSupportedPracticeWordLength(Math.trunc(candidate))) {
@@ -508,6 +523,7 @@ function normalizeMatch(value: unknown): LiveMultiplayerMatch | undefined {
     matchmakingRequestId: typeof record.matchmakingRequestId === 'string' ? record.matchmakingRequestId : undefined,
     mode,
     phase,
+    playerEntryAt: normalizePlayerEntryAt(record.playerEntryAt),
     playerUserIds: normalizePlayerUserIds(record.playerUserIds),
     playerProgress: [
       normalizePlayerProgress(progress[0], 'player-one'),
@@ -578,6 +594,14 @@ export function getViewerLivePlayerId(match: LiveMultiplayerMatch, userId: strin
     return 'player-two'
   }
   return undefined
+}
+
+export function hasLiveMultiplayerPlayerEntered(match: LiveMultiplayerMatch, playerId: LiveMultiplayerPlayerId): boolean {
+  return Boolean(match.playerEntryAt?.[playerId])
+}
+
+export function isLiveMultiplayerMatchFullyEntered(match: LiveMultiplayerMatch): boolean {
+  return hasLiveMultiplayerPlayerEntered(match, 'player-one') && hasLiveMultiplayerPlayerEntered(match, 'player-two')
 }
 
 function liveLobbyBelongsToViewer(lobby: LiveMultiplayerLobby, userId: string | undefined): boolean {
@@ -758,6 +782,26 @@ function createCountdownMatch(match: LiveMultiplayerMatch, wordLength: number, n
   }
 }
 
+function armLiveMultiplayerMatchIfReady(match: LiveMultiplayerMatch, now: string): LiveMultiplayerMatch {
+  if (!isLiveMultiplayerMatchFullyEntered(match)) {
+    return match
+  }
+  if (match.scope === 'practice' && match.phase === 'word-length-selection' && match.selection && !match.selection.endsAt && !match.selection.resolvedAt) {
+    return {
+      ...match,
+      selection: {
+        ...match.selection,
+        endsAt: plusMs(now, LIVE_WORD_LENGTH_SELECTION_MS),
+      },
+      updatedAt: now,
+    }
+  }
+  if (match.scope === 'daily' && match.phase === 'countdown' && match.wordLength === DAILY_WORD_LENGTH && !match.countdownEndsAt) {
+    return createCountdownMatch(match, DAILY_WORD_LENGTH, now)
+  }
+  return match
+}
+
 export function matchLiveMultiplayerLobby(state: LiveMultiplayerState, input: MatchLiveMultiplayerLobbyInput): LiveMultiplayerCommandResult {
   const normalized = normalizeLiveMultiplayerState(state)
   const lobby = normalized.lobbies.find((entry) => entry.id === input.lobbyId)
@@ -817,6 +861,7 @@ export function matchLiveMultiplayerLobby(state: LiveMultiplayerState, input: Ma
     matchmakingRequestId: lobby.matchmakingRequestId,
     mode: lobby.mode,
     phase: lobby.scope === 'practice' ? 'word-length-selection' : 'countdown',
+    playerEntryAt: input.joiningUserId ? { 'player-two': now } : undefined,
     playerUserIds,
     playerProgress: players.map((player) => ({ moves: [], playerId: player.id, status: 'playing' })),
     playerProfiles,
@@ -828,12 +873,11 @@ export function matchLiveMultiplayerLobby(state: LiveMultiplayerState, input: Ma
     updatedAt: now,
   }
   const match = lobby.scope === 'daily'
-    ? createCountdownMatch({ ...baseMatch, wordLength: DAILY_WORD_LENGTH }, DAILY_WORD_LENGTH, now)
+    ? { ...baseMatch, wordLength: DAILY_WORD_LENGTH }
     : {
         ...baseMatch,
         selection: {
           choices: [],
-          endsAt: plusMs(now, LIVE_WORD_LENGTH_SELECTION_MS),
         },
       }
 
@@ -842,6 +886,45 @@ export function matchLiveMultiplayerLobby(state: LiveMultiplayerState, input: Ma
     state: {
       lobbies: normalized.lobbies.map((entry) => entry.id === lobby.id ? { ...entry, matchId: match.id, status: 'matched', updatedAt: now } : entry),
       matches: [match, ...normalized.matches],
+    },
+  }
+}
+
+export function acknowledgeLiveMultiplayerEntry(state: LiveMultiplayerState, input: AcknowledgeLiveMultiplayerEntryInput): LiveMultiplayerCommandResult {
+  const normalized = normalizeLiveMultiplayerState(state)
+  const match = normalized.matches.find((entry) => entry.id === input.matchId)
+  if (!match) {
+    return { error: 'Live match not found.', state: normalized }
+  }
+  if (isTerminalPhase(match.phase)) {
+    return { match, state: normalized }
+  }
+  if (input.actorUserId && match.playerUserIds?.[input.playerId] !== input.actorUserId) {
+    return { error: 'Only the signed-in player for this seat can enter this live match.', match, state: normalized }
+  }
+  const now = nowIso(input.now)
+  const currentEntryAt = match.playerEntryAt?.[input.playerId]
+  const playerEntryAt = {
+    ...match.playerEntryAt,
+    [input.playerId]: currentEntryAt ?? now,
+  }
+  const updatedPlayers = match.players.map((player) => (
+    player.id === input.playerId
+      ? { ...player, connected: true, lastSeenAt: now }
+      : player
+  ))
+  const entered: LiveMultiplayerMatch = {
+    ...match,
+    playerEntryAt,
+    players: updatedPlayers,
+    updatedAt: currentEntryAt ? match.updatedAt : now,
+  }
+  const updated = armLiveMultiplayerMatchIfReady(entered, now)
+  return {
+    match: updated,
+    state: {
+      ...normalized,
+      matches: normalized.matches.map((entry) => entry.id === updated.id ? updated : entry),
     },
   }
 }
@@ -922,6 +1005,9 @@ export function resolveLivePracticeWordLength(state: LiveMultiplayerState, input
   }
 
   const now = nowIso(input.now)
+  if (!match.selection.endsAt) {
+    return { error: 'Waiting for both players to enter before the word-length clock starts.', match, state: normalized }
+  }
   const selectionExpired = Date.parse(now) >= Date.parse(match.selection.endsAt)
   const bothPlayersChose = match.selection.choices.length >= 2
   if (!selectionExpired && !bothPlayersChose) {
@@ -998,6 +1084,12 @@ export function startLiveMultiplayerMatch(state: LiveMultiplayerState, matchId: 
   }
   if (match.phase !== 'countdown') {
     return { error: 'This live match is not in countdown.', match, state: normalized }
+  }
+  if (!match.countdownEndsAt) {
+    return { error: 'Waiting for both players to enter before the countdown starts.', match, state: normalized }
+  }
+  if (Date.parse(now) < Date.parse(match.countdownEndsAt)) {
+    return { error: 'Countdown is still running.', match, state: normalized }
   }
   if (!match.wordLength) {
     return { error: 'This live match does not have a word length.', match, state: normalized }

@@ -1,7 +1,7 @@
 # AGENT-IMPLEMENTATION-PLAN.md
 
 **Project**: brrrdle
-**Plan Version**: 3.19
+**Plan Version**: 3.22
 **Date**: 2026-06-05
 **Status**: Draft for user review — amended with Hugging Face word-list source integration; further amended on 2026-05-27 with the `ADDITIONS-2026-05-27.md` addendum (see §18); further amended on 2026-05-27 with the `DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27.md` addendum (see §19); further amended on 2026-05-27 with the `AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27.md` addendum (see §20); further amended on 2026-05-28 with the Mobile & Tablet Responsiveness phase (see §21); further amended on 2026-05-28 with the Local Word Lists addendum (`LOCAL-WORD-LISTS-SPEC-2026-05-28.md`) as Phase 17 (see §22); further amended on 2026-05-28 with the Word List Difficulty Tiers + Word Explorer / Go / Settings improvements addendum (`PHASE-18-WORD-DIFFICULTY-AND-GO-IMPROVEMENTS-SPEC-2026-05-28.md`) as Phase 18 (see §23), whose §23.2 (Phase 18.0) performs an approved model-agnostic governance/repo cleanup and a root `README.md` upgrade in the planning stage; further amended on 2026-05-30 (v1.9) to integrate the user's definitive answers to the five §23.11 open questions (now recorded as resolved decisions) and to record the Phase 18.0 `README.md` upgrade; further amended on 2026-05-30 (v2.0) to record that Phase 18 **Prompt 2** has applied the approved constitution phase-range amendment (`CONSTITUTION.md` §1/§4/§5/§5.2/§17, v3.1 → v3.2) and the associated repo/doc adjustments, ahead of Prompt 3 (full Phase 18 feature execution); further amended on 2026-05-30 (v2.1) to append the Phase 19 addendum (`PHASE-19-ENHANCED-STATS-RESUME-CONFIGURABLE-GO-AND-POLISH-SPEC-2026-05-30.md`) as §24 (Phase 19 — Enhanced Statistics Visualizations, Configurable Go Puzzle Count, Full Resume-Most-Recent-Game Activation, Advanced Polish & Theming Foundations), whose §24.2 (Phase 19.0) performs the approved planning-stage governance/repo cleanup and a root `README.md` polish while deferring all game code changes (sub-phases 19.1–19.6) to explicit user approval ("Start Prompt 2" or equivalent); further amended on 2026-05-30 (v2.2) to record that Phase 19 **Prompt 2** has confirmed the planning-stage progress-step numbering decision (`phase_id = 46` / `progress/PROGRESS-STEP-46.md`, approved by the user) and applied the associated small clarity/governance adjustments (no game code), ahead of Prompt 3 (full Phase 19 feature execution, sub-phases 19.1–19.6); further amended on 2026-05-31 (v2.3) to upgrade `CONSTITUTION.md` to v3.3 for multi-agent workflow governance and append the Phase 20 addendum (`PHASE-20-DRAMATIC-UI-LAYOUT-EXPLORATION-SPEC-2026-05-30.md`) as §25, with governance-only tracking at `phase_id = 54`; further amended on 2026-06-01 (v2.4) to record Phase 20 completion (Variant 03 "Lunar Signal Deck" finalized) and append the Phase 21 addendum (`PHASE-21-UI-POLISH-AND-THEMING-FOUNDATION-SPEC-2026-06-01.md`) as §26 (Phase 21 — UI Polish & Theming Foundation), whose Prompt 1 is a planning + governance-only step (no UI polish, layout, or theming-foundation code) tracked at `phase_id = 59`, ahead of Prompt 2 (full Phase 21 execution); further amended on 2026-06-01 (v2.5) to record Phase 21 **Prompt 2**, a governance-only refined-instruction update incorporating the user's clarifications (keep the Lunar Signal Deck layout/tab structure mostly the same, adopt a very minimalist default background of plain black or a simple grid pattern, and capture the current Lunar Signal Deck visual style as one individual theme to be enabled in Phase 22) into the spec, §26, changelog, and progress at `phase_id = 60` — with no code, UI, layout, or theming-foundation changes — ahead of Prompt 3 (full Phase 21 execution); further amended on 2026-06-02 (v2.6) to record Phase 21 **Prompt 3** (full execution, `phase_id = 61`): added the `src/theme/surface.ts` surface-theme foundation (`minimal` default + `lunar-signal`), adopted a minimalist near-black default backdrop with a faint static grid, captured the original Lunar Signal Deck treatment as the single opt-in `lunar-signal` surface (gated by a `data-surface` attribute, to be enabled in Phase 22), and removed dead Phase-20 exploration CSS (`prism` and `command-shell` shells) plus the unused `Layout` component — with the Lunar Signal Deck layout/tab structure and every gameplay/accent-theme/stats/auth/resume/economy/sharing behavior preserved, and the Phase 22 theming system itself not implemented; further amended on 2026-06-02 (v2.7) to incorporate the **Phase 21 Addendum – Theme Proposal Templates** spec (`PHASE-21-THEME-PROPOSAL-TEMPLATES-SPEC-2026-06-02.md`) as a governance/planning-only step appended at §26.8, recording the new `themes/proposals/template_proposals/` + `full_proposals/` + `theme_proposals.csv` structure that Phase 21 must produce before closing, tracked at `phase_id = 62` — with no theme code, no proposal Markdown files, no CSV population, and no folder creation in this step (the requested "§26.1" addendum is recorded as §26.8 because the §26.1–§26.7 slots were already occupied, and the version advances to v2.7 because v2.6 was already consumed by the Phase 21 Prompt 3 full-execution amendment above); further amended on 2026-06-02 (v2.8) to incorporate the **Phase 22 – Advanced Calendar / Midnight Handling + Timezone-Aware Daily Reset (+ Targeted Bug Fixes)** spec (`PHASE-22-CALENDAR-MIDNIGHT-AND-BUGFIXES-SPEC-2026-06-02.md`) as §27, a planning + governance-only step (Prompt 1) that records the phase goals, scope, deliverables, verification requirements, and two-prompt workflow and makes Phase 22 the active next phase — with **no** daily-rollover, timezone, countdown, reset-alert, sound, dev-tool, or other source code implemented in this step (tracked at `phase_id = 64`), ahead of Prompt 2 (full Phase 22 execution); further amended on 2026-06-03 (v2.9) to record that Phase 22 **Prompt 2** (full execution) is complete (`phase_id = 65`) — timezone-aware local-midnight daily reset, balanced anti-gaming, cross-page countdown indicator, reset alert + brand-new unique sound, global Settings toggle, dev-mode Simulate Time tool, and the modular `src/daily/` service — and to incorporate the **Phase 22 Addendum – Calendar (Central Daily Hub) & Countdown Positioning** spec (`PHASE-22-ADDENDUM-CALENDAR-AND-COUNTDOWN-POSITIONING-2026-06-03.md`) as §27.10, a planning + governance-only step that records the Calendar-as-central-daily-hub feature (first tab, "Play Today's OG/GO" quick-access buttons, coin-gated past dailies with a one-guess-permanently-unlocks rule, past dailies treated as full daily experiences), the countdown repositioning to the top of the UI (context-aware on the landing page vs. game tabs), and the deliverables/scope/verification — with **no** calendar, navigation, routing, state-management, countdown-repositioning, economy, or other source code implemented in this step (tracked at `phase_id = 66`), ahead of a separately approved full-execution prompt.
 **Authority**: Must follow `CONSTITUTION.md`, `BRRRDLE-SPEC.md`, and the approved v2.6 plan in `BRRRDLE-OVERVIEW.md`.
@@ -44,6 +44,12 @@
 
 **Latest amendment (v3.19, 2026-06-05)**: The user explicitly authorized a narrow safety-backup PR and squash merge of the current local Phase 23 Stage 6 state to GitHub `main` before Stage 7. This backup is tracked under `phase_id = 91`; it does not close Phase 23, start Stage 7, create a release, expand the dedicated Multiplayer tab, or authorize deferred feature work. Further PRs, merges, releases, Stage 7 execution, and later-phase work remain gated pending explicit user approval.
 
+**Latest amendment (v3.20, 2026-06-05)**: Phase 23 Stage 7 whole-game autonomous bug bash and stabilization is now explicitly authorized by the user and opened under `phase_id = 92`. The execution must start from the PR #16 safety-backup state on GitHub `main` (`49e7f400c1ba8f6be3e048795d990b8db5ad6933`), create a dedicated Stage 7 branch, record a test/audit matrix before source edits, prioritize the known post-Stage-6 Live Multiplayer creator-entry and Practice Live word-length-selection bugs, run broad solo/daily/async/live/auth/stats/words/responsive audits, perform meaningful real two-client Supabase-backed multiplayer testing, and finish with the full verification gate plus Vercel preview. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion beyond bug fixes, redesign, and deferred feature work remain gated.
+
+**Latest amendment (v3.21, 2026-06-05)**: Phase 23 Stage 7 core stabilization fixes are implemented and tracked under `phase_id = 93`. The first bug-fix batch adds projection-based Live player entry acknowledgement before Practice word-length selection or Daily countdown timers arm, promotes a creator's selected matched lobby into its live match, tightens countdown start guards, persists host participant presence after entry, isolates in-memory Daily anti-gaming anchors per `DailyVariant`, locks solo Hard Mode toggles after the first guess, keys Word Explorer live-load responses by requested length, and improves mobile dialog scrolling. Focused regression tests pass; full Stage 7 lint/test/build/typecheck/browser/Supabase verification and preview deployment remain pending. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, and deferred feature work remain gated.
+
+**Latest amendment (v3.22, 2026-06-06)**: Phase 23 Stage 7 stabilization and verification handoff is tracked under `phase_id = 94`. Real two-client browser E2E against the configured Supabase project covered Practice Async, Daily Async, Practice Live, and Daily Live create/discover/join/play flows; remote Supabase probes confirmed durable async moves, matched live lobbies/matches, participant rows, entry acknowledgements, and Daily claim rows; desktop, tablet-like, and 390px browser smoke passed with no console errors or horizontal overflow; Word Explorer definition modal rendering was sampled. The full lint/test/build/typecheck/whitespace gate and preview deployment must remain part of the final handoff evidence. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, and deferred feature work remain gated.
+
 ---
 
 ## Current Phase Index
@@ -74,9 +80,9 @@
 | Phase 21 | §26 | Implementation complete (Prompt 3): minimalist default surface + Lunar Signal Deck captured as one opt-in surface theme; theming-foundation and CSS-architecture cleanup done |
 | Phase 21 Addendum – Theme Proposal Templates | §26.8 | Governance/planning only (`phase_id = 62`): incorporates `PHASE-21-THEME-PROPOSAL-TEMPLATES-SPEC-2026-06-02.md`; records the `themes/proposals/template_proposals/` + `full_proposals/` + `theme_proposals.csv` structure to produce before Phase 21 closes; templates authored (`phase_id = 63`) |
 | Phase 22 | §27 | Complete through addendum follow-up (`phase_id = 68`): timezone-aware local-midnight daily reset, Calendar central hub, coin-gated past dailies, top countdown positioning, and landing tab-row follow-up are implemented and verified. |
-| **Phase 23 (active phase)** | §28 | **Stage 1 complete (`phase_id = 69`); Stage 2 planning documented (`phase_id = 70`); multi-agent scaffolding complete (`phase_id = 71`); Stage 2 implementation complete and verified (`phase_id = 72`); Stage 3 planning documented (`phase_id = 73`); Stage 3 implementation complete (`phase_id = 74`); Stage 3 stabilization complete (`phase_id = 75`); account-backed multiplayer/UX stabilization follow-up complete (`phase_id = 76`); next stabilization follow-up planning documented (`phase_id = 77`); §28.13 stabilization follow-up implemented (`phase_id = 78`); Stage 4 planning documented (`phase_id = 79`); Stage 4 implemented (`phase_id = 80`); Stage 5 planning documented (`phase_id = 81`); Stage 5 implemented and verified (`phase_id = 82`-`85`); Stage 6 planning documented (`phase_id = 86`); Stage 6 testing addendum + Stage 7 planning documented (`phase_id = 87`); Stage 6 implemented and verified (`phase_id = 88`-`90`); Stage 6 safety backup to GitHub `main` authorized/tracked (`phase_id = 91`)**: Stage 1 delivered bug fixes and async multiplayer. Stage 2 delivered live Practice/Daily multiplayer foundations, Practice Live word-length selection, Calendar Daily Live, live indicators, repository seam, and Supabase migration/RLS/realtime hooks. Stage 3 delivered ELO/rating, scoring, matchmaking, custom-game support, Stats summaries, and additive Supabase competitive tables. Stabilization corrected online async/live ownership, persistence, account-backed matchmaking, multiplayer play surfaces, forfeit, password reset, mobile Calendar, Settings tooltips, realtime refresh/entry behavior, daily participation limits, separate Daily Async/Live answer lists, rival identity, Daily Multiplayer countdown navigation, creator-only cancellation, per-user active limits, Live spectator foundations, Stage 5 UX/correctness issues, and Stage 6 live realtime/Daily cancellation stability bugs. Stage 7 is planned as a separately authorized whole-game autonomous bug bash. Further PRs, merges, releases, dedicated Multiplayer tab work, and later-phase work remain gated. |
+| **Phase 23 (active phase)** | §28 | **Stage 1 complete (`phase_id = 69`); Stage 2 planning documented (`phase_id = 70`); multi-agent scaffolding complete (`phase_id = 71`); Stage 2 implementation complete and verified (`phase_id = 72`); Stage 3 planning documented (`phase_id = 73`); Stage 3 implementation complete (`phase_id = 74`); Stage 3 stabilization complete (`phase_id = 75`); account-backed multiplayer/UX stabilization follow-up complete (`phase_id = 76`); next stabilization follow-up planning documented (`phase_id = 77`); §28.13 stabilization follow-up implemented (`phase_id = 78`); Stage 4 planning documented (`phase_id = 79`); Stage 4 implemented (`phase_id = 80`); Stage 5 planning documented (`phase_id = 81`); Stage 5 implemented and verified (`phase_id = 82`-`85`); Stage 6 planning documented (`phase_id = 86`); Stage 6 testing addendum + Stage 7 planning documented (`phase_id = 87`); Stage 6 implemented and verified (`phase_id = 88`-`90`); Stage 6 safety backup to GitHub `main` authorized/tracked (`phase_id = 91`); Stage 7 execution opened (`phase_id = 92`); Stage 7 core stabilization fixes implemented (`phase_id = 93`); Stage 7 verification and handoff tracked (`phase_id = 94`)**: Stage 1 delivered bug fixes and async multiplayer. Stage 2 delivered live Practice/Daily multiplayer foundations, Practice Live word-length selection, Calendar Daily Live, live indicators, repository seam, and Supabase migration/RLS/realtime hooks. Stage 3 delivered ELO/rating, scoring, matchmaking, custom-game support, Stats summaries, and additive Supabase competitive tables. Stabilization corrected online async/live ownership, persistence, account-backed matchmaking, multiplayer play surfaces, forfeit, password reset, mobile Calendar, Settings tooltips, realtime refresh/entry behavior, daily participation limits, separate Daily Async/Live answer lists, rival identity, Daily Multiplayer countdown navigation, creator-only cancellation, per-user active limits, Live spectator foundations, Stage 5 UX/correctness issues, Stage 6 live realtime/Daily cancellation stability bugs, and Stage 7 live-entry/timing plus small whole-game audit fixes. Stage 7 is awaiting user review after final verification handoff. Further PRs, merges, releases, dedicated Multiplayer tab work, and later-phase work remain gated. |
 
-> **Upcoming planned roadmap:** Phase 23 Stage 6 is complete and verified under `phase_id = 88`-`90`, with the current Stage 6 local state backed up to GitHub `main` under `phase_id = 91` before Stage 7. Phase 23 Stage 7 broad autonomous debugging is planned under §28.20 but not authorized. No Stage 7 implementation, further PR, merge, release, spectator expansion, dedicated Multiplayer tab implementation, notification system, history/theme tab, bot work, broader redesign, or later phase work may begin until explicitly approved.
+> **Upcoming planned roadmap:** Phase 23 Stage 7 is awaiting user review after the final verification handoff. No further PR, merge, release, spectator expansion beyond bug fixes/non-regression, dedicated Multiplayer tab implementation, notification system, history/theme tab, bot work, broader redesign, or later phase work may begin until explicitly approved.
 
 ## 1. Operating Rules
 
@@ -3985,7 +3991,7 @@ Verification completed:
 
 ### 28.20 Stage 7 Planning — Whole-Game Autonomous Bug Bash and Stabilization
 
-**Authorization status**: planned only under `phase_id = 87`. This is intentionally split from Stage 6. Stage 6 must stay focused on the six critical live multiplayer and Daily claim bugs; Stage 7 is the later broad autonomous debugging pass across the whole game. This subsection does not authorize implementation, source-code edits, UI/component work, tests, Supabase migrations, build/config changes, PR creation, merge, release, dedicated Multiplayer tab work, deferred feature work, or feature development.
+**Authorization status**: planned under `phase_id = 87` and explicitly authorized for execution under `phase_id = 92`. This is intentionally split from Stage 6. Stage 6 stayed focused on the six critical live multiplayer and Daily claim bugs; Stage 7 is the broad autonomous debugging pass across the whole game. Stage 7 authorizes bug fixes, stabilization, targeted tests, browser/Supabase verification, and progress tracking only; PR creation, merge, release, dedicated Multiplayer tab work, deferred feature work, redesign, and feature development remain out of scope unless separately approved.
 
 #### 28.20.1 Rationale for Splitting Stage 7
 
@@ -4027,7 +4033,7 @@ Stage 7 should finish with:
 
 #### 28.20.5 Gate
 
-Stage 7 requires a separate explicit execution prompt after Stage 6 is complete and reviewed. Do not begin Stage 7 from a Stage 6 execution prompt unless the user explicitly authorizes Stage 7 in that same prompt and clearly overrides the original Stage 6 bug-only boundary.
+Stage 7 was authorized by the user's Stage 7 execution prompt after the Stage 6 safety backup merged to `main`. The execution branch is `codex/phase-23-stage-7`. Do not create a PR, merge, release, implement the dedicated Multiplayer tab, expand spectators beyond bug fixes/non-regression, or begin deferred feature work without later explicit approval.
 
 ### 28.21 Stage 6 Safety Backup Merge (`phase_id = 91`)
 
@@ -4041,9 +4047,129 @@ Purpose:
 
 Gate after merge:
 
-- Halt for user review.
-- Do not begin Stage 7 until the user provides a separate explicit Stage 7 execution prompt.
+- Halt for user review. This gate was satisfied by the user's later Stage 7 execution prompt, which opens Stage 7 under `phase_id = 92`.
 - Do not create additional PRs, merges, releases, dedicated Multiplayer tab work, deferred features, or later-phase work without later explicit approval.
+
+### 28.22 Stage 7 Execution Kickoff and Test Matrix (`phase_id = 92`)
+
+**Authorization status**: execution authorized by the user. This section records the required Stage 7 kickoff, branch, audit matrix, and scope guard before source-code fixes.
+
+Starting state:
+
+- Base branch: `main`.
+- Safety-backup PR: #16.
+- Base commit: `49e7f400c1ba8f6be3e048795d990b8db5ad6933`.
+- Working branch: `codex/phase-23-stage-7`.
+
+Known user-prioritized bugs:
+
+1. **Live lobby creator auto-entry**: creators are not always automatically entering the lobby/game after a second player joins.
+2. **Practice Live word-length selection timing**: selection must start only after both players are connected/entered, both clients must see the selection UI automatically, and no manual refresh should be required.
+3. **Live phase instability**: continue investigating lobby creation/joining, word-length selection sync, board/history realtime updates, UI flashing, route restoration, and related Live Multiplayer instability.
+
+Stage 7 test/audit matrix:
+
+| Lane | Surfaces | Automated checks | Browser / remote checks | Special attention |
+| --- | --- | --- | --- | --- |
+| Solo gameplay | Daily OG/GO, Practice OG/GO, Hard Mode, tile coloring, keyboard, loss/reveal, definitions, resume | `src/game/**` tests, game session tests, focused regressions for discovered issues | Desktop/tablet/mobile playthrough smoke for Daily and Practice | Duplicate-letter coloring, reveal/definition gating, resume integrity |
+| Calendar/Daily | Calendar hub, daily archives, countdowns, indicators, DailyVariant boundaries | Calendar and daily clock/cycle tests | Calendar route smoke at desktop/tablet/390px; daily archive and countdown checks | Daily 5-letter invariant, local-vs-UTC boundaries, mobile indicator density |
+| Async Multiplayer | Practice Async, Daily Async, lobbies, claims, cancellation, turns/history, rival identity, forfeit, refresh | Async domain/repository/panel tests | Two-client Supabase-backed Practice/Daily Async create/discover/join/play/refresh/forfeit | Four daily buckets, signed-in ownership, no dual-side control |
+| Live Multiplayer | Practice Live, Daily Live, lobbies, word-length selection, countdown/gameplay, board/history sync, cancellation/forfeit, refresh | Live domain/repository/panel/selection tests | Two-client Supabase-backed Practice/Daily Live create/discover/join/selection/play/refresh/cancel/forfeit | Creator auto-entry, selection countdown timing, realtime convergence |
+| Auth/sync | Sign-in/up, password reset, magic/recovery links, sign-out, guest/cloud merge, settings/profile sync | Auth, storage, guest transfer, Supabase client lifecycle tests | Browser auth smoke and remote Supabase probes where relevant | No duplicate GoTrue clients, no secret leakage in docs/logs |
+| Stats/economy/history | Stats dashboard, rating summaries, coins/XP, past daily unlocks, sharing/history separation | Stats/storage/economy-adjacent tests as available | Browser smoke of stats/history/share surfaces | Solo/multiplayer separation and coin unlock safety |
+| Words/definitions/admin | Word Explorer, filtering/pagination, definition modals/fallbacks, admin gating | Existing data/definition/admin tests as available; add regressions for found bugs | Browser smoke for Words, definitions modal, admin gating/protected refresh | Preserve dictionaries; do not remove words/features |
+| Responsive/accessibility/performance | Landing, Practice, Calendar, Words, Stats, Settings, auth dialogs, multiplayer panels | Lint/build/typecheck plus focused component tests | Desktop, tablet-like, and 390px smoke; console health; no horizontal overflow | Tooltip/dialog layering, reduced motion, touch ergonomics |
+
+Required verification before Stage 7 completion:
+
+1. Focused tests for every changed area.
+2. `npm run lint`.
+3. `npm run test`.
+4. `npm run build`.
+5. `npx tsc -p tsconfig.api.json --noEmit`.
+6. `git diff --check`.
+7. Desktop, tablet-like, and 390px browser smoke.
+8. Meaningful two-client Supabase-backed browser E2E for multiplayer flows touched or audited.
+9. Remote Supabase probes for relevant auth/sync/multiplayer state.
+10. Vercel preview deployment, with a share URL if the direct preview is protected.
+
+Scope guard:
+
+- Do not create a PR, merge, or release.
+- Do not implement the dedicated Multiplayer tab.
+- Do not expand spectator functionality beyond bug fixes/non-regression.
+- Do not add major new features, redesign the app, or begin deferred features.
+- Preserve all existing invariants, especially Daily 5-letter games, Practice 2-35 lengths, four Daily Multiplayer buckets, separated rating buckets, signed-in online multiplayer ownership, solo stats/economy/history integrity, and disabled multiplayer consumable/pay-to-continue affordances.
+
+### 28.23 Stage 7 Core Stabilization Fixes (`phase_id = 93`)
+
+**Authorization status**: implementation checkpoint complete; Stage 7 remains active and final verification is still pending. This subsection records the first Stage 7 bug-fix batch after the kickoff/test matrix.
+
+Implemented fixes:
+
+1. **Live player entry acknowledgement**
+   - Added an additive `playerEntryAt` projection field to Live matches.
+   - Practice Live word-length selection and Daily Live countdown timers now arm only after both player seats acknowledge entering the match surface.
+   - This preserves the existing Supabase schema while giving both browser clients time to render the joined match before timers progress.
+
+2. **Live creator auto-entry and phase guardrails**
+   - `LiveMultiplayerPanel` now follows a selected lobby's `matchId` once that lobby becomes matched, instead of falling back only to a generic active match.
+   - Authenticated players automatically acknowledge entry when their selected match surface appears.
+   - Countdown start is blocked until the countdown exists and has elapsed.
+   - Supabase-backed saves merge/preserve entry acknowledgement alongside choices, progress, spectators, player IDs, and match phase.
+
+3. **DailyVariant anti-gaming isolation**
+   - The in-memory anti-gaming anchor is now keyed by `DailyVariant`.
+   - Solo local-midnight and multiplayer UTC daily clocks no longer reuse the same live page-session baseline.
+
+4. **Small whole-game audit fixes**
+   - Solo Hard Mode toggles are disabled after the first submitted guess.
+   - Word Explorer live-load results are keyed by requested length so stale live responses cannot render old-length entries under a new length label.
+   - Shared dialogs now have mobile-safe max-height and internal scrolling.
+
+Focused verification:
+
+- `npm run test -- src/multiplayer/liveMultiplayer.test.ts src/multiplayer/liveRepository.test.ts src/multiplayer/LiveMultiplayerPanel.test.tsx src/multiplayer/WordLengthSelectionPanel.test.tsx src/daily/dailyCycle.test.ts src/wordExplorer/wordExplorerData.test.ts`
+- Result: 57 focused tests passing.
+
+Remaining Stage 7 verification:
+
+- Full `npm run lint`, `npm run test`, `npm run build`, API typecheck, and `git diff --check`.
+- Desktop/tablet/390px browser smoke.
+- Real two-client Supabase-backed browser E2E for Async and Live Practice/Daily flows.
+- Remote Supabase probes for relevant auth/sync/multiplayer rows and realtime behavior.
+- Vercel preview deployment.
+
+Scope guard remains unchanged: do not create a PR, merge, release, implement the dedicated Multiplayer tab, expand spectators beyond bug fixes/non-regression, redesign, or begin deferred feature work without later explicit user approval.
+
+### 28.24 Stage 7 Verification and Handoff (`phase_id = 94`)
+
+**Authorization status**: verification and handoff checkpoint for the approved Stage 7 bug-fix/stabilization pass. No PR, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, or deferred feature work is authorized by this checkpoint.
+
+Verification coverage recorded for handoff:
+
+1. **Real two-client multiplayer browser E2E**
+   - Used two isolated authenticated browser contexts against the configured Supabase project.
+   - Practice Live: creator opened a lobby, rival discovered/joined it, both clients entered word-length selection after entry acknowledgement, selection resolved, gameplay started, host submitted `about`, and rival saw board/history update without refresh.
+   - Daily Live: creator opened a Daily Live OG lobby, rival discovered/joined it, both clients auto-entered the fixed 5-letter daily board without Practice-style word-length selection, and Daily claim gating appeared for the bucket.
+   - Practice Async: creator opened a waiting match, rival discovered/joined it, host submitted `about`, and rival saw board/history plus turn ownership update without refresh.
+   - Daily Async: Daily Multiplayer countdown opened the Daily Async surface, creator opened a Daily Async OG match, rival discovered/joined it, host submitted `about`, and rival saw board/history plus turn ownership update without refresh.
+
+2. **Remote Supabase probes**
+   - Confirmed durable async rows for Practice Async and Daily Async with both player seats and persisted `about` moves.
+   - Confirmed matched live lobbies, playing live matches, both-player `playerEntryAt` acknowledgement, live participant rows, and Daily `async:og` / `live:og` claim rows for the temporary test users.
+   - Temporary Stage 7 auth users and exact related async/live/claim rows were deleted after verification.
+
+3. **Browser smoke**
+   - Desktop 1440px: Word Explorer renders with pagination; definition modal opens with live dictionary content.
+   - Tablet-like 834px: Settings route renders.
+   - Mobile 390px: Calendar route renders.
+   - All three smoke sessions reported zero console errors and no horizontal overflow.
+
+4. **Automated gate**
+   - Final lint/test/build/API-typecheck/whitespace results are recorded in `progress/PROGRESS-STEP-94.md` and the final user handoff.
+
+No bugs were intentionally deferred during this Stage 7 pass. Remaining future work is gated to later user authorization: PR creation, merge, release, dedicated Multiplayer tab, broader spectator expansion, notifications, bots, redesigns, or later phases.
 
 ---
 

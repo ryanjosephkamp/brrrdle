@@ -8,6 +8,7 @@ import { classNames } from '../ui/classNames'
 import {
   MAX_LIVE_MULTIPLAYER_GAMES,
   addLiveMultiplayerLobby,
+  acknowledgeLiveMultiplayerEntry,
   canCreateLiveMultiplayerLobby,
   canViewerCancelLiveLobby,
   canViewerJoinLiveLobby,
@@ -23,6 +24,8 @@ import {
   getViewerLiveSpectator,
   getLiveMultiplayerAnswerWords,
   hasDailyLiveMultiplayerParticipation,
+  hasLiveMultiplayerPlayerEntered,
+  isLiveMultiplayerMatchFullyEntered,
   joinLiveMultiplayerMatchAsSpectator,
   matchLiveMultiplayerLobby,
   normalizeLiveMultiplayerState,
@@ -138,8 +141,16 @@ export function LiveMultiplayerPanel({
       ?? visibleMatches.find((match) => getViewerLivePlayerId(match, viewerUserId))
     : undefined
   const selectedMatchForId = selectedMatchId ? visibleMatches.find((match) => match.id === selectedMatchId) : undefined
+  const selectedLobbyForId = selectedLobbyId ? visibleLobbies.find((lobby) => lobby.id === selectedLobbyId) : undefined
+  const selectedLobbyMatchedMatchId = selectedLobbyForId?.status === 'matched' ? selectedLobbyForId.matchId : undefined
+  const selectedLobbyMatchedMatch = selectedLobbyForId?.status === 'matched' && selectedLobbyForId.matchId
+    ? visibleMatches.find((match) => match.id === selectedLobbyForId.matchId)
+    : undefined
   const selectedMatchBelongsToViewer = Boolean(selectedMatchForId && viewerUserId && getViewerLivePlayerId(selectedMatchForId, viewerUserId))
-  const effectiveSelectedMatchId = selectedMatchForId && (!viewerActiveMatch || selectedMatchBelongsToViewer)
+  const selectedLobbyMatchBelongsToViewer = Boolean(selectedLobbyMatchedMatch && viewerUserId && getViewerLivePlayerId(selectedLobbyMatchedMatch, viewerUserId))
+  const effectiveSelectedMatchId = selectedLobbyMatchedMatch && (!viewerActiveMatch || selectedLobbyMatchBelongsToViewer)
+    ? selectedLobbyMatchedMatch.id
+    : selectedMatchForId && (!viewerActiveMatch || selectedMatchBelongsToViewer)
     ? selectedMatchForId.id
     : viewerActiveMatch?.id ?? existingDailyMatchClaim?.id ?? visibleMatches[0]?.id
   const effectiveSelectedLobbyId = selectedLobbyId && visibleLobbies.some((lobby) => lobby.id === selectedLobbyId && lobby.status === 'waiting')
@@ -151,6 +162,8 @@ export function LiveMultiplayerPanel({
   const viewerSpectator = selectedMatch ? getViewerLiveSpectator(selectedMatch, viewerUserId) : undefined
   const viewerProgress = selectedMatch && viewerPlayerId ? selectedMatch.playerProgress.find((entry) => entry.playerId === viewerPlayerId) : undefined
   const spectatorProgress = selectedMatch ? selectedMatch.playerProgress.find((entry) => entry.serializedSession) : undefined
+  const selectedMatchFullyEntered = selectedMatch ? isLiveMultiplayerMatchFullyEntered(selectedMatch) : false
+  const viewerHasEnteredSelectedMatch = selectedMatch && viewerPlayerId ? hasLiveMultiplayerPlayerEntered(selectedMatch, viewerPlayerId) : false
   const canJoinSelectedLobby = selectedLobby ? canViewerJoinLiveLobby(selectedLobby, viewerUserId) : false
   const canCancelSelectedLobby = selectedLobby ? canViewerCancelLiveLobby(selectedLobby, viewerUserId) && !readOnly : false
   const canJoinSelectedMatchAsSpectator = selectedMatch ? canViewerSpectateLiveMatch(selectedMatch, viewerUserId) && !readOnly : false
@@ -176,6 +189,7 @@ export function LiveMultiplayerPanel({
     : authStatus === 'anonymous'
       ? 'Sign in to create, join, or play shared live rooms.'
       : 'Configure Supabase and sign in to create, join, or play shared live rooms.'
+  const displayedMessage = selectedLobbyMatchedMatchId ? undefined : message
 
   const updateFromResult = useCallback((result: { readonly error?: string; readonly lobby?: { readonly id: string }; readonly match?: LiveMultiplayerMatch; readonly state: LiveMultiplayerState }, successMessage: string) => {
     if (result.error) {
@@ -184,6 +198,7 @@ export function LiveMultiplayerPanel({
     }
     if (result.match) {
       setSelectedMatchId(result.match.id)
+      setSelectedLobbyId(undefined)
     }
     if (result.lobby) {
       setSelectedLobbyId(result.lobby.id)
@@ -394,6 +409,20 @@ export function LiveMultiplayerPanel({
   }
 
   useEffect(() => {
+    if (!selectedMatch || !viewerPlayerId || !canControlSelectedMatch || viewerHasEnteredSelectedMatch) {
+      return
+    }
+    const result = acknowledgeLiveMultiplayerEntry(normalized, {
+      actorUserId: viewerUserId,
+      matchId: selectedMatch.id,
+      playerId: viewerPlayerId,
+    })
+    if (!result.error) {
+      onChange(result.state)
+    }
+  }, [canControlSelectedMatch, normalized, onChange, selectedMatch, viewerHasEnteredSelectedMatch, viewerPlayerId, viewerUserId])
+
+  useEffect(() => {
     if (!selectedMatch || readOnly || !canControlSelectedMatch) {
       return undefined
     }
@@ -401,6 +430,7 @@ export function LiveMultiplayerPanel({
     const runAutoStep = () => {
       if (selectedMatch.phase === 'word-length-selection' && selectedMatch.selection) {
         const shouldResolve = !selectedMatch.selection.resolvedAt
+          && selectedMatch.selection.endsAt
           && (selectedMatch.selection.choices.length >= 2 || Date.now() >= Date.parse(selectedMatch.selection.endsAt))
         if (shouldResolve) {
           updateFromResult(
@@ -562,8 +592,8 @@ export function LiveMultiplayerPanel({
         </div>
       ) : null}
 
-      {message ? (
-        <p className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 p-3 font-semibold text-cyan-50" aria-live="polite">{message}</p>
+      {displayedMessage ? (
+        <p className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 p-3 font-semibold text-cyan-50" aria-live="polite">{displayedMessage}</p>
       ) : null}
 
       {selectedMatch ? (
@@ -587,7 +617,7 @@ export function LiveMultiplayerPanel({
             </div>
           </div>
 
-          {selectedMatch.scope === 'practice' && selectedMatch.phase === 'word-length-selection' ? (
+          {selectedMatch.scope === 'practice' && selectedMatch.phase === 'word-length-selection' && selectedMatch.selection?.endsAt ? (
             <WordLengthSelectionPanel
               key={selectedMatch.id}
               match={selectedMatch}
@@ -597,6 +627,11 @@ export function LiveMultiplayerPanel({
               readOnly={readOnly || !canControlSelectedMatch}
               viewerPlayerId={viewerPlayerId}
             />
+          ) : selectedMatch.scope === 'practice' && selectedMatch.phase === 'word-length-selection' ? (
+            <div className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 p-4">
+              <p className="font-semibold text-cyan-50">Waiting for both players to enter</p>
+              <p className="mt-1 text-sm text-cyan-100">The synchronized word-length clock starts only after both signed-in clients have loaded this match.</p>
+            </div>
           ) : null}
 
           {viewerSpectator ? (
@@ -638,9 +673,20 @@ export function LiveMultiplayerPanel({
 
           {selectedMatch.phase === 'countdown' ? (
             <div className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 p-4">
-              <p className="font-semibold text-cyan-50">Countdown ready</p>
-              <p className="mt-1 text-sm text-cyan-100">Both clients render this phase before guesses open. First-player selection is already committed.</p>
-              <Button className="mt-3" disabled={!canControlSelectedMatch} onClick={startMatch} variant="primary">Enter live arena</Button>
+              <p className="font-semibold text-cyan-50">{selectedMatch.countdownEndsAt ? 'Countdown ready' : 'Waiting for both players to enter'}</p>
+              <p className="mt-1 text-sm text-cyan-100">
+                {selectedMatch.countdownEndsAt
+                  ? 'Both clients rendered this phase before guesses open. First-player selection is already committed.'
+                  : 'The Daily Live countdown starts only after both signed-in clients have loaded this match.'}
+              </p>
+              <Button
+                className="mt-3"
+                disabled={!canControlSelectedMatch || !selectedMatchFullyEntered || !selectedMatch.countdownEndsAt}
+                onClick={startMatch}
+                variant="primary"
+              >
+                Enter live arena
+              </Button>
             </div>
           ) : null}
 

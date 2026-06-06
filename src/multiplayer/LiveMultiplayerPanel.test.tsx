@@ -4,6 +4,7 @@ import { DEFAULT_DIFFICULTY_TIER } from '../data/difficulty'
 import { DEFAULT_GO_PUZZLE_COUNT } from '../game/constants'
 import { LiveMultiplayerPanel } from './LiveMultiplayerPanel'
 import {
+  acknowledgeLiveMultiplayerEntry,
   createEmptyLiveMultiplayerState,
   createLiveMultiplayerLobby,
   joinLiveMultiplayerMatchAsSpectator,
@@ -58,7 +59,38 @@ describe('LiveMultiplayerPanel', () => {
     expect(html).toContain('midnight UTC')
     expect(html).toContain('GO')
     expect(html).toContain('Countdown')
+    expect(html).toContain('Waiting for both players to enter')
     expect(html).not.toContain('Word length selection')
+  })
+
+  it('shows Practice Live waiting text before the word-length clock is armed', () => {
+    const lobby = createLiveMultiplayerLobby({
+      hostUserId: 'host-user',
+      mode: 'og',
+      scope: 'practice',
+    })
+    const matched = matchLiveMultiplayerLobby(
+      { lobbies: [lobby], matches: [] },
+      {
+        joiningUserId: 'rival-user',
+        lobbyId: lobby.id,
+        playerUserIds: { 'player-one': 'host-user', 'player-two': 'rival-user' },
+      },
+    )
+    const html = renderToStaticMarkup(
+      <LiveMultiplayerPanel
+        authStatus="authenticated"
+        defaultDifficulty={DEFAULT_DIFFICULTY_TIER}
+        defaultGoPuzzleCount={DEFAULT_GO_PUZZLE_COUNT}
+        onChange={noop}
+        scope="practice"
+        state={matched.state}
+        viewerUserId="host-user"
+      />,
+    )
+
+    expect(html).toContain('Waiting for both players to enter')
+    expect(html).not.toContain('Resolve selection')
   })
 
   it('pulses the join action for a non-host who can join a selected lobby', () => {
@@ -121,6 +153,12 @@ describe('LiveMultiplayerPanel', () => {
       },
     ).state
     const matchId = state.matches[0].id
+    state = acknowledgeLiveMultiplayerEntry(state, {
+      actorUserId: 'host-user',
+      matchId,
+      now: '2026-06-04T12:00:02.000Z',
+      playerId: 'player-one',
+    }).state
     state = startLiveMultiplayerMatch(state, matchId, '2026-06-04T12:00:05.000Z').state
     state = joinLiveMultiplayerMatchAsSpectator(state, {
       matchId,

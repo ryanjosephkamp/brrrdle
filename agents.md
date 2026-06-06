@@ -29,7 +29,9 @@ The project now has enough parallelizable work that a clear coordination layer i
 - Stage 6 real multiplayer testing requirements and Stage 7 broad bug-bash planning are documented under `phase_id = 87`.
 - Stage 6 implementation is complete and verified under `phase_id = 88` through `phase_id = 90`.
 - Stage 6 safety backup to GitHub `main` is authorized/tracked under `phase_id = 91` as a one-time backup before Stage 7.
-- Stage 7 implementation remains unauthorized until a later explicit execution prompt.
+- Stage 7 implementation is authorized and opened under `phase_id = 92` as a broad bug-fix and stabilization pass.
+- Stage 7 core stabilization fixes are tracked under `phase_id = 93`; full Stage 7 verification remains pending.
+- Stage 7 final verification and handoff are tracked under `phase_id = 94`; further PRs, merges, releases, dedicated Multiplayer tab work, spectator expansion, redesign, deferred features, and later-phase work remain gated.
 - Further PR creation, merges, release, dedicated Multiplayer tab work, deferred feature work, and later-phase work remain unauthorized until later explicit approval.
 
 ## 3. Authority Stack
@@ -60,7 +62,7 @@ Before accepting or assigning Phase 23 work, the coordinator should read:
 - `AGENT-IMPLEMENTATION-PLAN.md` §28.
 - `PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`.
 - `progress/PROGRESS.csv`.
-- The latest relevant progress reports, currently `progress/PROGRESS-STEP-69.md` through `progress/PROGRESS-STEP-91.md`.
+- The latest relevant progress reports, currently `progress/PROGRESS-STEP-69.md` through `progress/PROGRESS-STEP-92.md`.
 - This file and `memory.md`.
 
 Sub-agents should read the subset named in their work packet and must always read this file before parallel work.
@@ -287,17 +289,19 @@ Suggested execution ownership if parallelized:
 
 Keep `src/app/App.tsx`, `src/multiplayer/liveRepository.ts`, `src/multiplayer/liveMultiplayer.ts`, `src/multiplayer/LiveMultiplayerPanel.tsx`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `agents.md`, and `memory.md` single-writer or explicitly sequenced.
 
-### Phase 23 Stage 7 Planning Lane Notes
+### Phase 23 Stage 7 Execution Lane Notes
 
-Stage 7 planning is documented under `phase_id = 87` as a separate broad autonomous bug-bash and stabilization pass. Stage 7 implementation is not authorized until a later explicit execution prompt.
+Stage 7 planning is documented under `phase_id = 87` as a separate broad autonomous bug-bash and stabilization pass. Stage 7 execution is authorized under `phase_id = 92` from the PR #16 safety-backup state on GitHub `main`.
 
-Do not fold Stage 7 into Stage 6 unless the user explicitly overrides the Stage 6 bug-only boundary. The recommended sequence is:
+Stage 7 remains a bug-fix and stabilization stage:
 
-1. Finish Stage 6 critical live multiplayer stability fixes and verification.
-2. Halt for user review.
-3. If approved, run Stage 7 as a separate whole-game bug-fix pass.
+- Fix clear bugs found through systematic testing.
+- Prioritize the known post-Stage-6 Live creator auto-entry and Practice Live word-length selection timing/visibility bugs.
+- Use meaningful two-client Supabase-backed browser verification for multiplayer flows.
+- Keep high-conflict source and governance surfaces coordinator-owned or explicitly sequenced.
+- Do not create a PR, merge, release, implement the dedicated Multiplayer tab, expand spectators beyond bug fixes/non-regression, redesign, or add deferred features.
 
-Suggested Stage 7 lanes if later approved:
+Suggested Stage 7 lanes:
 
 - **Solo gameplay lane**: Daily/Practice OG/GO, hard mode, keyboard/tile behavior, loss/reveal, resume, and definitions.
 - **Daily/Calendar lane**: Calendar hub, past-daily unlocks, countdowns, reset behavior, mobile indicators, and DailyVariant boundaries.
@@ -308,6 +312,20 @@ Suggested Stage 7 lanes if later approved:
 - **Responsive/accessibility/performance lane**: desktop/tablet/mobile smoke, console errors, horizontal overflow, reduced motion, keyboard/touch ergonomics, and loading/error states.
 
 Stage 7 should fix clear bugs only unless a later prompt explicitly authorizes feature work or redesign.
+
+After `phase_id = 93`, Live Practice and Daily phase timers must be treated as entry-gated:
+
+- A live match may exist after a rival joins, but Practice word-length selection and Daily countdown timers should arm only after both player seats have acknowledged entering the match surface.
+- The entry acknowledgement lives in the live match projection, not a new table/column, unless a later migration is explicitly justified.
+- UI workers must not reintroduce timers that start merely from lobby matching; both clients need a chance to render/enter first.
+- Repository workers must preserve `playerEntryAt`, word-length choices, countdown fields, player progress, and rival moves when reconciling stale live saves.
+
+After `phase_id = 94`, future multiplayer workers should preserve the Stage 7 verification standard:
+
+- Use isolated authenticated browser contexts for real async/live checks, not local dual-side simulations.
+- Pair browser evidence with remote Supabase probes for durable rows, participant/claim records, and realtime-reconciled projections.
+- Clean generated test users and exact related remote rows after verification.
+- Do not downgrade the live repository subscription backstop without replacing it with equally reliable realtime-state reconciliation.
 
 ## 9. Sub-Agent Handoff Template
 
