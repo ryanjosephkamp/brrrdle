@@ -18,7 +18,7 @@ describe('MultiplayerStatsPanel', () => {
           customGames: [],
           rating: {
             profiles: [{
-              bucket: 'live:og',
+              bucket: 'multiplayer:og',
               draws: 0,
               gamesPlayed: 1,
               losses: 0,
@@ -31,22 +31,21 @@ describe('MultiplayerStatsPanel', () => {
             transactions: [],
           },
           results: [{
-            bucket: 'live:og',
+            bucket: 'multiplayer:og',
             mode: 'og',
             players: [],
             ranked: true,
             scope: 'practice',
             sourceMatchId: 'match-1',
             status: 'completed',
-            summary: 'You won the live match',
-            transport: 'live',
+            summary: 'You won the multiplayer match',
           }],
         }}
       />,
     )
 
     expect(html).toContain('1220')
-    expect(html).toContain('LIVE OG')
-    expect(html).toContain('You won the live match')
+    expect(html).toContain('MULTIPLAYER OG')
+    expect(html).toContain('You won the multiplayer match')
   })
 })

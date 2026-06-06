@@ -1,6 +1,6 @@
 import { getLevelForXp } from '../progression'
 import type { GameStatsBucket, StatisticsState } from '../stats/types'
-import { mergeAsyncMultiplayerStates, mergeCompetitiveMultiplayerStates } from '../multiplayer'
+import { mergeMultiplayerStates, mergeCompetitiveMultiplayerStates } from '../multiplayer'
 import { normalizeGuestSettings, type GuestProgressState } from './storageSchema'
 import { getLatestResumeSlot, mergeResumeSlots } from './resumeSlot'
 
@@ -69,7 +69,7 @@ export function mergeGuestProgressIntoCloud(local: GuestProgressState, cloud: Gu
       level: getLevelForXp(xp),
       xp,
     },
-    asyncMultiplayer: mergeAsyncMultiplayerStates(local.asyncMultiplayer, cloud.asyncMultiplayer),
+    multiplayer: mergeMultiplayerStates(local.multiplayer, cloud.multiplayer),
     competitiveMultiplayer: mergeCompetitiveMultiplayerStates(local.competitiveMultiplayer, cloud.competitiveMultiplayer),
     resumeSlot,
     resumeSlots,

@@ -8,27 +8,25 @@ import {
 } from './matchmaking'
 
 describe('multiplayer matchmaking', () => {
-  it('widens live search bands over wait time', () => {
+  it('widens search bands over wait time', () => {
     const request = createMatchmakingRequest({
       createdAt: '2026-06-04T12:00:00.000Z',
       mode: 'og',
       rating: 1400,
       scope: 'practice',
-      transport: 'live',
       userId: 'user-a',
     })
 
     expect(getSearchBand(request, new Date('2026-06-04T12:00:00.000Z'))).toBe(100)
-    expect(getSearchBand(request, new Date('2026-06-04T12:00:45.000Z'))).toBe(250)
+    expect(getSearchBand(request, new Date('2026-06-04T12:10:00.000Z'))).toBe(150)
   })
 
-  it('filters by transport, mode, scope, daily UTC key, word length, and distinct users', () => {
+  it('filters by mode, scope, daily UTC key, word length, and distinct users', () => {
     const left = createMatchmakingRequest({
       createdAt: '2026-06-04T12:00:00.000Z',
       mode: 'go',
       rating: 1200,
       scope: 'practice',
-      transport: 'async',
       userId: 'user-a',
       wordLength: 8,
     })
@@ -37,7 +35,6 @@ describe('multiplayer matchmaking', () => {
       mode: 'go',
       rating: 1210,
       scope: 'practice',
-      transport: 'async',
       userId: 'user-b',
       wordLength: 8,
     })
@@ -55,7 +52,6 @@ describe('multiplayer matchmaking', () => {
       dailyDateKey: '2026-06-04',
       mode: 'og',
       scope: 'daily',
-      transport: 'live',
       userId: 'user-a',
     })
     const right = createMatchmakingRequest({
@@ -63,7 +59,6 @@ describe('multiplayer matchmaking', () => {
       dailyDateKey: '2026-06-04',
       mode: 'og',
       scope: 'daily',
-      transport: 'live',
       userId: 'user-b',
     })
 
@@ -72,9 +67,9 @@ describe('multiplayer matchmaking', () => {
   })
 
   it('selects the closest compatible queued opponent and marks both matched', () => {
-    const left = createMatchmakingRequest({ id: 'left', mode: 'og', rating: 1300, scope: 'practice', transport: 'live', userId: 'user-a' })
-    const close = createMatchmakingRequest({ id: 'close', mode: 'og', rating: 1320, scope: 'practice', transport: 'live', userId: 'user-b' })
-    const far = createMatchmakingRequest({ id: 'far', mode: 'og', rating: 1500, scope: 'practice', transport: 'live', userId: 'user-c' })
+    const left = createMatchmakingRequest({ id: 'left', mode: 'og', rating: 1300, scope: 'practice', userId: 'user-a' })
+    const close = createMatchmakingRequest({ id: 'close', mode: 'og', rating: 1320, scope: 'practice', userId: 'user-b' })
+    const far = createMatchmakingRequest({ id: 'far', mode: 'og', rating: 1500, scope: 'practice', userId: 'user-c' })
 
     const selection = findBestMatchForRequest(left, [far, close], new Date(left.createdAt))
     expect(selection?.right.id).toBe('close')

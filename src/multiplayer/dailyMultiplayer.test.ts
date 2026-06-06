@@ -8,17 +8,16 @@ import {
 } from './dailyMultiplayer'
 
 describe('daily multiplayer helpers', () => {
-  it('uses separate deterministic answer lists for Daily Async and Daily Live', () => {
+  it('uses deterministic Daily Multiplayer answer lists for OG and GO', () => {
     const date = new Date('2026-06-04T12:00:00.000Z')
-    const asyncOg = createDailyMultiplayerOgSetup(date, DEFAULT_DIFFICULTY_TIER, 'async')
-    const liveOg = createDailyMultiplayerOgSetup(date, DEFAULT_DIFFICULTY_TIER, 'live')
-    const asyncGo = createDailyMultiplayerGoSetup(date, DEFAULT_DIFFICULTY_TIER, 5, 'async')
-    const liveGo = createDailyMultiplayerGoSetup(date, DEFAULT_DIFFICULTY_TIER, 5, 'live')
+    const og = createDailyMultiplayerOgSetup(date, DEFAULT_DIFFICULTY_TIER)
+    const repeatedOg = createDailyMultiplayerOgSetup(date, DEFAULT_DIFFICULTY_TIER)
+    const go = createDailyMultiplayerGoSetup(date, DEFAULT_DIFFICULTY_TIER, 5)
 
-    expect(asyncOg.dateKey).toBe('2026-06-04')
-    expect(liveOg.dateKey).toBe('2026-06-04')
-    expect(asyncOg.answer).not.toBe(liveOg.answer)
-    expect(asyncGo.puzzles.map((puzzle) => puzzle.answer)).not.toEqual(liveGo.puzzles.map((puzzle) => puzzle.answer))
+    expect(og.dateKey).toBe('2026-06-04')
+    expect(repeatedOg.answer).toBe(og.answer)
+    expect(go.puzzles).toHaveLength(5)
+    expect(go.puzzles[0].answer).not.toBe(og.answer)
   })
 
   it('sanitizes rival profile summaries before they enter match projections', () => {

@@ -29,7 +29,13 @@ The project now has enough parallelizable work that a clear coordination layer i
 - Stage 6 real multiplayer testing requirements and Stage 7 broad bug-bash planning are documented under `phase_id = 87`.
 - Stage 6 implementation is complete and verified under `phase_id = 88` through `phase_id = 90`.
 - Stage 6 safety backup to GitHub `main` is authorized/tracked under `phase_id = 91` as a one-time backup before Stage 7.
-- Stage 7 implementation remains unauthorized until a later explicit execution prompt.
+- Stage 7 implementation is authorized and opened under `phase_id = 92` as a broad bug-fix and stabilization pass.
+- Stage 7 core stabilization fixes are tracked under `phase_id = 93`; full Stage 7 verification remains pending.
+- Stage 7 final verification and handoff are tracked under `phase_id = 94`; further PRs, merges, releases, dedicated Multiplayer tab work, spectator expansion, redesign, deferred features, and later-phase work remain gated.
+- Stage 8 planning for Multiplayer unification, Practice time limits, and memory/performance remediation is documented under `phase_id = 95`.
+- Stage 8 implementation and verification are complete under `phase_id = 96`-`97`.
+- Stage 9 implementation and verification for timed Practice Multiplayer fixes, Practice Hard Mode, and multiplayer scoring are complete under `phase_id = 99`-`100`.
+- Stage 10 planning for unified Multiplayer debugging and bug fixes is documented under `phase_id = 101`; implementation remains gated.
 - Further PR creation, merges, release, dedicated Multiplayer tab work, deferred feature work, and later-phase work remain unauthorized until later explicit approval.
 
 ## 3. Authority Stack
@@ -60,7 +66,7 @@ Before accepting or assigning Phase 23 work, the coordinator should read:
 - `AGENT-IMPLEMENTATION-PLAN.md` §28.
 - `PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`.
 - `progress/PROGRESS.csv`.
-- The latest relevant progress reports, currently `progress/PROGRESS-STEP-69.md` through `progress/PROGRESS-STEP-91.md`.
+- The latest relevant progress reports, currently `progress/PROGRESS-STEP-69.md` through `progress/PROGRESS-STEP-101.md`.
 - This file and `memory.md`.
 
 Sub-agents should read the subset named in their work packet and must always read this file before parallel work.
@@ -193,6 +199,44 @@ Keep `src/app/App.tsx`, `src/calendar/CalendarPanel.tsx`, `src/account/storageSc
 
 Do not use Stage 3 follow-up work to add leaderboards, social graph, public profiles, economy rewards, or broader competitive systems unless a later user prompt approves that scope.
 
+### Phase 23 Stage 9 Coordination Notes
+
+Stage 9 is complete under `phase_id = 100`. Future multiplayer work must preserve these invariants unless a higher-authority spec explicitly changes them:
+
+- Unified Multiplayer games keep per-player `playerSessions`; UI and gameplay workers should use `getMultiplayerSessionForPlayer` for viewer boards.
+- The shared `serializedSession` remains compatibility/answer plumbing and must not become the source of truth for a specific player's board.
+- Timed Practice expiration is viewer-owned for the authenticated active player, and repository saves must continue guarding against stale projections that drop moves.
+- Supabase row creation uses duplicate-safe upsert semantics to avoid recoverable `409` console/network noise during create/join races.
+- Practice Hard Mode is Practice-only, creator-selected before join, and copied into canonical sessions. Daily Multiplayer must not expose or persist Practice Hard Mode or Practice time-limit controls.
+- Multiplayer scoring is deterministic and per-player; do not introduce rival-performance penalties or ELO/rating rule changes without explicit scope.
+
+Coordinator-owned high-conflict surfaces for any follow-up: `src/multiplayer/multiplayer.ts`, `src/multiplayer/multiplayerRepository.ts`, `src/multiplayer/MultiplayerGameSurface.tsx`, `src/multiplayer/MultiplayerPanel.tsx`, `src/multiplayer/scoring.ts`, `src/app/App.tsx`, and all progress/changelog/memory files.
+
+### Phase 23 Stage 10 Coordination Notes
+
+Stage 10 planning is documented under `phase_id = 101` from `PHASE-23-STAGE-10-MULTIPLAYER-DEBUGGING-AND-BUGFIXES-SPEC-2026-06-06.md`. Implementation remains gated until the user explicitly authorizes execution.
+
+If Stage 10 execution is later approved, keep it debugging-focused:
+
+- Reproduce the reported board/keyboard synchronization bug with two authenticated browser contexts before changing code.
+- Treat turn history, board state, keyboard state, `playerSessions`, shared `serializedSession`, repository subscriptions, and `MultiplayerGameSurface` rendering as the primary investigation surfaces.
+- Preserve the Stage 9 rule that a player's canonical board comes from `getMultiplayerSessionForPlayer`; do not fix shared visibility by letting one browser overwrite another player's session.
+- If both players should see played letters/keyboard eliminations, prefer pure shared projections from durable moves/session evidence while keeping validation tied to the active player's own session.
+- Preserve Stage 9 stale-save and duplicate-safe upsert protections.
+- Keep Daily Multiplayer strictly asynchronous, no-clock, no-Hard-Mode-lobby-control, five-letter, UTC-day keyed, and claim-safe.
+- Do not use Stage 10 to implement the dedicated Multiplayer tab, expand spectators, add notifications, add bots/social features, redesign the app, or change scoring/rating rules.
+
+Suggested Stage 10 execution ownership if parallelized:
+
+- **Reproduction/probe lane**: two-client browser reproduction, Supabase row snapshots, subscription observations, and failure matrix.
+- **Domain/session lane**: `src/multiplayer/multiplayer.ts` and tests for per-player session/shared move visibility.
+- **Repository lane**: `src/multiplayer/multiplayerRepository.ts` and tests for projection reconciliation and subscription refresh.
+- **UI lane**: `src/multiplayer/MultiplayerGameSurface.tsx`, `src/multiplayer/MultiplayerPanel.tsx`, and focused component tests after state contracts are clear.
+- **Verification lane**: real two-client Supabase E2E, responsive smoke, cleanup probes, and full gate evidence.
+- **Coordinator lane**: `src/app/App.tsx` only if needed, plus docs/progress/changelog/memory integration.
+
+Keep `src/app/App.tsx`, `src/multiplayer/multiplayer.ts`, `src/multiplayer/multiplayerRepository.ts`, `src/multiplayer/MultiplayerGameSurface.tsx`, `src/multiplayer/MultiplayerPanel.tsx`, `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `agents.md`, and `memory.md` single-writer or explicitly sequenced.
+
 ### Phase 23 Stage 3 Stabilization Lane Notes
 
 After `phase_id = 75`, async and live multiplayer must be treated as real signed-in online transports, not one-device simulations:
@@ -287,17 +331,19 @@ Suggested execution ownership if parallelized:
 
 Keep `src/app/App.tsx`, `src/multiplayer/liveRepository.ts`, `src/multiplayer/liveMultiplayer.ts`, `src/multiplayer/LiveMultiplayerPanel.tsx`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `agents.md`, and `memory.md` single-writer or explicitly sequenced.
 
-### Phase 23 Stage 7 Planning Lane Notes
+### Phase 23 Stage 7 Execution Lane Notes
 
-Stage 7 planning is documented under `phase_id = 87` as a separate broad autonomous bug-bash and stabilization pass. Stage 7 implementation is not authorized until a later explicit execution prompt.
+Stage 7 planning is documented under `phase_id = 87` as a separate broad autonomous bug-bash and stabilization pass. Stage 7 execution is authorized under `phase_id = 92` from the PR #16 safety-backup state on GitHub `main`.
 
-Do not fold Stage 7 into Stage 6 unless the user explicitly overrides the Stage 6 bug-only boundary. The recommended sequence is:
+Stage 7 remains a bug-fix and stabilization stage:
 
-1. Finish Stage 6 critical live multiplayer stability fixes and verification.
-2. Halt for user review.
-3. If approved, run Stage 7 as a separate whole-game bug-fix pass.
+- Fix clear bugs found through systematic testing.
+- Prioritize the known post-Stage-6 Live creator auto-entry and Practice Live word-length selection timing/visibility bugs.
+- Use meaningful two-client Supabase-backed browser verification for multiplayer flows.
+- Keep high-conflict source and governance surfaces coordinator-owned or explicitly sequenced.
+- Do not create a PR, merge, release, implement the dedicated Multiplayer tab, expand spectators beyond bug fixes/non-regression, redesign, or add deferred features.
 
-Suggested Stage 7 lanes if later approved:
+Suggested Stage 7 lanes:
 
 - **Solo gameplay lane**: Daily/Practice OG/GO, hard mode, keyboard/tile behavior, loss/reveal, resume, and definitions.
 - **Daily/Calendar lane**: Calendar hub, past-daily unlocks, countdowns, reset behavior, mobile indicators, and DailyVariant boundaries.
@@ -308,6 +354,83 @@ Suggested Stage 7 lanes if later approved:
 - **Responsive/accessibility/performance lane**: desktop/tablet/mobile smoke, console errors, horizontal overflow, reduced motion, keyboard/touch ergonomics, and loading/error states.
 
 Stage 7 should fix clear bugs only unless a later prompt explicitly authorizes feature work or redesign.
+
+After `phase_id = 93`, Live Practice and Daily phase timers must be treated as entry-gated:
+
+- A live match may exist after a rival joins, but Practice word-length selection and Daily countdown timers should arm only after both player seats have acknowledged entering the match surface.
+- The entry acknowledgement lives in the live match projection, not a new table/column, unless a later migration is explicitly justified.
+- UI workers must not reintroduce timers that start merely from lobby matching; both clients need a chance to render/enter first.
+- Repository workers must preserve `playerEntryAt`, word-length choices, countdown fields, player progress, and rival moves when reconciling stale live saves.
+
+After `phase_id = 94`, future multiplayer workers should preserve the Stage 7 verification standard:
+
+- Use isolated authenticated browser contexts for real async/live checks, not local dual-side simulations.
+- Pair browser evidence with remote Supabase probes for durable rows, participant/claim records, and realtime-reconciled projections.
+- Clean generated test users and exact related remote rows after verification.
+- Do not downgrade the live repository subscription backstop without replacing it with equally reliable realtime-state reconciliation.
+
+After `phase_id = 95`, Stage 8 execution must treat Multiplayer unification as a coordinated refactor, not a broad redesign:
+
+- `PHASE-23-STAGE-8-MULTIPLAYER-UNIFICATION-AND-TIME-LIMITS-SPEC-2026-06-05.md` is the dedicated Stage 8 source of truth.
+- The future execution should collapse Async/Live into one user-facing Multiplayer model, preserve the reliable async/durable-row behavior as the baseline, and remove Live-specific terminology and code paths only after compatibility and verification are planned.
+- Daily Multiplayer remains strictly asynchronous: five letters, UTC day key, UTC-midnight expiry, separate OG/GO answers, no Practice time-limit controls, and no solo-daily/stat contamination.
+- Practice Multiplayer gains optional creator-selected chess-clock-style total time per side; clock enforcement must be domain/persistence-driven and server-time-aware where possible.
+- Memory/performance remediation is a blocking Stage 8 requirement. Assign a read-only performance lane first to inspect duplicate Supabase clients, realtime subscriptions, polling intervals, timers, localStorage restore loops, large projections, and rerender hot spots before edits.
+- Suggested Stage 8 lanes: unified domain/timer model, persistence/Supabase compatibility, UI/terminology/Calendar integration, performance audit/fixes, and coordinator-owned App/progress/changelog integration.
+- Keep `src/app/App.tsx`, `src/multiplayer/index.ts`, repository adapters, Supabase migrations, `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `agents.md`, and `memory.md` single-writer or explicitly sequenced.
+- Do not implement the dedicated Multiplayer tab, expand spectators, add notifications/bots/social systems, or redesign the app during Stage 8 unless the user separately authorizes that scope.
+
+After `phase_id = 96`, Stage 8 workers should treat the existing `async_multiplayer_games` table/local storage key as compatibility plumbing unless a later migration explicitly replaces it:
+
+- The user-facing and source-facing model is unified Multiplayer.
+- Mounted Live App/Calendar surfaces and obsolete Live modules should not be reintroduced.
+- Practice clock work should stay on the unified Multiplayer model and must not add time limits to Daily Multiplayer.
+
+After `phase_id = 97`, Stage 8 is complete for user review:
+
+- Keep future multiplayer fixes on the unified `src/multiplayer/multiplayer.ts`, `MultiplayerPanel.tsx`, `MultiplayerGameSurface.tsx`, and `multiplayerRepository.ts` path unless a later prompt explicitly authorizes a new transport or dedicated Multiplayer tab.
+- Treat `async_multiplayer_games` and `brrrdle:async-multiplayer:v1` as private compatibility names. Do not surface "Async" or "Live" to players when referring to current Multiplayer.
+- Daily Multiplayer remains no-clock and UTC-midnight based; Practice Multiplayer is the only timed multiplayer surface.
+- If future agents touch Supabase rating bucket persistence, preserve the Stage 8 storage-edge mapping: unified `multiplayer:*` buckets live in projections, while top-level storage columns may need historical compatible values until a migration changes constraints.
+
+### Phase 23 Stage 9 Lane Notes
+
+Stage 9 planning was documented under `phase_id = 98`, and implementation/verification are complete under `phase_id = 99`-`100` from `PHASE-23-STAGE-9-TIMER-BUGS-AND-MULTIPLAYER-SCORING-SPEC-2026-06-06.md`.
+
+For any Stage 9 follow-up, keep the work inside the unified Multiplayer model:
+
+- Fix the timed Practice Multiplayer timer/board synchronization bug before building broader scoring features. Reproduce it with two authenticated browser contexts first, then pin the behavior with focused tests.
+- Timed Practice clocks must decrement only the active player's remaining time. The inactive player's clock must not expire while waiting.
+- Submitted guesses must persist on both players' boards after repository saves, subscription refreshes, and browser refreshes.
+- Practice Multiplayer Hard Mode is a creator-selected lobby setting. It must be visible before join, locked after join, stored in the game projection, and validated through canonical solo Hard Mode logic.
+- Daily Multiplayer must remain strictly asynchronous/no-clock. Do not add Practice Hard Mode lobby controls, Practice time limits, or new Daily claim behavior while working on Stage 9.
+- Multiplayer scoring should be deterministic and per-player: one player's points are based on their own guesses and solve status, not penalties caused by the rival's performance.
+- Keep ELO/rating-system changes deferred unless the Stage 9 execution prompt explicitly authorizes rating integration beyond exposing score evidence to existing helpers.
+- Avoid destructive Supabase schema changes. Prefer projection fields and compatibility normalization unless a migration is clearly required and explicitly authorized.
+
+Suggested Stage 9 execution ownership if parallelized:
+
+- **Timer bug lane**: `src/multiplayer/multiplayer.ts`, `src/multiplayer/multiplayerRepository.ts`, and timed-turn domain/repository tests.
+- **Hard Mode lane**: Practice lobby setting and canonical validation wiring after the timer lane stabilizes domain shape.
+- **Scoring lane**: `src/multiplayer/scoring.ts` and deterministic score/winner/draw tests.
+- **UI lane**: `src/multiplayer/MultiplayerPanel.tsx`, `src/multiplayer/MultiplayerGameSurface.tsx`, and component tests after domain/scoring contracts stabilize.
+- **Coordinator lane**: `src/app/App.tsx`, high-conflict docs/progress, real Supabase two-client verification, responsive smoke, and final handoff.
+
+Keep `src/app/App.tsx`, `src/multiplayer/multiplayer.ts`, `src/multiplayer/multiplayerRepository.ts`, `src/multiplayer/MultiplayerPanel.tsx`, `src/multiplayer/MultiplayerGameSurface.tsx`, `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `agents.md`, and `memory.md` single-writer or explicitly sequenced.
+
+### Phase 23 Stage 10 Lane Notes
+
+Stage 10 planning was documented under `phase_id = 101`; implementation and verification are complete under `phase_id = 102`-`103`.
+
+For future Stage 10 follow-up or multiplayer sync fixes:
+
+- Treat `game.moves` as the shared display evidence for what both players should see on the visible board and keyboard.
+- Keep `playerSessions` canonical and player-owned. Do not make a rival guess visible by writing it into the other player's canonical session.
+- The shared `serializedSession` remains compatibility/answer plumbing only.
+- Timed Practice clock persistence must update `timeRemainingMs` and `turnStartedAt` together. Do not persist a decremented remaining time while leaving the old turn start timestamp in place.
+- UI draft reset keys must avoid clock-only `updatedAt` churn. Use gameplay-changing fields such as move history, turn, status, and player id to decide when the local draft should reset.
+- Real two-client Supabase browser E2E is required for any future claim that board, keyboard, clock, refresh, or Hard Mode multiplayer synchronization is fixed.
+- Stage 10 completion does not authorize a PR, merge, release, dedicated Multiplayer tab, spectator expansion, notification system, bot/social feature, redesign, scoring/rating overhaul, or later-phase work.
 
 ## 9. Sub-Agent Handoff Template
 

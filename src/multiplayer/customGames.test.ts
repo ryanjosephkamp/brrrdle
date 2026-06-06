@@ -8,7 +8,6 @@ describe('custom game lobbies', () => {
       createdAt: '2026-06-04T12:00:00.000Z',
       mode: 'og',
       scope: 'practice',
-      transport: 'live',
       wordLength: 5,
     })
 
@@ -23,7 +22,6 @@ describe('custom game lobbies', () => {
       id: 'custom-1',
       mode: 'go',
       scope: 'daily',
-      transport: 'async',
     })?.code).toBe('ABC123')
     expect(normalizeCustomGameLobby({ mode: 'og' })).toBeUndefined()
   })

@@ -14,6 +14,7 @@ import {
   submitGuess,
   useKeyboardInput,
   type GoSessionState,
+  type GuessResult,
   type KeyboardInput,
   type PuzzleSessionState,
   type TileState,
@@ -21,18 +22,14 @@ import {
 import { dateKeyToLocalDate, getUtcDailyDateKey } from '../daily'
 import { Keyboard } from '../ui'
 import { classNames } from '../ui/classNames'
-import type { AsyncMultiplayerGame } from './asyncMultiplayer'
+import { getMultiplayerSessionForPlayer, type MultiplayerGame, type MultiplayerPlayerId } from './multiplayer'
 import { createDailyMultiplayerGoSetup, createDailyMultiplayerOgSetup } from './dailyMultiplayer'
-import type { LiveMultiplayerMatch, LiveMultiplayerPlayerProgress } from './liveMultiplayer'
-
-type MultiplayerGameModel =
-  | { readonly kind: 'async'; readonly game: AsyncMultiplayerGame }
-  | { readonly kind: 'live'; readonly match: LiveMultiplayerMatch; readonly progress: LiveMultiplayerPlayerProgress }
 
 interface MultiplayerGameSurfaceProps {
   readonly disabled?: boolean
-  readonly model: MultiplayerGameModel
+  readonly game: MultiplayerGame
   readonly onSubmitGuess: (guess: string) => void
+  readonly playerId?: MultiplayerPlayerId
   readonly statusLabel: string
 }
 
@@ -46,54 +43,30 @@ const tileStateClasses: Record<GridTileState, string> = {
   present: 'border-amber-300/70 bg-amber-300/20 text-amber-50',
 }
 
-function getModelKey(model: MultiplayerGameModel): string {
-  if (model.kind === 'async') {
-    const session = model.game.serializedSession
-    const currentGuess = session.mode === 'og'
-      ? session.session.currentGuess
-      : session.session.puzzles[session.session.currentPuzzleIndex]?.currentGuess ?? ''
-    return `${model.game.id}:${model.game.updatedAt}:${model.game.currentTurn}:${model.game.status}:${currentGuess}`
-  }
-  const session = model.progress.serializedSession
-  const currentGuess = session?.mode === 'og'
+function getModelKey(game: MultiplayerGame, playerId?: MultiplayerPlayerId): string {
+  const session = playerId ? getMultiplayerSessionForPlayer(game, playerId) : game.serializedSession
+  const currentGuess = session.mode === 'og'
     ? session.session.currentGuess
-    : session?.mode === 'go'
-      ? session.session.puzzles[session.session.currentPuzzleIndex]?.currentGuess ?? ''
-      : ''
-  const moveKey = model.progress.moves.map((move) => `${move.id}:${move.createdAt}`).join('|')
-  return `${model.match.id}:${model.progress.playerId}:${model.progress.status}:${model.progress.completedAt ?? ''}:${moveKey}:${currentGuess}`
+    : session.session.puzzles[session.session.currentPuzzleIndex]?.currentGuess ?? ''
+  const moveKey = game.moves.map((move) => `${move.id}:${move.playerId}:${move.puzzleIndex}:${move.guess}`).join('|')
+  return `${game.id}:${game.currentTurn}:${game.status}:${playerId ?? 'shared'}:${moveKey}:${currentGuess}`
 }
 
-function getValidGuesses(model: MultiplayerGameModel): ReadonlySet<string> {
-  const mode = model.kind === 'async' ? model.game.mode : model.match.mode
-  const scope = model.kind === 'async' ? model.game.scope : model.match.scope
-  const dailyDateKey = model.kind === 'async' ? model.game.dailyDateKey : model.match.dailyDateKey
-  const difficulty = model.kind === 'async' ? model.game.difficulty : model.match.difficulty
-  const goPuzzleCount = model.kind === 'async' ? model.game.goPuzzleCount : model.match.goPuzzleCount
-  const seed = model.kind === 'async' ? model.game.seed : model.match.seed
-  const wordLength = model.kind === 'async' ? model.game.wordLength : model.match.wordLength ?? 5
-
-  if (mode === 'og') {
-    return scope === 'daily'
-      ? createDailyMultiplayerOgSetup(dateKeyToLocalDate(dailyDateKey ?? getUtcDailyDateKey()), difficulty, model.kind).validGuesses
-      : createPracticeOgSetup(wordLength, seed, difficulty).validGuesses
+function getValidGuesses(game: MultiplayerGame): ReadonlySet<string> {
+  if (game.mode === 'og') {
+    return game.scope === 'daily'
+      ? createDailyMultiplayerOgSetup(dateKeyToLocalDate(game.dailyDateKey ?? getUtcDailyDateKey()), game.difficulty).validGuesses
+      : createPracticeOgSetup(game.wordLength, game.seed, game.difficulty).validGuesses
   }
 
-  return scope === 'daily'
-    ? createDailyMultiplayerGoSetup(dateKeyToLocalDate(dailyDateKey ?? getUtcDailyDateKey()), difficulty, goPuzzleCount ?? DEFAULT_GO_PUZZLE_COUNT, model.kind).validGuesses
-    : createPracticeGoSetup(wordLength, seed, difficulty, goPuzzleCount ?? DEFAULT_GO_PUZZLE_COUNT).validGuesses
+  return game.scope === 'daily'
+    ? createDailyMultiplayerGoSetup(dateKeyToLocalDate(game.dailyDateKey ?? getUtcDailyDateKey()), game.difficulty, game.goPuzzleCount ?? DEFAULT_GO_PUZZLE_COUNT).validGuesses
+    : createPracticeGoSetup(game.wordLength, game.seed, game.difficulty, game.goPuzzleCount ?? DEFAULT_GO_PUZZLE_COUNT).validGuesses
 }
 
-function getSerializedSession(model: MultiplayerGameModel) {
-  return model.kind === 'async' ? model.game.serializedSession : model.progress.serializedSession
-}
-
-function restoreModelSession(model: MultiplayerGameModel): PuzzleSessionState | GoSessionState | undefined {
-  const serialized = getSerializedSession(model)
-  if (!serialized) {
-    return undefined
-  }
-  const validGuesses = getValidGuesses(model)
+function restoreModelSession(game: MultiplayerGame, playerId?: MultiplayerPlayerId): PuzzleSessionState | GoSessionState {
+  const serialized = playerId ? getMultiplayerSessionForPlayer(game, playerId) : game.serializedSession
+  const validGuesses = getValidGuesses(game)
   return serialized.mode === 'og'
     ? restoreOgSession(serialized.session, validGuesses)
     : restoreGoSession(serialized.session, validGuesses)
@@ -103,8 +76,31 @@ function getActivePuzzle(session: PuzzleSessionState | GoSessionState): PuzzleSe
   return 'puzzles' in session ? session.puzzles[session.currentPuzzleIndex] : session
 }
 
+function getActivePuzzleIndex(session: PuzzleSessionState | GoSessionState): number {
+  return 'puzzles' in session ? session.currentPuzzleIndex : 0
+}
+
 function getCurrentGuess(session: PuzzleSessionState | GoSessionState): string {
   return getActivePuzzle(session).currentGuess
+}
+
+function getSharedMoveGuesses(game: MultiplayerGame, puzzleIndex: number): readonly GuessResult[] {
+  return game.moves
+    .filter((move) => move.puzzleIndex === puzzleIndex)
+    .map((move): GuessResult => ({ guess: move.guess, tiles: move.tiles }))
+}
+
+function getDisplayPuzzle(session: PuzzleSessionState, sharedGuesses: readonly GuessResult[]): PuzzleSessionState {
+  const guesses = sharedGuesses.length > 0 ? sharedGuesses : session.guesses
+  const maxAttempts = Math.max(session.maxAttempts, guesses.length + (session.status === 'playing' ? 1 : 0))
+  if (guesses === session.guesses && maxAttempts === session.maxAttempts) {
+    return session
+  }
+  return {
+    ...session,
+    guesses,
+    maxAttempts,
+  }
 }
 
 function applyInput(session: PuzzleSessionState | GoSessionState, input: KeyboardInput): PuzzleSessionState | GoSessionState {
@@ -179,19 +175,22 @@ function GuessGrid({ session }: { readonly session: PuzzleSessionState }) {
   )
 }
 
-export function MultiplayerGameSurface({ disabled = false, model, onSubmitGuess, statusLabel }: MultiplayerGameSurfaceProps) {
-  const baseSession = useMemo(() => restoreModelSession(model), [model])
-  const [sessionKey, setSessionKey] = useState(getModelKey(model))
+export function MultiplayerGameSurface({ disabled = false, game, onSubmitGuess, playerId, statusLabel }: MultiplayerGameSurfaceProps) {
+  const baseSession = useMemo(() => restoreModelSession(game, playerId), [game, playerId])
+  const [sessionKey, setSessionKey] = useState(getModelKey(game, playerId))
   const [draftSession, setDraftSession] = useState<PuzzleSessionState | GoSessionState | undefined>(baseSession)
-  const nextSessionKey = getModelKey(model)
+  const nextSessionKey = getModelKey(game, playerId)
   if (sessionKey !== nextSessionKey) {
     setSessionKey(nextSessionKey)
     setDraftSession(baseSession)
   }
 
   const activePuzzle = draftSession ? getActivePuzzle(draftSession) : undefined
-  const isGo = draftSession ? 'puzzles' in draftSession : getSerializedSession(model)?.mode === 'go'
-  const letterStates = activePuzzle ? deriveKeyboardLetterStates(activePuzzle.guesses) : {}
+  const activePuzzleIndex = draftSession ? getActivePuzzleIndex(draftSession) : 0
+  const sharedGuesses = useMemo(() => getSharedMoveGuesses(game, activePuzzleIndex), [activePuzzleIndex, game])
+  const displayPuzzle = activePuzzle ? getDisplayPuzzle(activePuzzle, sharedGuesses) : undefined
+  const isGo = draftSession ? 'puzzles' in draftSession : game.serializedSession.mode === 'go'
+  const letterStates = activePuzzle ? deriveKeyboardLetterStates(sharedGuesses.length > 0 ? sharedGuesses : activePuzzle.guesses) : {}
   const inputDisabled = disabled || !draftSession || getActivePuzzle(draftSession).status !== 'playing'
 
   const handleInput = useCallback((input: KeyboardInput) => {
@@ -264,7 +263,7 @@ export function MultiplayerGameSurface({ disabled = false, model, onSubmitGuess,
         </div>
       ) : null}
 
-      <GuessGrid session={activePuzzle} />
+      <GuessGrid session={displayPuzzle ?? activePuzzle} />
 
       <div aria-live="polite" className="rounded-2xl border border-slate-700 bg-black/30 p-3 text-sm leading-6 text-slate-200" role="status">
         <p>{inputDisabled ? statusLabel : 'Use the on-screen keyboard to enter your guess.'}</p>

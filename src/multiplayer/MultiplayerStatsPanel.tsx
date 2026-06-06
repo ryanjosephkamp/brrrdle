@@ -6,8 +6,8 @@ interface MultiplayerStatsPanelProps {
 }
 
 function bucketLabel(bucket: string): string {
-  const [transport, mode] = bucket.split(':')
-  return `${transport} ${mode}`.toUpperCase()
+  const [, mode = 'og'] = bucket.split(':')
+  return `multiplayer ${mode}`.toUpperCase()
 }
 
 export function MultiplayerStatsPanel({ state }: MultiplayerStatsPanelProps) {

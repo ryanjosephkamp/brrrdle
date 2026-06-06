@@ -3,7 +3,7 @@ import type { DifficultyTier } from '../data/difficulty'
 import { updateStatistics } from '../stats/statistics'
 import type { CompletedGameStatsInput } from '../stats/types'
 import { normalizeUnlockedDailies } from '../daily/pastDailies'
-import { normalizeAsyncMultiplayerState, normalizeCompetitiveMultiplayerState } from '../multiplayer'
+import { normalizeMultiplayerState, normalizeCompetitiveMultiplayerState } from '../multiplayer'
 import { createDefaultGuestProgress, GUEST_PROGRESS_SCHEMA_VERSION, normalizeGuestSettings, type GameHistoryEntry, type GuestProgressState } from './storageSchema'
 import { getLatestResumeSlot, getResumeSlotKey, normalizeResumeSlot, normalizeResumeSlots, type ResumeSlotCollection } from './resumeSlot'
 
@@ -65,7 +65,7 @@ export function migrateGuestProgress(value: unknown): GuestProgressState | undef
 
   return {
     ...value,
-    asyncMultiplayer: normalizeAsyncMultiplayerState(value.asyncMultiplayer),
+    multiplayer: normalizeMultiplayerState(value.multiplayer ?? (value as unknown as Record<string, unknown>).asyncMultiplayer),
     competitiveMultiplayer: normalizeCompetitiveMultiplayerState(value.competitiveMultiplayer),
     resumeSlot: normalizeResumeSlot(value.resumeSlot),
     resumeSlots: migrateResumeSlots(value),

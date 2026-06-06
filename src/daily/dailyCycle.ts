@@ -57,18 +57,18 @@ function getBrowserStorage(): KeyValueStorage | undefined {
 }
 
 /**
- * The live, in-memory guard anchor for the current page session. Unlike the
+ * The live, in-memory guard anchors for the current page session. Unlike the
  * persisted anchor (which loses its monotonic baseline across reloads), this
  * keeps the `performance.now` baseline alive so the wall-vs-monotonic clock-jump
- * check actually works within a single page load. It is shared by every default
- * `resolveDaily` caller (the countdown hook AND the daily game surfaces) so a
- * clamp decided in one place is honoured everywhere on the page.
+ * check actually works within a single page load. Anchors are keyed by variant:
+ * solo local-midnight and multiplayer UTC dailies must never reuse each other's
+ * guard baseline.
  */
-let liveAnchor: DailyGuardAnchor | null = null
+let liveAnchors: Partial<Record<DailyVariant, DailyGuardAnchor>> = {}
 
 /** Test-only: clear the in-memory live anchor so cases start from a clean slate. */
 export function resetDailyLiveAnchor(): void {
-  liveAnchor = null
+  liveAnchors = {}
 }
 
 export interface ResolveDailyOptions {
@@ -121,8 +121,8 @@ export function resolveDaily(options: ResolveDailyOptions = {}): ResolvedDaily {
   let previous: DailyGuardAnchor | null
   if (options.previousAnchor !== undefined) {
     previous = options.previousAnchor
-  } else if (usingSharedLiveAnchor && liveAnchor && liveAnchor.sessionId === sessionId) {
-    previous = liveAnchor
+  } else if (usingSharedLiveAnchor && liveAnchors[variant.id]?.sessionId === sessionId) {
+    previous = liveAnchors[variant.id] ?? null
   } else {
     previous = loadDailyGuardAnchor(storage, variant.storagePrefix)
   }
@@ -148,7 +148,7 @@ export function resolveDaily(options: ResolveDailyOptions = {}): ResolvedDaily {
   }
 
   if (usingSharedLiveAnchor) {
-    liveAnchor = result.anchor
+    liveAnchors = { ...liveAnchors, [variant.id]: result.anchor }
   }
 
   const nextReset = variant.resetClock === 'utc' ? getNextUtcMidnight(now.date) : getNextLocalMidnight(now.date)
