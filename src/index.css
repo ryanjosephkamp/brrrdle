@@ -913,8 +913,8 @@ textarea {
  * variables that default to the shared accent tokens, so any current or future
  * theme can restyle the countdown by overriding these variables (and the
  * `[data-alerting]` / `[data-clamped]` data-attribute hooks) without touching
- * the component markup. Non-intrusive and mobile-friendly: a small pill pinned
- * to the bottom edge, clear of the account controls and primary navigation.
+ * the component markup. Non-intrusive and mobile-friendly: small pills mounted
+ * in the top account stack, clear of the primary navigation.
  */
 :root {
   --brrrdle-countdown-bg: rgb(2 6 23 / 0.82);
@@ -998,6 +998,14 @@ textarea {
 .brrrdle-daily-countdown-value {
   font-size: 0.85rem;
   font-weight: 700;
+}
+
+.brrrdle-daily-countdown-deadline {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--brrrdle-countdown-value) 72%, transparent);
 }
 
 .brrrdle-daily-countdown[data-clamped='true'] {
@@ -1136,4 +1144,14 @@ textarea {
 .brrrdle-sim-time-actions button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.brrrdle-calendar-mode-button {
+  font-size: 0.44rem;
+}
+
+@media (min-width: 640px) {
+  .brrrdle-calendar-mode-button {
+    font-size: 0.56rem;
+  }
 }

@@ -1,4 +1,5 @@
 import type { GameHistoryEntry, GuestProgressionState } from '../account/storageSchema'
+import { MultiplayerStatsPanel, type MultiplayerCompetitiveState } from '../multiplayer'
 import { BarChart, CalendarHeatmap, ProgressMeter, TrendSparkline } from './charts'
 import { getAverageAttempts, getStatsBucket, getWinRate } from './statistics'
 import {
@@ -12,6 +13,7 @@ import {
 import type { StatisticsState } from './types'
 
 interface StatsDashboardProps {
+  readonly competitiveMultiplayer?: MultiplayerCompetitiveState
   readonly history?: readonly GameHistoryEntry[]
   readonly progression?: GuestProgressionState
   readonly stats: StatisticsState
@@ -32,7 +34,7 @@ const EMPTY_PROGRESSION: GuestProgressionState = {
   xp: 0,
 }
 
-export function StatsDashboard({ history = EMPTY_HISTORY, progression = EMPTY_PROGRESSION, stats }: StatsDashboardProps) {
+export function StatsDashboard({ competitiveMultiplayer, history = EMPTY_HISTORY, progression = EMPTY_PROGRESSION, stats }: StatsDashboardProps) {
   const winRateByScope = selectWinRateByScope(stats)
   const winRateByLength = selectWinRateByLength(stats)
   const winRateByTier = selectWinRateByTier(history)
@@ -88,6 +90,8 @@ export function StatsDashboard({ history = EMPTY_HISTORY, progression = EMPTY_PR
           <TrendSparkline caption="Coins earned trend" data={coinTrend} emptyMessage="Earn coins by completing games to see your trend." />
         </article>
       </div>
+
+      <MultiplayerStatsPanel state={competitiveMultiplayer} />
     </section>
   )
 }

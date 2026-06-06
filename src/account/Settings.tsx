@@ -17,6 +17,7 @@ interface SettingsProps {
   readonly onSendMagicLink?: (email: string) => void
   readonly onSignInWithPassword?: (email: string, password: string) => void
   readonly onSignUpWithPassword?: (email: string, password: string) => void
+  readonly onRequestPasswordReset?: (email: string) => void
   readonly onSignOut?: () => void
   readonly onOpenAuthModal?: () => void
   readonly onOpenProfilePanel?: () => void
@@ -34,6 +35,7 @@ export function Settings({
   onSendMagicLink,
   onSignInWithPassword,
   onSignUpWithPassword,
+  onRequestPasswordReset,
   onSignOut,
   onOpenAuthModal,
   onOpenProfilePanel,
@@ -42,7 +44,14 @@ export function Settings({
   onUpdateSettings,
   syncStatus,
 }: SettingsProps) {
-  const { difficultyDefault, goPuzzleCountDefault, hardModeDefault, themeDefault, dailyCountdownEnabled } = guestProgress.settings
+  const {
+    difficultyDefault,
+    goPuzzleCountDefault,
+    hardModeDefault,
+    themeDefault,
+    dailyCountdownEnabled,
+    dailyMultiplayerCountdownEnabled,
+  } = guestProgress.settings
   return (
     <section className="space-y-4" aria-labelledby="settings-title">
       <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-ice-200)]">account and persistence</p>
@@ -51,9 +60,9 @@ export function Settings({
         <Panel className="space-y-4 text-sm leading-6 text-slate-300" tone="muted">
           <h3 className="text-xl font-bold text-white">Gameplay</h3>
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <label className="font-semibold text-cyan-100" htmlFor="settings-difficulty">Default difficulty</label>
-              <Tooltip label="More information about default difficulty">
+              <Tooltip className="shrink-0" label="More information about default difficulty">
                 Difficulty only changes which answers can be chosen, never which guesses are allowed. Casual uses the most common answers, Standard adds more, and Expert allows every answer. The daily puzzle and any in-progress game keep their difficulty until you start a new one.
               </Tooltip>
             </div>
@@ -70,9 +79,9 @@ export function Settings({
             <p className="text-xs text-slate-400">{getDifficultyTierMeta(difficultyDefault).description}</p>
           </div>
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <label className="font-semibold text-cyan-100" htmlFor="settings-go-count">Default go chain length</label>
-              <Tooltip label="More information about go chain length">
+              <Tooltip className="shrink-0" label="More information about go chain length">
                 Sets how many linked puzzles a go chain contains by default (5, 7, or 10). Each puzzle keeps its own word length; daily go puzzles stay 5 letters. You can override this per game from the Customize menu until your first guess.
               </Tooltip>
             </div>
@@ -89,9 +98,9 @@ export function Settings({
             <p className="text-xs text-slate-400">Applies to new go chains. Override per game until your first guess.</p>
           </div>
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <label className="font-semibold text-cyan-100" htmlFor="settings-theme">Theme</label>
-              <Tooltip label="More information about themes">
+              <Tooltip className="shrink-0" label="More information about themes">
                 Themes change only the accent and highlight colors (buttons, focus rings, headings). Layout and the tile colors that show correct, present, and absent letters never change, so puzzles stay just as readable.
               </Tooltip>
             </div>
@@ -114,9 +123,9 @@ export function Settings({
                 onChange={(event) => onUpdateSettings({ hardModeDefault: event.target.checked })}
                 type="checkbox"
               />
-              <span className="flex items-center gap-2">
+              <span className="flex min-w-0 flex-wrap items-center gap-2">
                 Start games in Hard Mode by default
-                <Tooltip label="More information about Hard Mode">
+                <Tooltip className="shrink-0" label="More information about Hard Mode">
                   Hard Mode forces every guess to reuse all revealed hints (correct letters stay in place and present letters must be used). You can still toggle Hard Mode per game before your first guess.
                 </Tooltip>
               </span>
@@ -130,14 +139,30 @@ export function Settings({
                 onChange={(event) => onUpdateSettings({ dailyCountdownEnabled: event.target.checked })}
                 type="checkbox"
               />
-              <span className="flex items-center gap-2">
+              <span className="flex min-w-0 flex-wrap items-center gap-2">
                 Show the daily countdown and reset alerts
-                <Tooltip label="More information about the daily countdown">
+                <Tooltip className="shrink-0" label="More information about the daily countdown">
                   Shows a small, non-intrusive countdown to the next daily reset (at your local midnight) on every page. Tap it to jump to the daily game. When a new daily is ready you get a subtle glow and a short unique chime. Turn this off to hide the countdown everywhere and silence the reset alert.
                 </Tooltip>
               </span>
             </label>
             <p className="text-xs text-slate-400">The daily still rolls over at your local midnight; this only controls the countdown and its alerts.</p>
+          </div>
+          <div className="space-y-2">
+            <label className="flex items-center gap-3 text-slate-100">
+              <input
+                checked={dailyMultiplayerCountdownEnabled}
+                onChange={(event) => onUpdateSettings({ dailyMultiplayerCountdownEnabled: event.target.checked })}
+                type="checkbox"
+              />
+              <span className="flex min-w-0 flex-wrap items-center gap-2">
+                Show the Daily Multiplayer UTC countdown and reset alerts
+                <Tooltip className="shrink-0" label="More information about the Daily Multiplayer countdown">
+                  Daily Multiplayer closes at midnight UTC, separately from your solo daily reset. This countdown shows the UTC deadline on every page and plays its own reset chime when the multiplayer daily turns over.
+                </Tooltip>
+              </span>
+            </label>
+            <p className="text-xs text-slate-400">Daily Multiplayer uses midnight UTC. Toggle this off to hide only the multiplayer deadline and its unique alert sound.</p>
           </div>
         </Panel>
       ) : null}
@@ -160,6 +185,7 @@ export function Settings({
         authMessage={authMessage}
         authStatus={authState.status}
         onSendMagicLink={onSendMagicLink}
+        onRequestPasswordReset={onRequestPasswordReset}
         onSignInWithPassword={onSignInWithPassword}
         onSignOut={onSignOut}
         onSignUpWithPassword={onSignUpWithPassword}

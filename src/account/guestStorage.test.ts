@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createDefaultGuestProgress } from './storageSchema'
+import { createDefaultGuestProgress, GUEST_PROGRESS_SCHEMA_VERSION } from './storageSchema'
 import { exportGuestProgress, loadGuestProgress, recordCompletedGame, resetGuestProgress, saveGuestProgress, type KeyValueStorage } from './guestStorage'
 
 function createMemoryStorage(initialValue?: string): KeyValueStorage & { readonly values: Map<string, string> } {
@@ -22,12 +22,12 @@ describe('guest storage', () => {
     saveGuestProgress({ ...progress, progression: { ...progress.progression, coins: 12 } }, storage)
 
     expect(loadGuestProgress(storage).progression.coins).toBe(12)
-    expect(JSON.parse(exportGuestProgress(loadGuestProgress(storage))).schemaVersion).toBe(4)
+    expect(JSON.parse(exportGuestProgress(loadGuestProgress(storage))).schemaVersion).toBe(GUEST_PROGRESS_SCHEMA_VERSION)
     expect(resetGuestProgress(storage).progression.coins).toBe(0)
   })
 
   it('falls back to defaults for corrupted or incompatible data', () => {
-    expect(loadGuestProgress(createMemoryStorage('{broken')).schemaVersion).toBe(4)
+    expect(loadGuestProgress(createMemoryStorage('{broken')).schemaVersion).toBe(GUEST_PROGRESS_SCHEMA_VERSION)
     expect(loadGuestProgress(createMemoryStorage(JSON.stringify({ schemaVersion: 99 }))).progression.level).toBe(1)
   })
 
@@ -41,7 +41,7 @@ describe('guest storage', () => {
     })
     const migrated = loadGuestProgress(createMemoryStorage(legacyPayload))
 
-    expect(migrated.schemaVersion).toBe(4)
+    expect(migrated.schemaVersion).toBe(GUEST_PROGRESS_SCHEMA_VERSION)
     expect(migrated.progression.coins).toBe(42)
     expect(migrated.progression.xp).toBe(120)
     expect(migrated.progression.level).toBe(3)
@@ -50,6 +50,9 @@ describe('guest storage', () => {
     expect(migrated.settings.difficultyDefault).toBe('expert')
     expect(migrated.settings.goPuzzleCountDefault).toBe(5)
     expect(migrated.settings.themeDefault).toBe('icy')
+    expect(migrated.settings.dailyMultiplayerCountdownEnabled).toBe(true)
+    expect(migrated.asyncMultiplayer?.games).toHaveLength(0)
+    expect(migrated.competitiveMultiplayer?.rating.profiles).toHaveLength(0)
   })
 
   it('records completed games once for history, stats, XP, and coins', () => {

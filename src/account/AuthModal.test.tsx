@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { AuthModal } from './AuthModal'
+import { AUTH_MODAL_PASSWORD_ACTION_LABELS } from './authModalConstants'
 
 function noop() {}
 
@@ -74,8 +75,8 @@ describe('AuthModal (structural)', () => {
   })
 
   it('exposes a single primary CTA (no duplicate-buttons regression)', () => {
-    // Static render starts in magic-link mode; we can still verify that the
-    // password sub-mode toggle radios are wired distinctly from a submit CTA.
+    // Static render starts in magic-link mode, so this pins the visible default
+    // and a separate test below pins the password action order.
     const html = renderToStaticMarkup(
       <AuthModal
         isOpen
@@ -86,11 +87,12 @@ describe('AuthModal (structural)', () => {
         onRequestPasswordReset={noop}
       />,
     )
-    // There is at most one primary submit button at any time. In magic-link
-    // mode that is "Send magic link"; "Sign in" / "Create account" appear only
-    // as radio mode-toggle options in the password tab.
     const primary = html.match(/Send magic link/g) ?? []
     expect(primary.length).toBe(1)
+  })
+
+  it('orders Email + Password actions without a duplicate mode-toggle sign-in button', () => {
+    expect(AUTH_MODAL_PASSWORD_ACTION_LABELS).toEqual(['Sign in', 'Create account', 'Forgot password?'])
   })
 })
 

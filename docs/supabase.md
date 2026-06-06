@@ -34,6 +34,49 @@ Apply `supabase/migrations/20260526012500_phase8_accounts.sql` to create:
 
 All user-owned tables have row-level security enabled. Users can read and write only rows where `auth.uid()` matches the row owner. Admin access is represented with an `admin` role in user metadata or profile data managed outside the browser client.
 
+For Phase 23 live multiplayer, also apply `supabase/migrations/20260604024500_phase23_live_multiplayer.sql`. It creates:
+
+- `live_lobbies`
+- `live_matches`
+- `live_match_participants`
+- `live_match_events`
+- `get_live_multiplayer_server_time()`
+
+These tables are additive and RLS-protected. Authenticated players can create/join live lobbies and can read/write only match rows, participant rows, and append-only events for matches they participate in. The migration also attempts to add the live tables to the `supabase_realtime` publication when that publication exists.
+
+For Phase 23 Stage 3 competitive multiplayer, also apply `supabase/migrations/20260604033000_phase23_competitive_multiplayer.sql` after the live multiplayer migration. It additively creates or extends:
+
+- `live_lobbies.ranked`, `rating_bucket`, `matchmaking_request_id`, and `custom_game_code`
+- `live_matches.ranked`, `rating_bucket`, `matchmaking_request_id`, and `custom_game_code`
+- `multiplayer_rating_profiles`
+- `multiplayer_match_results`
+- `multiplayer_player_results`
+- `multiplayer_rating_transactions`
+- `multiplayer_matchmaking_queue`
+- `custom_game_lobbies`
+
+Stage 3 rating rows are intentionally stricter than live projections. Browser clients can read permitted profile/result/transaction rows and can create their own queue/custom-lobby requests, but the migration does not grant direct client insert/update policies for rating profiles, match results, player results, or rating transactions. Production rating settlement should happen through trusted RPC/server-side code with idempotency keys so clients cannot forge old/new ELO values.
+
+For the Phase 23 Stage 3 online-multiplayer stabilization, also apply `supabase/migrations/20260604050824_phase23_online_multiplayer_fixes.sql` after the live and competitive migrations. It creates:
+
+- `async_multiplayer_games`
+
+It also updates the live-lobby update policy so a second authenticated player can claim a waiting live lobby, and it adds `async_multiplayer_games` to the `supabase_realtime` publication when that publication exists. Async and live browser clients should now write only rows owned by, or participated in by, the current authenticated user; public waiting rooms can be read for matchmaking but should not be blindly upserted by every client.
+
+For the Phase 23 Stage 3 stabilization follow-up, also apply these additive migrations in order:
+
+- `supabase/migrations/20260604202631_phase23_multiplayer_grants_reset_forfeit.sql`
+- `supabase/migrations/20260604210000_phase23_live_policy_recursion_fix.sql`
+- `supabase/migrations/20260604211000_phase23_live_join_policy_fix.sql`
+- `supabase/migrations/20260604211500_phase23_live_matched_lobby_visibility.sql`
+- `supabase/migrations/20260604223000_phase23_daily_multiplayer_claims.sql`
+- `supabase/migrations/20260605043000_phase23_stage4_lobby_cancel_spectators.sql`
+- `supabase/migrations/20260605223500_phase23_stage6_daily_claim_release.sql`
+
+These migrations grant the expected authenticated access to the multiplayer tables/functions, refine live-lobby policies so a second signed-in player can claim a waiting lobby and continue reading the matched lobby row after the join update, persist safe live-lobby host profile summaries, and enforce one Daily Multiplayer claim per authenticated user, UTC date, transport, and mode. The daily claim buckets are `async:og`, `async:go`, `live:og`, and `live:go`. They do not grant browser clients direct write access to rating profiles, rating transactions, or trusted result-settlement tables.
+
+The Stage 4 migration adds the async `cancelled` status and a separate `live_match_spectators` table. The Stage 6 migration then narrows cancellation behavior so creator-cancelled unjoined Daily Async games and Daily Live lobbies release the matching Daily claim; joined, terminal, forfeited, expired, or matched games remain claimed for that UTC date and bucket. Live spectators are authenticated read-only viewers recorded outside `live_match_participants`; they can read the live match after joining spectator mode but cannot update match rows, participant rows, ratings, guesses, forfeits, or word-length selection.
+
 ## Account and sync behavior
 
 Implemented account features include:
@@ -64,13 +107,27 @@ Admin verification checklist:
 
 1. Create a Supabase project.
 2. Run the Phase 8 migration.
-3. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` locally or in Vercel.
-4. Sign in with a magic link.
-5. Transfer local guest progress to the account.
-6. Refresh and confirm cloud progress can be downloaded.
-7. Confirm a second user cannot read the first user's `progress_snapshots`, `game_history`, or `settings` rows.
-8. Assign an admin role through a secure server-side path, then confirm the admin route unlocks only for that user.
-9. Confirm `/api/admin-refresh` rejects missing auth, non-admin auth, and non-POST requests.
+3. Run the Phase 23 live multiplayer migration if live rooms are enabled.
+4. Run the Phase 23 Stage 3 competitive multiplayer migration if ranked/custom multiplayer is enabled.
+5. Run the Phase 23 Stage 3 online-multiplayer stabilization migration if shared async/live play is enabled.
+6. Run the Phase 23 Stage 3 stabilization follow-up migrations if account-backed async/live matchmaking is enabled.
+7. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` locally or in Vercel.
+8. Sign in with a magic link.
+9. Transfer local guest progress to the account.
+10. Refresh and confirm cloud progress can be downloaded.
+11. Confirm a second user cannot read the first user's `progress_snapshots`, `game_history`, or `settings` rows.
+12. Confirm a second user cannot read or mutate live match rows unless they are a recorded match participant or are claiming a waiting lobby through the intended join flow.
+13. Confirm two signed-in browsers can create/join an async match, submit one turn, refresh the other browser, and see the submitted turn without controlling the other player seat.
+14. Confirm two signed-in browsers can create/join a live match and see match/lobby updates synchronize through Supabase Realtime without either browser rendering controls for both seats.
+15. Confirm a signed-in user cannot create or join more than one Daily Multiplayer game for the same UTC date and bucket (`async:og`, `async:go`, `live:og`, or `live:go`), even after the first game becomes terminal.
+16. Confirm Daily Async and Daily Live reveal different deterministic answer sequences for the same UTC date and mode.
+17. Confirm a Daily Async and Daily Live lobby creator can cancel an unjoined lobby, the lobby leaves the active count, and the same Daily bucket becomes available again only while no rival has joined.
+18. Confirm the five-active-game limit is enforced per authenticated user, not globally across all visible lobbies.
+19. Confirm an authenticated non-player can join spectator mode for an active Live match, sees board/history updates, and cannot submit guesses, forfeit, resolve selection, cancel lobbies, or mutate ratings.
+20. Confirm a user can create their own `multiplayer_matchmaking_queue` row and `custom_game_lobbies` row.
+21. Confirm a browser client cannot directly insert/update `multiplayer_rating_profiles`, `multiplayer_match_results`, `multiplayer_player_results`, or `multiplayer_rating_transactions`.
+22. Assign an admin role through a secure server-side path, then confirm the admin route unlocks only for that user.
+23. Confirm `/api/admin-refresh` rejects missing auth, non-admin auth, and non-POST requests.
 
 ## Optional: avatar uploads (Phase 15)
 

@@ -20,6 +20,7 @@ export interface SerializedOgSession {
   readonly guesses: readonly string[]
   readonly hardMode: boolean
   readonly maxAttempts: number
+  readonly revealedAnswer?: boolean
 }
 
 function selectPracticeAnswer(answers: readonly WordEntry[], seed: number): string {
@@ -78,13 +79,14 @@ export function serializeOgSession(state: PuzzleSessionState): SerializedOgSessi
     guesses: state.guesses.map((guess) => guess.guess),
     hardMode: state.hardMode,
     maxAttempts: state.maxAttempts,
+    revealedAnswer: state.revealedAnswer,
   }
 }
 
 export function restoreOgSession(serialized: SerializedOgSession, validGuesses: ReadonlySet<string>): PuzzleSessionState {
   const guesses = serialized.guesses.map((guess) => getGuessResult(guess, serialized.answer))
   const solved = guesses.some((guess) => guess.tiles.every((tile) => tile.state === 'correct'))
-  const status = solved ? 'won' : guesses.length >= serialized.maxAttempts ? 'lost' : 'playing'
+  const status = serialized.revealedAnswer ? 'lost' : solved ? 'won' : guesses.length >= serialized.maxAttempts ? 'lost' : 'playing'
 
   return {
     answer: serialized.answer,
@@ -94,6 +96,7 @@ export function restoreOgSession(serialized: SerializedOgSession, validGuesses: 
     hardMode: serialized.hardMode,
     lastValidation: undefined,
     maxAttempts: serialized.maxAttempts,
+    revealedAnswer: serialized.revealedAnswer,
     status,
     validGuesses,
     wordLength: serialized.answer.length,

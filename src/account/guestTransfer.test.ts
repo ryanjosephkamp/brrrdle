@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createDefaultGuestProgress } from './storageSchema'
 import { mergeGuestProgressIntoCloud } from './guestTransfer'
+import { createAsyncMultiplayerGame } from '../multiplayer'
 
 describe('guest transfer', () => {
   it('merges local and cloud progress without losing history or completed IDs', () => {
@@ -108,5 +109,24 @@ describe('guest transfer', () => {
       'practice-og': practiceOg,
     })
     expect(merged.resumeSlot).toEqual(practiceGo)
+  })
+
+  it('merges async multiplayer games by id and newest update', () => {
+    const localGame = {
+      ...createAsyncMultiplayerGame({ createdAt: '2026-05-26T01:00:00.000Z', mode: 'og', scope: 'practice', seed: 1, wordLength: 5 }),
+      id: 'shared-game',
+      updatedAt: '2026-05-26T03:00:00.000Z',
+    }
+    const cloudGame = {
+      ...localGame,
+      updatedAt: '2026-05-26T02:00:00.000Z',
+    }
+    const merged = mergeGuestProgressIntoCloud(
+      { ...createDefaultGuestProgress(), asyncMultiplayer: { games: [localGame] } },
+      { ...createDefaultGuestProgress(), asyncMultiplayer: { games: [cloudGame] } },
+    )
+
+    expect(merged.asyncMultiplayer?.games).toHaveLength(1)
+    expect(merged.asyncMultiplayer?.games[0].updatedAt).toBe('2026-05-26T03:00:00.000Z')
   })
 })

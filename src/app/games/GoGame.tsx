@@ -206,13 +206,15 @@ function GoGameSession({
   })
   const canAffordContinuation = session.status === 'lost' && !session.revealedAnswer && coins >= continuationCost
   const canPayToContinue = session.status === 'lost' && !session.revealedAnswer
+  const lossAnswerRevealed = session.status === 'lost' && (!canPayToContinue || Boolean(session.revealedAnswer))
+  const endStateRevealed = session.status === 'won' || lossAnswerRevealed
   const revealCost = calculatePayToContinueCost({
     completionPercentage,
     continuationCount: currentPuzzle.continuationCount,
     wordLength: currentPuzzle.wordLength,
   })
   const canReveal = scope === 'practice' && session.status === 'playing' && currentPuzzle.guesses.length > 0
-  const solvedPuzzles = session.puzzles.filter((puzzle) => puzzle.status === 'won')
+  const solvedPuzzles = endStateRevealed ? session.puzzles.filter((puzzle) => puzzle.status === 'won') : []
 
   useEffect(() => {
     if (scope !== 'daily' || !setup.dateKey) {
@@ -250,7 +252,7 @@ function GoGameSession({
       return
     }
 
-    if (session.status === 'lost' && canAffordContinuation) {
+    if (session.status === 'lost' && canPayToContinue) {
       return
     }
 
@@ -270,7 +272,7 @@ function GoGameSession({
       wordLength: session.wordLength,
       ...(pastDailyDateKey ? { affectsStreak: false } : {}),
     })
-  }, [canAffordContinuation, difficulty, onGameComplete, pastDailyDateKey, practiceLength, scope, session.currentPuzzleIndex, session.puzzles, session.status, session.wordLength, setup.dateKey, setup.puzzles])
+  }, [canPayToContinue, difficulty, onGameComplete, pastDailyDateKey, practiceLength, scope, session.currentPuzzleIndex, session.puzzles, session.status, session.wordLength, setup.dateKey, setup.puzzles])
 
   const sound = useSound()
   const handleInput = useCallback((input: KeyboardInput) => {
@@ -329,11 +331,23 @@ function GoGameSession({
     setContinuationMessage(`Revealed the answer: ${revealedAnswer}. This puzzle counts as a loss.`)
   }, [canReveal, currentPuzzle.answer, onSpendCoins, revealCost])
 
+  const handleRevealAfterLoss = useCallback(() => {
+    if (!canPayToContinue) {
+      return
+    }
+
+    const revealedAnswer = currentPuzzle.answer.toLocaleUpperCase('en-US')
+    setSession((currentSession) => revealGoPuzzle(currentSession))
+    setContinuationMessage(`Revealed the answer: ${revealedAnswer}. This puzzle counts as a loss.`)
+  }, [canPayToContinue, currentPuzzle.answer])
+
   const letterStates = deriveKeyboardLetterStates(currentPuzzle.guesses)
   const statusMessage = session.status === 'won'
     ? `Solved all ${session.puzzles.length} go puzzles. Daily completion is preserved on refresh.`
     : session.status === 'lost'
-      ? `The chain ended on puzzle ${session.currentPuzzleIndex + 1}. The answer was ${currentPuzzle.answer.toLocaleUpperCase('en-US')}.`
+      ? lossAnswerRevealed
+        ? `The chain ended on puzzle ${session.currentPuzzleIndex + 1}. The answer was ${currentPuzzle.answer.toLocaleUpperCase('en-US')}.`
+        : `The chain ended on puzzle ${session.currentPuzzleIndex + 1}. Continue this puzzle or reveal the answer to finish it.`
       : `Puzzle ${session.currentPuzzleIndex + 1} of ${session.puzzles.length}; ${currentPuzzle.maxAttempts - currentPuzzle.guesses.length} attempts remaining.`
 
   return (
@@ -438,9 +452,12 @@ function GoGameSession({
           <div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm leading-6 text-amber-50">
             <p className="font-bold">Pay to Continue</p>
             <p>Spend {continuationCost} coins for one more attempt on puzzle {session.currentPuzzleIndex + 1}. Current balance: {coins} coins.</p>
-            <Button disabled={!canAffordContinuation} onClick={handlePayToContinue} variant="secondary">
-              {canAffordContinuation ? `Pay ${continuationCost} coins to continue` : `Need ${continuationCost} coins to continue`}
-            </Button>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button disabled={!canAffordContinuation} onClick={handlePayToContinue} variant="secondary">
+                {canAffordContinuation ? `Pay ${continuationCost} coins to continue` : `Need ${continuationCost} coins to continue`}
+              </Button>
+              <Button onClick={handleRevealAfterLoss} variant="ghost">Reveal answer instead</Button>
+            </div>
             {continuationMessage ? <p className="mt-2 font-semibold">{continuationMessage}</p> : null}
           </div>
         ) : continuationMessage ? (
@@ -460,7 +477,7 @@ function GoGameSession({
         <Keyboard disabled={session.status !== 'playing'} letterStates={letterStates} onInput={handleInput} />
 
 
-        {session.status !== 'playing' ? (
+        {endStateRevealed ? (
           <ShareButton
             label="Share go result"
             text={formatGoShare({
@@ -500,7 +517,7 @@ function GoGameSession({
         ) : null}
 
         <DefinitionPanel
-          enabled={session.status !== 'playing'}
+          enabled={endStateRevealed}
           mode="go"
           scope={scope}
           word={currentPuzzle.answer}

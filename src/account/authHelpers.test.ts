@@ -1,9 +1,11 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   AVATAR_STORAGE_BUCKET,
   classifyAuthError,
   hasAvatarStorage,
+  isPasswordResetUrl,
   sendPasswordResetEmail,
+  updatePassword,
   updateProfile,
   uploadAvatar,
 } from './auth'
@@ -19,6 +21,10 @@ function client(overrides: Record<string, unknown> = {}, storage?: unknown): Brr
     storage,
   } as unknown as BrrrdleSupabaseClient
 }
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 describe('classifyAuthError', () => {
   const cases: Array<[string, Parameters<typeof classifyAuthError>[1], string]> = [
@@ -59,11 +65,20 @@ describe('sendPasswordResetEmail', () => {
   })
 
   it('lowercases the email and forwards to supabase', async () => {
+    vi.stubGlobal('window', {
+      location: {
+        href: 'https://brrrdle.app/settings',
+        origin: 'https://brrrdle.app',
+      },
+    })
     const reset = vi.fn().mockResolvedValue({ error: null })
     const c = client({ resetPasswordForEmail: reset })
     const result = await sendPasswordResetEmail(c, 'Foo@Bar.com')
     expect(reset).toHaveBeenCalled()
     expect(reset.mock.calls[0]![0]).toBe('foo@bar.com')
+    expect(reset.mock.calls[0]![1]).toEqual({
+      redirectTo: expect.stringContaining('auth_action=reset-password'),
+    })
     expect(result).toEqual({ ok: true })
   })
 
@@ -79,6 +94,30 @@ describe('sendPasswordResetEmail', () => {
     const reset = vi.fn().mockRejectedValue(new Error('boom'))
     const c = client({ resetPasswordForEmail: reset })
     const result = await sendPasswordResetEmail(c, 'a@b.com')
+    expect('ok' in result && result.ok).toBe(false)
+  })
+})
+
+describe('password recovery helpers', () => {
+  it('detects explicit reset URLs and Supabase recovery hash URLs', () => {
+    expect(isPasswordResetUrl({ search: '?auth_action=reset-password' })).toBe(true)
+    expect(isPasswordResetUrl({ hash: '#access_token=abc&type=recovery' })).toBe(true)
+    expect(isPasswordResetUrl({ search: '?auth_action=magic-link', hash: '#type=magiclink' })).toBe(false)
+  })
+
+  it('updates the current recovery-session password', async () => {
+    const updateUser = vi.fn().mockResolvedValue({ error: null })
+    const c = client({ updateUser })
+    const result = await updatePassword(c, 'new-password')
+    expect(updateUser).toHaveBeenCalledWith({ password: 'new-password' })
+    expect(result).toEqual({ ok: true })
+  })
+
+  it('rejects short password updates without calling supabase', async () => {
+    const updateUser = vi.fn().mockResolvedValue({ error: null })
+    const c = client({ updateUser })
+    const result = await updatePassword(c, 'short')
+    expect(updateUser).not.toHaveBeenCalled()
     expect('ok' in result && result.ok).toBe(false)
   })
 })

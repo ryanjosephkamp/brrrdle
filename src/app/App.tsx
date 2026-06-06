@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AccountBadge, AuthModal, ProfilePanel, classifyAuthError, createBrrrdleSupabaseClient, createResumeSlot, createSupabaseProgressRepository, createSyncStatus, getCurrentAuthState, getLatestResumeSlot, getResumeSlotKey, isCaptureInProgress, loadGuestProgress, normalizeResumeSlots, recordCompletedGame, sendPasswordResetEmail, resetGuestProgress, saveGuestProgress, sendMagicLink, Settings, signInWithPassword, signOut, signUpWithPassword, subscribeToAuthChanges, syncGuestProgress, updateProfile, type AuthState, type CompletedGameInput, type ProfileAccentColor, type ResumeCapture, type ResumeSlot, type ResumeSlotCollection } from '../account'
+import { AccountBadge, AuthModal, PasswordResetModal, ProfilePanel, classifyAuthError, clearPasswordResetUrlMarker, createBrrrdleSupabaseClient, createResumeSlot, createSupabaseProgressRepository, createSyncStatus, getCurrentAuthState, getLatestResumeSlot, getResumeSlotKey, isCaptureInProgress, isPasswordResetUrl, loadGuestProgress, normalizeResumeSlots, recordCompletedGame, sendPasswordResetEmail, resetGuestProgress, saveGuestProgress, sendMagicLink, Settings, signInWithPassword, signOut, signUpWithPassword, subscribeToAuthChanges, syncGuestProgress, updatePassword, updateProfile, type AuthState, type CompletedGameInput, type ProfileAccentColor, type ResumeCapture, type ResumeSlot, type ResumeSlotCollection } from '../account'
 import { BUNDLED_WORD_LIST_LENGTHS, type DifficultyTier } from '../data'
 import { DAILY_WORD_LENGTH, MAX_PRACTICE_WORD_LENGTH, MIN_PRACTICE_WORD_LENGTH, type GoPuzzleCount } from '../game/constants'
 import { Button, Panel } from '../ui'
@@ -8,8 +8,32 @@ import { StatsDashboard } from '../stats'
 import { WordExplorerPanel } from '../wordExplorer'
 import { FeedbackPanel } from '../feedback'
 import { SoundProvider, useSound } from '../sound'
-import { DailyCountdown, SimulateTimePanel, useDailyCycle } from '../daily'
+import { DailyCountdown, MULTIPLAYER_DAILY_VARIANT, SimulateTimePanel, useDailyCycle } from '../daily'
 import { applySurfaceTheme, applyTheme, DEFAULT_SURFACE_THEME, getThemeMeta, isTheme, THEMES, type Theme } from '../theme'
+import {
+  AsyncMultiplayerPanel,
+  LiveMultiplayerPanel,
+  createLocalStorageAsyncMultiplayerRepository,
+  createLocalStorageLiveMultiplayerRepository,
+  createMultiplayerProfileSummary,
+  createSupabaseAsyncMultiplayerRepository,
+  createSupabaseLiveMultiplayerRepository,
+  expireStaleDailyLiveMultiplayerMatches,
+  expireStaleDailyMultiplayerGames,
+  loadAsyncMultiplayerState,
+  loadLiveMultiplayerState,
+  normalizeCompetitiveMultiplayerState,
+  saveAsyncMultiplayerState,
+  saveLiveMultiplayerState,
+  settleAsyncMultiplayerResult,
+  settleLiveMultiplayerResult,
+  type AsyncMultiplayerRepository,
+  type AsyncMultiplayerState,
+  type LiveMultiplayerRepository,
+  type LiveMultiplayerState,
+  type MultiplayerProfileSummary,
+  type MultiplayerCompetitiveState,
+} from '../multiplayer'
 import { GoGame } from './games/GoGame'
 import { OgGame } from './games/OgGame'
 import { CalendarPanel, type CalendarLaunchRequest } from '../calendar'
@@ -17,6 +41,52 @@ import { LunarSignalStage } from './LunarSignalStage'
 import { APP_ROUTES, DEFAULT_ROUTE_ID, getRouteById, getRoutesByGroup, type AppRoute } from './routes'
 
 type PracticeMode = 'og' | 'go'
+
+const NAVIGATION_STORAGE_KEY = 'brrrdle:navigation:v1'
+
+interface PersistedNavigation {
+  readonly activeRouteId?: AppRoute['id']
+  readonly practiceMode?: PracticeMode
+}
+
+function isPracticeMode(value: unknown): value is PracticeMode {
+  return value === 'og' || value === 'go'
+}
+
+function isAppRouteId(value: unknown): value is AppRoute['id'] {
+  return typeof value === 'string' && APP_ROUTES.some((route) => route.id === value)
+}
+
+function loadPersistedNavigation(): PersistedNavigation {
+  if (typeof window === 'undefined') {
+    return {}
+  }
+  try {
+    const raw = window.localStorage.getItem(NAVIGATION_STORAGE_KEY)
+    if (!raw) {
+      return {}
+    }
+    const record = JSON.parse(raw) as Record<string, unknown>
+    return {
+      activeRouteId: isAppRouteId(record.activeRouteId) ? record.activeRouteId : undefined,
+      practiceMode: isPracticeMode(record.practiceMode) ? record.practiceMode : undefined,
+    }
+  } catch {
+    return {}
+  }
+}
+
+function savePersistedNavigation(patch: PersistedNavigation): void {
+  if (typeof window === 'undefined') {
+    return
+  }
+  try {
+    const current = loadPersistedNavigation()
+    window.localStorage.setItem(NAVIGATION_STORAGE_KEY, JSON.stringify({ ...current, ...patch }))
+  } catch {
+    // Browser storage is best-effort only; navigation still works without it.
+  }
+}
 
 function isSameResumeSlot(left: ResumeSlot | undefined, right: ResumeSlot): boolean {
   if (!left) {
@@ -50,11 +120,18 @@ function ModeCard({ route, onSelect }: { readonly route: AppRoute; readonly onSe
 
 
 function PracticeGameSwitcher({
+  asyncMultiplayer,
   coins,
+  competitiveMultiplayer,
   defaultDifficulty,
   defaultGoPuzzleCount,
   keyboardDisabled,
+  liveMultiplayer,
+  onAsyncMultiplayerChange,
+  onCompetitiveMultiplayerChange,
   onGameComplete,
+  onLiveMultiplayerChange,
+  onJoinLiveSpectatorMatch,
   onPracticeModeChange,
   onResumeCapture,
   onSaveDifficultyDefault,
@@ -62,12 +139,23 @@ function PracticeGameSwitcher({
   onSpendCoins,
   practiceMode,
   resumeSlots,
+  authStatus,
+  viewerUserId,
+  viewerProfile,
 }: {
+  readonly authStatus: AuthState['status']
+  readonly asyncMultiplayer?: AsyncMultiplayerState
   readonly coins: number
+  readonly competitiveMultiplayer?: MultiplayerCompetitiveState
   readonly defaultDifficulty: DifficultyTier
   readonly defaultGoPuzzleCount: GoPuzzleCount
   readonly keyboardDisabled?: boolean
+  readonly liveMultiplayer?: LiveMultiplayerState
+  readonly onAsyncMultiplayerChange: (state: AsyncMultiplayerState) => void
+  readonly onCompetitiveMultiplayerChange: (state: MultiplayerCompetitiveState) => void
   readonly onGameComplete: (input: CompletedGameInput) => void
+  readonly onLiveMultiplayerChange: (state: LiveMultiplayerState) => void
+  readonly onJoinLiveSpectatorMatch: (matchId: string) => void
   readonly onPracticeModeChange: (mode: PracticeMode) => void
   readonly onResumeCapture: (capture: ResumeCapture) => void
   readonly onSaveDifficultyDefault: (tier: DifficultyTier) => void
@@ -75,6 +163,8 @@ function PracticeGameSwitcher({
   readonly onSpendCoins: (amount: number) => boolean
   readonly practiceMode: PracticeMode
   readonly resumeSlots: ResumeSlotCollection
+  readonly viewerUserId?: string
+  readonly viewerProfile?: MultiplayerProfileSummary
 }) {
   const practiceOgResume = resumeSlots['practice-og']
   const practiceGoResume = resumeSlots['practice-go']
@@ -88,6 +178,31 @@ function PracticeGameSwitcher({
       {practiceMode === 'og'
         ? <OgGame coins={coins} defaultDifficulty={defaultDifficulty} initialResume={practiceOgResume?.mode === 'og' ? practiceOgResume : undefined} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onResumeCapture={onResumeCapture} onSaveDifficultyDefault={onSaveDifficultyDefault} onSpendCoins={onSpendCoins} scope="practice" />
         : <GoGame coins={coins} defaultDifficulty={defaultDifficulty} defaultGoPuzzleCount={defaultGoPuzzleCount} initialResume={practiceGoResume?.mode === 'go' ? practiceGoResume : undefined} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onResumeCapture={onResumeCapture} onSaveDifficultyDefault={onSaveDifficultyDefault} onSaveGoPuzzleCountDefault={onSaveGoPuzzleCountDefault} onSpendCoins={onSpendCoins} scope="practice" />}
+      <AsyncMultiplayerPanel
+        authStatus={authStatus}
+        competitiveState={competitiveMultiplayer}
+        defaultDifficulty={defaultDifficulty}
+        defaultGoPuzzleCount={defaultGoPuzzleCount}
+        onChange={onAsyncMultiplayerChange}
+        onCompetitiveChange={onCompetitiveMultiplayerChange}
+        scope="practice"
+        state={asyncMultiplayer}
+        viewerProfile={viewerProfile}
+        viewerUserId={viewerUserId}
+      />
+      <LiveMultiplayerPanel
+        authStatus={authStatus}
+        competitiveState={competitiveMultiplayer}
+        defaultDifficulty={defaultDifficulty}
+        defaultGoPuzzleCount={defaultGoPuzzleCount}
+        onChange={onLiveMultiplayerChange}
+        onCompetitiveChange={onCompetitiveMultiplayerChange}
+        onJoinSpectatorMatch={onJoinLiveSpectatorMatch}
+        scope="practice"
+        state={liveMultiplayer}
+        viewerProfile={viewerProfile}
+        viewerUserId={viewerUserId}
+      />
     </section>
   )
 }
@@ -136,14 +251,21 @@ function AboutBrrrdlePanel() {
 function RoutePanel({
   route,
   keyboardDisabled,
+  asyncMultiplayer,
   guestProgress,
+  liveMultiplayer,
   onGameComplete,
+  onAsyncMultiplayerChange,
+  onCompetitiveMultiplayerChange,
+  onLiveMultiplayerChange,
+  onJoinLiveSpectatorMatch,
   authState,
   authMessage,
   onResetProgress,
   onResumeCapture,
   onSelectRoute,
   onSendMagicLink,
+  onRequestPasswordReset,
   onSignInWithPassword,
   onSignUpWithPassword,
   onSpendCoins,
@@ -159,19 +281,27 @@ function RoutePanel({
   supabaseClient,
   syncStatus,
   todayDateKey,
+  multiplayerDailyDateKey,
   onMarkPastDailyUnlocked,
   calendarLaunch,
   onCalendarLaunchConsumed,
 }: {
   readonly authState: AuthState
   readonly authMessage?: string
+  readonly asyncMultiplayer: AsyncMultiplayerState
   readonly guestProgress: ReturnType<typeof loadGuestProgress>
+  readonly liveMultiplayer: LiveMultiplayerState
   readonly keyboardDisabled?: boolean
   readonly onGameComplete: (input: CompletedGameInput) => void
+  readonly onAsyncMultiplayerChange: (state: AsyncMultiplayerState) => void
+  readonly onCompetitiveMultiplayerChange: (state: MultiplayerCompetitiveState) => void
+  readonly onLiveMultiplayerChange: (state: LiveMultiplayerState) => void
+  readonly onJoinLiveSpectatorMatch: (matchId: string) => void
   readonly onResetProgress: () => void
   readonly onResumeCapture: (capture: ResumeCapture) => void
   readonly onPracticeModeChange: (mode: PracticeMode) => void
   readonly onSendMagicLink: (email: string) => void
+  readonly onRequestPasswordReset: (email: string) => void
   readonly onSignInWithPassword: (email: string, password: string) => void
   readonly onSignUpWithPassword: (email: string, password: string) => void
   readonly onSignOut: () => void
@@ -188,10 +318,15 @@ function RoutePanel({
   readonly syncStatus: ReturnType<typeof createSyncStatus>
   readonly onSpendCoins: (amount: number) => boolean
   readonly todayDateKey: string
+  readonly multiplayerDailyDateKey: string
   readonly onMarkPastDailyUnlocked: (mode: 'og' | 'go', dateKey: string) => void
   readonly calendarLaunch: CalendarLaunchRequest | null
   readonly onCalendarLaunchConsumed: () => void
 }) {
+  const viewerProfile = authState.status === 'authenticated' && authState.user?.profile
+    ? createMultiplayerProfileSummary(authState.user.profile, 'Player')
+    : undefined
+
   if (route.id === 'home') {
     return (
       <div className="space-y-4">
@@ -212,12 +347,22 @@ function RoutePanel({
         guestProgress={guestProgress}
         keyboardDisabled={keyboardDisabled}
         launchRequest={calendarLaunch}
+        asyncMultiplayer={asyncMultiplayer}
         onGameComplete={onGameComplete}
         onLaunchConsumed={onCalendarLaunchConsumed}
         onMarkPastDailyUnlocked={onMarkPastDailyUnlocked}
         onResumeCapture={onResumeCapture}
         onSpendCoins={onSpendCoins}
         onUpdateSettings={onUpdateSettings}
+        onAsyncMultiplayerChange={onAsyncMultiplayerChange}
+        onCompetitiveMultiplayerChange={onCompetitiveMultiplayerChange}
+        onLiveMultiplayerChange={onLiveMultiplayerChange}
+        onJoinLiveSpectatorMatch={onJoinLiveSpectatorMatch}
+        liveMultiplayer={liveMultiplayer}
+        multiplayerDailyDateKey={multiplayerDailyDateKey}
+        authStatus={authState.status}
+        viewerUserId={authState.user?.id}
+        viewerProfile={viewerProfile}
         todayDateKey={todayDateKey}
       />
     )
@@ -232,7 +377,7 @@ function RoutePanel({
   }
 
   if (route.id === 'practice') {
-    return <PracticeGameSwitcher coins={guestProgress.progression.coins} defaultDifficulty={guestProgress.settings.difficultyDefault} defaultGoPuzzleCount={guestProgress.settings.goPuzzleCountDefault} keyboardDisabled={keyboardDisabled} onGameComplete={onGameComplete} onPracticeModeChange={onPracticeModeChange} onResumeCapture={onResumeCapture} onSaveDifficultyDefault={(tier) => onUpdateSettings({ difficultyDefault: tier })} onSaveGoPuzzleCountDefault={(count) => onUpdateSettings({ goPuzzleCountDefault: count })} onSpendCoins={onSpendCoins} practiceMode={practiceMode} resumeSlots={resumeSlots} />
+    return <PracticeGameSwitcher asyncMultiplayer={asyncMultiplayer} authStatus={authState.status} coins={guestProgress.progression.coins} competitiveMultiplayer={guestProgress.competitiveMultiplayer} defaultDifficulty={guestProgress.settings.difficultyDefault} defaultGoPuzzleCount={guestProgress.settings.goPuzzleCountDefault} keyboardDisabled={keyboardDisabled} liveMultiplayer={liveMultiplayer} onAsyncMultiplayerChange={onAsyncMultiplayerChange} onCompetitiveMultiplayerChange={onCompetitiveMultiplayerChange} onGameComplete={onGameComplete} onJoinLiveSpectatorMatch={onJoinLiveSpectatorMatch} onLiveMultiplayerChange={onLiveMultiplayerChange} onPracticeModeChange={onPracticeModeChange} onResumeCapture={onResumeCapture} onSaveDifficultyDefault={(tier) => onUpdateSettings({ difficultyDefault: tier })} onSaveGoPuzzleCountDefault={(count) => onUpdateSettings({ goPuzzleCountDefault: count })} onSpendCoins={onSpendCoins} practiceMode={practiceMode} resumeSlots={resumeSlots} viewerProfile={viewerProfile} viewerUserId={authState.user?.id} />
   }
 
   if (route.id === 'word-explorer') {
@@ -244,7 +389,7 @@ function RoutePanel({
   }
 
   if (route.id === 'stats') {
-    return <StatsDashboard history={guestProgress.history} progression={guestProgress.progression} stats={guestProgress.stats} />
+    return <StatsDashboard competitiveMultiplayer={guestProgress.competitiveMultiplayer} history={guestProgress.history} progression={guestProgress.progression} stats={guestProgress.stats} />
   }
 
   if (route.id === 'settings') {
@@ -256,6 +401,7 @@ function RoutePanel({
         onOpenAuthModal={onOpenAuthModal}
         onOpenProfilePanel={onOpenProfilePanel}
         onResetProgress={onResetProgress}
+        onRequestPasswordReset={onRequestPasswordReset}
         onSendMagicLink={onSendMagicLink}
         onSignInWithPassword={onSignInWithPassword}
         onSignOut={onSignOut}
@@ -300,20 +446,43 @@ function App() {
 
 function AppInner() {
   const sound = useSound()
-  const [activeRouteId, setActiveRouteId] = useState(DEFAULT_ROUTE_ID)
+  const [initialNavigation] = useState(() => loadPersistedNavigation())
+  const [activeRouteId, setActiveRouteId] = useState<AppRoute['id']>(() => initialNavigation.activeRouteId ?? DEFAULT_ROUTE_ID)
   const [guestProgress, setGuestProgress] = useState(() => loadGuestProgress())
+  const [asyncMultiplayer, setAsyncMultiplayer] = useState(() => guestProgress.asyncMultiplayer ?? loadAsyncMultiplayerState())
+  const [initialAsyncMultiplayerSeed] = useState(() => guestProgress.asyncMultiplayer)
+  const [liveMultiplayer, setLiveMultiplayer] = useState(() => loadLiveMultiplayerState())
   const supabaseClient = useMemo(() => createBrrrdleSupabaseClient(), [])
   const [authState, setAuthState] = useState<AuthState>(() => supabaseClient ? { status: 'anonymous' } : { status: 'unconfigured' })
+  const authenticatedLiveUserId = authState.status === 'authenticated' && authState.user ? authState.user.id : undefined
+  const asyncRepository = useMemo<AsyncMultiplayerRepository>(
+    () => authenticatedLiveUserId && supabaseClient
+      ? createSupabaseAsyncMultiplayerRepository({ client: supabaseClient, userId: authenticatedLiveUserId })
+      : createLocalStorageAsyncMultiplayerRepository(undefined, initialAsyncMultiplayerSeed),
+    [authenticatedLiveUserId, initialAsyncMultiplayerSeed, supabaseClient],
+  )
+  const liveRepository = useMemo<LiveMultiplayerRepository>(
+    () => authenticatedLiveUserId && supabaseClient
+      ? createSupabaseLiveMultiplayerRepository({ client: supabaseClient, userId: authenticatedLiveUserId })
+      : createLocalStorageLiveMultiplayerRepository(),
+    [authenticatedLiveUserId, supabaseClient],
+  )
+  const asyncRepositoryRef = useRef(asyncRepository)
+  const liveRepositoryRef = useRef(liveRepository)
   const [authMessage, setAuthMessage] = useState<string | undefined>(undefined)
   const [authBusy, setAuthBusy] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [passwordResetOpen, setPasswordResetOpen] = useState(false)
+  const [passwordResetMessage, setPasswordResetMessage] = useState<string | undefined>(undefined)
   const [profilePanelOpen, setProfilePanelOpen] = useState(false)
   const [profileMessage, setProfileMessage] = useState<string | undefined>(undefined)
   const [profileBusy, setProfileBusy] = useState(false)
   const [syncStatus, setSyncStatus] = useState(() => createSyncStatus(supabaseClient ? 'idle' : 'error'))
-  const [practiceMode, setPracticeMode] = useState<PracticeMode>('og')
+  const [practiceMode, setPracticeModeState] = useState<PracticeMode>(() => initialNavigation.practiceMode ?? 'og')
   const [dailyAlerting, setDailyAlerting] = useState(false)
+  const [dailyMultiplayerAlerting, setDailyMultiplayerAlerting] = useState(false)
   const dailyAlertTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const dailyMultiplayerAlertTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const autoResumedRef = useRef(false)
   const guestProgressRef = useRef(guestProgress)
   const activeRoute = getRouteById(activeRouteId)
@@ -335,6 +504,7 @@ function AppInner() {
     })
   }, [])
   const countdownEnabled = guestProgress.settings.dailyCountdownEnabled
+  const dailyMultiplayerCountdownEnabled = guestProgress.settings.dailyMultiplayerCountdownEnabled
   const handleDailyReset = useCallback(() => {
     // Subtle, non-modal alert: play the unique reset chime (respects the master
     // sound toggle inside the engine) and glow the countdown for a few seconds.
@@ -346,6 +516,23 @@ function AppInner() {
     dailyAlertTimeoutRef.current = setTimeout(() => setDailyAlerting(false), 12_000)
   }, [sound])
   const daily = useDailyCycle({ alertsEnabled: countdownEnabled, onReset: handleDailyReset })
+  const handleDailyMultiplayerReset = useCallback(() => {
+    sound.play('daily-multiplayer-reset')
+    setDailyMultiplayerAlerting(true)
+    if (dailyMultiplayerAlertTimeoutRef.current) {
+      clearTimeout(dailyMultiplayerAlertTimeoutRef.current)
+    }
+    dailyMultiplayerAlertTimeoutRef.current = setTimeout(() => setDailyMultiplayerAlerting(false), 12_000)
+  }, [sound])
+  const dailyMultiplayer = useDailyCycle({
+    alertsEnabled: dailyMultiplayerCountdownEnabled,
+    onReset: handleDailyMultiplayerReset,
+    variant: 'multiplayer',
+  })
+  const handlePracticeModeChange = useCallback((mode: PracticeMode) => {
+    setPracticeModeState(mode)
+    savePersistedNavigation({ practiceMode: mode })
+  }, [])
   const handleNavigate = useCallback((routeId: AppRoute['id']) => {
     // Phase 22 Addendum (§27.10): the dedicated daily routes are retired. Any
     // deep link to them gracefully redirects into the Calendar with today's
@@ -353,15 +540,103 @@ function AppInner() {
     if (routeId === 'og-daily' || routeId === 'go-daily') {
       setCalendarLaunch({ mode: routeId === 'og-daily' ? 'og' : 'go', dateKey: daily.dateKey })
       setActiveRouteId('calendar')
+      savePersistedNavigation({ activeRouteId: 'calendar' })
       return
     }
     setActiveRouteId(routeId)
+    savePersistedNavigation({ activeRouteId: routeId })
   }, [daily.dateKey])
   const handleCountdownActivate = useCallback(() => {
     setDailyAlerting(false)
     setCalendarLaunch({ mode: 'og', dateKey: daily.dateKey })
     setActiveRouteId('calendar')
+    savePersistedNavigation({ activeRouteId: 'calendar' })
   }, [daily.dateKey])
+  const handleDailyMultiplayerCountdownActivate = useCallback(() => {
+    setDailyMultiplayerAlerting(false)
+    setCalendarLaunch({ dateKey: dailyMultiplayer.dateKey, kind: 'multiplayer', transport: 'async' })
+    setActiveRouteId('calendar')
+    savePersistedNavigation({ activeRouteId: 'calendar' })
+  }, [dailyMultiplayer.dateKey])
+  const handleAsyncMultiplayerChange = useCallback((asyncMultiplayer: AsyncMultiplayerState) => {
+    setAsyncMultiplayer(asyncMultiplayer)
+    setGuestProgress((currentProgress) => {
+      let competitiveMultiplayer = normalizeCompetitiveMultiplayerState(currentProgress.competitiveMultiplayer)
+      for (const game of asyncMultiplayer.games) {
+        if (game.status === 'won' || game.status === 'lost' || game.status === 'expired') {
+          competitiveMultiplayer = settleAsyncMultiplayerResult(competitiveMultiplayer, game, authState).state
+        }
+      }
+      const nextProgress = { ...currentProgress, asyncMultiplayer, competitiveMultiplayer }
+      saveGuestProgress(nextProgress)
+      return nextProgress
+    })
+    void asyncRepositoryRef.current.save(asyncMultiplayer).catch(() => {
+      if (authState.status === 'authenticated') {
+        void asyncRepositoryRef.current.load().then((snapshot) => {
+          setAsyncMultiplayer(snapshot.state)
+          saveAsyncMultiplayerState(snapshot.state)
+          setGuestProgress((currentProgress) => {
+            const nextProgress = { ...currentProgress, asyncMultiplayer: snapshot.state }
+            saveGuestProgress(nextProgress)
+            return nextProgress
+          })
+        })
+        return
+      }
+      saveAsyncMultiplayerState(asyncMultiplayer)
+    })
+  }, [authState])
+  const handleCompetitiveMultiplayerChange = useCallback((competitiveMultiplayer: MultiplayerCompetitiveState) => {
+    setGuestProgress((currentProgress) => {
+      const nextProgress = { ...currentProgress, competitiveMultiplayer: normalizeCompetitiveMultiplayerState(competitiveMultiplayer) }
+      saveGuestProgress(nextProgress)
+      return nextProgress
+    })
+  }, [])
+  const handleLiveMultiplayerChange = useCallback((nextLiveMultiplayer: LiveMultiplayerState) => {
+    setLiveMultiplayer(nextLiveMultiplayer)
+    setGuestProgress((currentProgress) => {
+      let competitiveMultiplayer = normalizeCompetitiveMultiplayerState(currentProgress.competitiveMultiplayer)
+      for (const match of nextLiveMultiplayer.matches) {
+        if (match.phase === 'finished' || match.phase === 'expired' || match.phase === 'aborted') {
+          competitiveMultiplayer = settleLiveMultiplayerResult(competitiveMultiplayer, match, authState).state
+        }
+      }
+      const nextProgress = { ...currentProgress, competitiveMultiplayer }
+      saveGuestProgress(nextProgress)
+      return nextProgress
+    })
+    void liveRepositoryRef.current.save(nextLiveMultiplayer).catch(() => {
+      if (authState.status === 'authenticated') {
+        void liveRepositoryRef.current.load().then((snapshot) => {
+          setLiveMultiplayer(snapshot.state)
+          saveLiveMultiplayerState(snapshot.state)
+        })
+        return
+      }
+      saveLiveMultiplayerState(nextLiveMultiplayer)
+    })
+  }, [authState])
+  const handleJoinLiveSpectatorMatch = useCallback((matchId: string) => {
+    if (authState.status !== 'authenticated' || !authState.user) {
+      setAuthMessage('Sign in to join spectator mode.')
+      setAuthModalOpen(true)
+      return
+    }
+    const profile = authState.user.profile
+      ? createMultiplayerProfileSummary(authState.user.profile, 'Player')
+      : undefined
+    void liveRepositoryRef.current.joinSpectator(matchId, {
+      profile,
+      userId: authState.user.id,
+    }).then((snapshot) => {
+      setLiveMultiplayer(snapshot.state)
+      saveLiveMultiplayerState(snapshot.state)
+    }).catch((error: unknown) => {
+      setAuthMessage(error instanceof Error ? error.message : 'Unable to join spectator mode.')
+    })
+  }, [authState])
   const handleResumeCapture = useCallback((capture: ResumeCapture) => {
     setGuestProgress((currentProgress) => {
       const slotKey = getResumeSlotKey(capture)
@@ -393,14 +668,16 @@ function AppInner() {
       return
     }
     if (slot.scope === 'practice') {
-      setPracticeMode(slot.mode)
+      handlePracticeModeChange(slot.mode)
       setActiveRouteId('practice')
+      savePersistedNavigation({ activeRouteId: 'practice' })
       return
     }
     // Daily resume now lands inside the Calendar with today's daily launched.
     setCalendarLaunch({ mode: slot.mode, dateKey: daily.dateKey })
     setActiveRouteId('calendar')
-  }, [daily.dateKey])
+    savePersistedNavigation({ activeRouteId: 'calendar' })
+  }, [daily.dateKey, handlePracticeModeChange])
   // Auto-resume the most recent unfinished game once per signed-in load (spec §2).
   // Called from async auth callbacks (not synchronously in an effect body).
   const maybeAutoResume = useCallback((nextAuthState: AuthState) => {
@@ -509,6 +786,27 @@ function AppInner() {
       }
     })
   }, [supabaseClient])
+  const handleClosePasswordReset = useCallback(() => {
+    setPasswordResetOpen(false)
+    setPasswordResetMessage(undefined)
+    clearPasswordResetUrlMarker()
+  }, [])
+  const handleUpdatePassword = useCallback((password: string) => {
+    if (!supabaseClient) {
+      return
+    }
+    setPasswordResetMessage(undefined)
+    setAuthBusy(true)
+    void updatePassword(supabaseClient, password).then((result) => {
+      setAuthBusy(false)
+      if (!result.ok) {
+        setPasswordResetMessage(result.message)
+        return
+      }
+      setPasswordResetMessage('Password updated. You can close this window and continue playing.')
+      clearPasswordResetUrlMarker()
+    })
+  }, [supabaseClient])
   const handleSignOut = useCallback(() => {
     if (!supabaseClient || authBusy) {
       return
@@ -527,6 +825,7 @@ function AppInner() {
 
       setAuthState({ status: 'anonymous' })
       setAuthModalOpen(false)
+      setPasswordResetOpen(false)
       setProfilePanelOpen(false)
     })
   }, [authBusy, supabaseClient])
@@ -604,11 +903,97 @@ function AppInner() {
     guestProgressRef.current = guestProgress
   }, [guestProgress])
 
+  useEffect(() => {
+    asyncRepositoryRef.current = asyncRepository
+    let isActive = true
+    const applySnapshot = (snapshotState: AsyncMultiplayerState) => {
+      if (!isActive) {
+        return
+      }
+      setAsyncMultiplayer(snapshotState)
+      saveAsyncMultiplayerState(snapshotState)
+      setGuestProgress((currentProgress) => {
+        const nextProgress = { ...currentProgress, asyncMultiplayer: snapshotState }
+        saveGuestProgress(nextProgress)
+        return nextProgress
+      })
+    }
+    const unsubscribe = asyncRepository.subscribe((snapshot) => {
+      applySnapshot(snapshot.state)
+    })
+    void asyncRepository.load().then((snapshot) => {
+      applySnapshot(snapshot.state)
+    })
+    return () => {
+      isActive = false
+      unsubscribe()
+    }
+  }, [asyncRepository])
+
+  useEffect(() => {
+    liveRepositoryRef.current = liveRepository
+    let isActive = true
+    const unsubscribe = liveRepository.subscribe((snapshot) => {
+      if (!isActive) {
+        return
+      }
+      setLiveMultiplayer(snapshot.state)
+      saveLiveMultiplayerState(snapshot.state)
+    })
+    void liveRepository.load().then((snapshot) => {
+      if (!isActive) {
+        return
+      }
+      setLiveMultiplayer(snapshot.state)
+      saveLiveMultiplayerState(snapshot.state)
+    })
+    return () => {
+      isActive = false
+      unsubscribe()
+    }
+  }, [liveRepository])
+
   useEffect(() => () => {
     if (dailyAlertTimeoutRef.current) {
       clearTimeout(dailyAlertTimeoutRef.current)
     }
+    if (dailyMultiplayerAlertTimeoutRef.current) {
+      clearTimeout(dailyMultiplayerAlertTimeoutRef.current)
+    }
   }, [])
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const expired = expireStaleDailyMultiplayerGames(asyncMultiplayer)
+      if (JSON.stringify(expired) === JSON.stringify(asyncMultiplayer)) {
+        return
+      }
+      setAsyncMultiplayer(expired)
+      void asyncRepositoryRef.current.save(expired).catch(() => {
+        saveAsyncMultiplayerState(expired)
+      })
+      setGuestProgress((currentProgress) => {
+        const nextProgress = { ...currentProgress, asyncMultiplayer: expired }
+        saveGuestProgress(nextProgress)
+        return nextProgress
+      })
+    }, 0)
+    return () => clearTimeout(timeoutId)
+  }, [asyncMultiplayer, dailyMultiplayer.dateKey])
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setLiveMultiplayer((currentState) => {
+        const expired = expireStaleDailyLiveMultiplayerMatches(currentState)
+        if (JSON.stringify(expired) === JSON.stringify(currentState)) {
+          return currentState
+        }
+        saveLiveMultiplayerState(expired)
+        return expired
+      })
+    }, 0)
+    return () => clearTimeout(timeoutId)
+  }, [dailyMultiplayer.dateKey])
 
   useEffect(() => {
     applyTheme(guestProgress.settings.themeDefault)
@@ -625,12 +1010,26 @@ function AppInner() {
     void getCurrentAuthState(supabaseClient).then((nextAuthState) => {
       if (isMounted) {
         setAuthState(nextAuthState)
+        if (isPasswordResetUrl() && nextAuthState.status === 'authenticated') {
+          setAuthModalOpen(false)
+          setProfilePanelOpen(false)
+          setPasswordResetOpen(true)
+          setPasswordResetMessage(undefined)
+          return
+        }
         maybeAutoResume(nextAuthState)
       }
     })
-    const subscription = subscribeToAuthChanges(supabaseClient, (nextAuthState) => {
+    const subscription = subscribeToAuthChanges(supabaseClient, (nextAuthState, event) => {
       if (isMounted) {
         setAuthState(nextAuthState)
+        if (event === 'PASSWORD_RECOVERY' || (isPasswordResetUrl() && nextAuthState.status === 'authenticated')) {
+          setAuthModalOpen(false)
+          setProfilePanelOpen(false)
+          setPasswordResetOpen(true)
+          setPasswordResetMessage(undefined)
+          return
+        }
         maybeAutoResume(nextAuthState)
       }
     })
@@ -646,15 +1045,31 @@ function AppInner() {
       <LunarSignalStage
         accountControls={<AccountBadge authState={authState} onOpenAuthModal={handleOpenAuthModal} onOpenProfile={handleOpenProfilePanel} />}
         activeRoute={activeRoute}
-        dailyCountdown={countdownEnabled ? (
-          <DailyCountdown
-            alerting={dailyAlerting}
-            clamped={daily.clamped}
-            countdownLabel={daily.countdownLabel}
-            onActivate={handleCountdownActivate}
-            timeZone={daily.timeZone}
-          />
-        ) : undefined}
+        dailyCountdown={(
+          <>
+            {countdownEnabled ? (
+              <DailyCountdown
+                alerting={dailyAlerting}
+                clamped={daily.clamped}
+                countdownLabel={daily.countdownLabel}
+                onActivate={handleCountdownActivate}
+                timeZone={daily.timeZone}
+              />
+            ) : null}
+            {dailyMultiplayerCountdownEnabled ? (
+              <DailyCountdown
+                alerting={dailyMultiplayerAlerting}
+                clamped={dailyMultiplayer.clamped}
+                countdownLabel={dailyMultiplayer.countdownLabel}
+                deadlineLabel={MULTIPLAYER_DAILY_VARIANT.deadlineLabel}
+                label={MULTIPLAYER_DAILY_VARIANT.countdownLabel}
+                onActivate={handleDailyMultiplayerCountdownActivate}
+                readyLabel={MULTIPLAYER_DAILY_VARIANT.readyLabel}
+                timeZone={dailyMultiplayer.timeZone}
+              />
+            ) : null}
+          </>
+        )}
         surfaceTheme={DEFAULT_SURFACE_THEME}
         metrics={[
           { label: 'daily', value: `${DAILY_WORD_LENGTH} letters` },
@@ -720,15 +1135,22 @@ function AppInner() {
           <RoutePanel
             authMessage={authMessage}
             authState={authState}
+            asyncMultiplayer={asyncMultiplayer}
             calendarLaunch={calendarLaunch}
             guestProgress={guestProgress}
+            liveMultiplayer={liveMultiplayer}
             onCalendarLaunchConsumed={handleClearCalendarLaunch}
+            onAsyncMultiplayerChange={handleAsyncMultiplayerChange}
+            onCompetitiveMultiplayerChange={handleCompetitiveMultiplayerChange}
             onGameComplete={handleGameComplete}
+            onJoinLiveSpectatorMatch={handleJoinLiveSpectatorMatch}
+            onLiveMultiplayerChange={handleLiveMultiplayerChange}
             onMarkPastDailyUnlocked={handleMarkPastDailyUnlocked}
             onOpenAuthModal={handleOpenAuthModal}
             onOpenProfilePanel={handleOpenProfilePanel}
-            onPracticeModeChange={setPracticeMode}
+            onPracticeModeChange={handlePracticeModeChange}
             onResetProgress={handleResetProgress}
+            onRequestPasswordReset={handleRequestPasswordReset}
             onResumeCapture={handleResumeCapture}
             onSelectRoute={handleNavigate}
             onSendMagicLink={handleSendMagicLink}
@@ -744,6 +1166,7 @@ function AppInner() {
             soundEnabled={sound.enabled}
             supabaseClient={supabaseClient}
             syncStatus={syncStatus}
+            multiplayerDailyDateKey={dailyMultiplayer.dateKey}
             todayDateKey={daily.dateKey}
           />
       </LunarSignalStage>
@@ -760,6 +1183,14 @@ function AppInner() {
         onSendMagicLink={handleSendMagicLink}
         onSignInWithPassword={handleSignInWithPassword}
         onSignUpWithPassword={handleSignUpWithPassword}
+      />
+
+      <PasswordResetModal
+        busy={authBusy}
+        isOpen={passwordResetOpen}
+        onClose={handleClosePasswordReset}
+        onUpdatePassword={handleUpdatePassword}
+        statusMessage={passwordResetMessage}
       />
 
       <ProfilePanel

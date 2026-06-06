@@ -23,6 +23,7 @@ export interface PuzzleSessionState {
   readonly status: GameStatus
   readonly lastValidation?: ValidationFailure
   readonly continuationCount: number
+  readonly revealedAnswer?: boolean
 }
 
 function gameOverFailure(status: GameStatus): ValidationFailure {
@@ -141,6 +142,7 @@ export function continueAfterLoss(
     maxAttempts: state.maxAttempts + extraAttempts,
     lastValidation: undefined,
     continuationCount: state.continuationCount + 1,
+    revealedAnswer: undefined,
   }
 }
 

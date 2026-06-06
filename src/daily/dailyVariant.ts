@@ -3,26 +3,31 @@
  *
  * Source of truth: PHASE-22-CALENDAR-MIDNIGHT-AND-BUGFIXES-SPEC-2026-06-02 / §27
  * goal 7: "Design the daily reset / rollover logic modularly so it can later
- * support a special multiplayer daily variant with separate statistics —
- * without implementing multiplayer in this phase."
+ * support a special multiplayer daily variant with separate statistics.
  *
  * This module introduces a single seam — the `DailyVariant` — that the rollover
- * service, countdown, and anti-gaming guard are parameterised by. Today only
- * the `'solo'` variant exists and is the default everywhere. A future phase can
- * add a `'multiplayer'` variant (with its own storage namespace and separate
- * statistics) by extending the registry below, with **no** change to the
- * rollover/countdown/anti-gaming logic itself.
- *
- * NOTE: No multiplayer behaviour is implemented here. This is architecture only.
+ * service, countdown, and anti-gaming guard are parameterised by. Phase 23 adds
+ * the `'multiplayer'` variant with its own UTC reset, storage namespace, and UI
+ * labels while keeping solo daily rollover unchanged.
  */
 
-export type DailyVariant = 'solo'
+export type DailyVariant = 'solo' | 'multiplayer'
 
 export interface DailyVariantDescriptor {
   /** Stable identifier used in storage keys and analytics. */
   readonly id: DailyVariant
   /** Human-readable label for UI surfaces. */
   readonly label: string
+  /** Reset clock used to derive the raw daily key and countdown deadline. */
+  readonly resetClock: 'local' | 'utc'
+  /** Countdown headline while the variant is waiting for its next reset. */
+  readonly countdownLabel: string
+  /** Countdown headline while the variant has just reset. */
+  readonly readyLabel: string
+  /** Human-readable deadline label rendered in the countdown and Settings copy. */
+  readonly deadlineLabel: string
+  /** Timezone label rendered beside the countdown value. */
+  readonly timeZoneLabel: string
   /**
    * Storage-key prefix that namespaces this variant's persisted state (resume
    * slots, anti-gaming anchor, etc.). Keeping the prefix per-variant is what
@@ -33,12 +38,29 @@ export interface DailyVariantDescriptor {
 }
 
 export const SOLO_DAILY_VARIANT: DailyVariantDescriptor = {
+  countdownLabel: 'Next daily',
+  deadlineLabel: 'Local midnight',
   id: 'solo',
   label: 'Daily',
+  readyLabel: 'New daily ready',
+  resetClock: 'local',
   storagePrefix: 'brrrdle:daily',
+  timeZoneLabel: 'local',
+}
+
+export const MULTIPLAYER_DAILY_VARIANT: DailyVariantDescriptor = {
+  countdownLabel: 'Daily multiplayer',
+  deadlineLabel: 'UTC midnight',
+  id: 'multiplayer',
+  label: 'Daily Multiplayer',
+  readyLabel: 'Daily multiplayer ready',
+  resetClock: 'utc',
+  storagePrefix: 'brrrdle:daily-multiplayer',
+  timeZoneLabel: 'UTC',
 }
 
 export const DAILY_VARIANTS: Readonly<Record<DailyVariant, DailyVariantDescriptor>> = {
+  multiplayer: MULTIPLAYER_DAILY_VARIANT,
   solo: SOLO_DAILY_VARIANT,
 }
 

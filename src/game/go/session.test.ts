@@ -63,6 +63,7 @@ describe('go session model', () => {
     expect(continued.puzzles[0].status).toBe('playing')
     expect(continued.puzzles[0].maxAttempts).toBe(7)
     expect(continued.puzzles[0].continuationCount).toBe(1)
+    expect(continued.revealedAnswer).toBeUndefined()
   })
 
   it('creates practice go sessions with one selected length for all puzzles', () => {
@@ -84,6 +85,16 @@ describe('go session model', () => {
     expect(restored.currentPuzzleIndex).toBe(1)
     expect(restored.hardMode).toBe(true)
     expect(restored.priorAnswers).toEqual([setup.puzzles[0].answer])
+  })
+
+  it('serializes and restores the explicit answer-revealed loss state', () => {
+    const setup = createPracticeGoSetup(5, 0)
+    const revealed = revealGoPuzzle(createGoSession(setup))
+    const restored = restoreGoSession(serializeGoSession(revealed), setup.validGuesses)
+
+    expect(restored.status).toBe('lost')
+    expect(restored.revealedAnswer).toBe(true)
+    expect(restored.puzzles[restored.currentPuzzleIndex].status).toBe('lost')
   })
 
   it('reveals the current puzzle as a loss-equivalent and flags the session', () => {

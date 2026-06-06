@@ -7,7 +7,10 @@ export {
   getDailyDateKey,
   getDeviceTimeZone,
   getMillisUntilNextLocalMidnight,
+  getMillisUntilNextUtcMidnight,
   getNextLocalMidnight,
+  getNextUtcMidnight,
+  getUtcDailyDateKey,
 } from './dailyClock'
 export {
   DEFAULT_ANTI_GAMING_CONFIG,
@@ -25,6 +28,7 @@ export {
 export {
   DAILY_VARIANTS,
   DEFAULT_DAILY_VARIANT,
+  MULTIPLAYER_DAILY_VARIANT,
   SOLO_DAILY_VARIANT,
   getDailyVariantDescriptor,
   type DailyVariant,

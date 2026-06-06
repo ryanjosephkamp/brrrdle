@@ -49,12 +49,14 @@ describe('puzzle session', () => {
   it('can continue a lost puzzle with extra attempts', () => {
     const lostState = {
       ...createPuzzleSession({ answer: 'crane', maxAttempts: 1 }),
+      revealedAnswer: true,
       status: 'lost' as const,
     }
     const continued = continueAfterLoss(lostState, 2)
     expect(continued.status).toBe('playing')
     expect(continued.maxAttempts).toBe(3)
     expect(continued.continuationCount).toBe(1)
+    expect(continued.revealedAnswer).toBeUndefined()
   })
 
   it('enforces hard mode during submission', () => {

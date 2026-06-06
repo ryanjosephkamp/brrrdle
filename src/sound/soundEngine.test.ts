@@ -103,6 +103,14 @@ describe('createSoundEngine', () => {
     expect(mock.events).toContain('oscillator.start')
   })
 
+  it('plays a separate unique multi-tone Daily Multiplayer reset chime', () => {
+    const mock = createMockContext()
+    const engine = createSoundEngine({ enabled: true, audioContextFactory: () => mock.context })
+    engine.play('daily-multiplayer-reset')
+    expect(mock.oscillators.length).toBe(4)
+    expect(mock.events).toContain('oscillator.start')
+  })
+
   it('stops creating new audio activity after setEnabled(false)', () => {
     const mock = createMockContext()
     const engine = createSoundEngine({ enabled: true, audioContextFactory: () => mock.context })
@@ -157,6 +165,8 @@ describe('sound categories', () => {
     'game-over-loss',
     'keyboard-click',
     'invalid-guess',
+    'daily-reset',
+    'daily-multiplayer-reset',
   ]
 
   it('assigns every sound event to exactly one category', () => {

@@ -45,6 +45,7 @@ export interface SerializedGoSession {
   readonly currentPuzzleIndex: number
   readonly hardMode: boolean
   readonly priorAnswers: readonly string[]
+  readonly revealedAnswer?: boolean
   readonly puzzles: readonly {
     readonly answer: string
     readonly continuationCount: number
@@ -225,6 +226,7 @@ export function continueGoAfterLoss(state: GoSessionState, extraAttempts = 1): G
   return {
     ...state,
     puzzles,
+    revealedAnswer: undefined,
     status: 'playing',
   }
 }
@@ -235,7 +237,7 @@ export function continueGoAfterLoss(state: GoSessionState, extraAttempts = 1): G
  * so Pay-to-Continue is not offered. No-op when the chain is already over.
  */
 export function revealGoPuzzle(state: GoSessionState): GoSessionState {
-  if (state.status !== 'playing') {
+  if (state.status !== 'playing' && state.status !== 'lost') {
     return state
   }
 
@@ -260,6 +262,7 @@ export function serializeGoSession(state: GoSessionState): SerializedGoSession {
     currentPuzzleIndex: state.currentPuzzleIndex,
     hardMode: state.hardMode,
     priorAnswers: state.priorAnswers,
+    revealedAnswer: state.revealedAnswer,
     puzzles: state.puzzles.map((puzzle, index) => ({
       answer: puzzle.answer,
       continuationCount: puzzle.continuationCount,
@@ -272,10 +275,13 @@ export function serializeGoSession(state: GoSessionState): SerializedGoSession {
 }
 
 export function restoreGoSession(serialized: SerializedGoSession, validGuesses: ReadonlySet<string>): GoSessionState {
-  const puzzles = serialized.puzzles.map((puzzle) => {
+  const activePuzzleIndex = Math.min(serialized.currentPuzzleIndex, serialized.puzzles.length - 1)
+  const puzzles = serialized.puzzles.map((puzzle, index) => {
     const guesses = puzzle.guesses.map((guess) => getGuessResult(guess, puzzle.answer))
     const solved = guesses.some((guess) => guess.tiles.every((tile) => tile.state === 'correct'))
-    const status = solved ? 'won' : guesses.length >= puzzle.maxAttempts ? 'lost' : 'playing'
+    const status = serialized.revealedAnswer && index === activePuzzleIndex
+      ? 'lost'
+      : solved ? 'won' : guesses.length >= puzzle.maxAttempts ? 'lost' : 'playing'
 
     return {
       answer: puzzle.answer,
@@ -290,13 +296,14 @@ export function restoreGoSession(serialized: SerializedGoSession, validGuesses: 
       wordLength: puzzle.answer.length,
     } satisfies PuzzleSessionState
   })
-  const currentPuzzleIndex = Math.min(serialized.currentPuzzleIndex, puzzles.length - 1)
+  const currentPuzzleIndex = activePuzzleIndex
 
   return {
     currentPuzzleIndex,
     hardMode: serialized.hardMode,
     priorAnswers: serialized.priorAnswers,
     puzzles,
+    revealedAnswer: serialized.revealedAnswer,
     status: getStatus(puzzles, currentPuzzleIndex),
     validGuesses,
     wordLength: puzzles[currentPuzzleIndex].wordLength,

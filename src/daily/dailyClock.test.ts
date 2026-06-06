@@ -5,7 +5,10 @@ import {
   getDailyDateKey,
   getDeviceTimeZone,
   getMillisUntilNextLocalMidnight,
+  getMillisUntilNextUtcMidnight,
   getNextLocalMidnight,
+  getNextUtcMidnight,
+  getUtcDailyDateKey,
 } from './dailyClock'
 
 describe('dailyClock', () => {
@@ -32,6 +35,13 @@ describe('dailyClock', () => {
     const ms = getMillisUntilNextLocalMidnight(justAfterMidnight)
     expect(ms).toBeGreaterThan(0)
     expect(ms).toBeLessThanOrEqual(MS_PER_DAY)
+  })
+
+  it('derives UTC daily keys and reset timing for multiplayer dailies', () => {
+    const lateUtc = new Date('2026-05-26T23:30:00.000Z')
+    expect(getUtcDailyDateKey(lateUtc)).toBe('2026-05-26')
+    expect(getNextUtcMidnight(lateUtc).toISOString()).toBe('2026-05-27T00:00:00.000Z')
+    expect(getMillisUntilNextUtcMidnight(lateUtc)).toBe(30 * 60 * 1000)
   })
 
   it('formats durations as zero-padded HH:MM:SS', () => {

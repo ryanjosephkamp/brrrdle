@@ -49,4 +49,22 @@ describe('DailyCountdown', () => {
     )
     expect(html).toContain('data-clamped="true"')
   })
+
+  it('renders custom daily multiplayer labels and the UTC deadline context', () => {
+    const html = renderToStaticMarkup(
+      <DailyCountdown
+        alerting={false}
+        clamped={false}
+        countdownLabel="00:30:00"
+        deadlineLabel="UTC midnight"
+        label="Daily multiplayer"
+        onActivate={noop}
+        readyLabel="Daily multiplayer ready"
+        timeZone="UTC"
+      />,
+    )
+    expect(html).toContain('Daily multiplayer')
+    expect(html).toContain('UTC midnight')
+    expect(html).toMatch(/aria-label="Daily multiplayer in 00:30:00 \(UTC; UTC midnight\)/)
+  })
 })

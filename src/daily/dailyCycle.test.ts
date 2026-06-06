@@ -63,6 +63,22 @@ describe('resolveDaily', () => {
     expect(resolved.grantedDateKey).toBe(getDailyDateKey(start))
     expect(resolved.rawDateKey).toBe(getDailyDateKey(jumped))
   })
+
+  it('uses UTC day keys and UTC reset timing for the multiplayer variant', () => {
+    const storage = createMemoryStorage()
+    const date = new Date('2026-05-26T23:30:00.000Z')
+    const resolved = resolveDaily({
+      storage,
+      sessionId: 's1',
+      now: nowAt(date, 1_000),
+      variant: 'multiplayer',
+    })
+
+    expect(resolved.grantedDateKey).toBe('2026-05-26')
+    expect(resolved.rawDateKey).toBe('2026-05-26')
+    expect(resolved.msUntilReset).toBe(30 * 60 * 1000)
+    expect(resolved.nextResetAt).toBe(Date.parse('2026-05-27T00:00:00.000Z'))
+  })
 })
 
 describe('getActiveDailyDate / dateKeyToLocalDate', () => {
