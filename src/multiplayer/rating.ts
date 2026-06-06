@@ -1,7 +1,6 @@
 import type { GameMode } from '../game/types'
 
-export type MultiplayerTransport = 'async' | 'live'
-export type RatingBucketId = `${MultiplayerTransport}:${GameMode}`
+export type RatingBucketId = `multiplayer:${GameMode}`
 export type RatingOutcome = 'win' | 'loss' | 'draw'
 
 export const INITIAL_MULTIPLAYER_RATING = 1200
@@ -69,12 +68,18 @@ export interface ApplyRatedMatchResult {
   readonly transactions: readonly MultiplayerRatingTransaction[]
 }
 
-export function getRatingBucket(transport: MultiplayerTransport, mode: GameMode): RatingBucketId {
-  return `${transport}:${mode}`
+export function getRatingBucket(mode: GameMode): RatingBucketId {
+  return `multiplayer:${mode}`
 }
 
-export function normalizeRatingBucket(value: unknown, fallback: RatingBucketId = 'live:og'): RatingBucketId {
-  return value === 'async:og' || value === 'async:go' || value === 'live:og' || value === 'live:go' ? value : fallback
+export function normalizeRatingBucket(value: unknown, fallback: RatingBucketId = 'multiplayer:og'): RatingBucketId {
+  if (value === 'multiplayer:og' || value === 'async:og' || value === 'live:og') {
+    return 'multiplayer:og'
+  }
+  if (value === 'multiplayer:go' || value === 'async:go' || value === 'live:go') {
+    return 'multiplayer:go'
+  }
+  return fallback
 }
 
 export function createEmptyRatingState(): MultiplayerRatingState {

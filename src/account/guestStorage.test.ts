@@ -51,7 +51,7 @@ describe('guest storage', () => {
     expect(migrated.settings.goPuzzleCountDefault).toBe(5)
     expect(migrated.settings.themeDefault).toBe('icy')
     expect(migrated.settings.dailyMultiplayerCountdownEnabled).toBe(true)
-    expect(migrated.asyncMultiplayer?.games).toHaveLength(0)
+    expect(migrated.multiplayer?.games).toHaveLength(0)
     expect(migrated.competitiveMultiplayer?.rating.profiles).toHaveLength(0)
   })
 

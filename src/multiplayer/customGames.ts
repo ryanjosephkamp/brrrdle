@@ -1,5 +1,4 @@
 import type { GameMode, PlayScope } from '../game/types'
-import type { MultiplayerTransport } from './rating'
 
 export type CustomGameLobbyStatus = 'waiting' | 'matched' | 'expired' | 'cancelled'
 
@@ -13,7 +12,6 @@ export interface CustomGameLobby {
   readonly ranked: boolean
   readonly scope: PlayScope
   readonly status: CustomGameLobbyStatus
-  readonly transport: MultiplayerTransport
   readonly wordLength?: number
 }
 
@@ -26,7 +24,6 @@ export interface CreateCustomGameLobbyInput {
   readonly mode: GameMode
   readonly ranked?: boolean
   readonly scope: PlayScope
-  readonly transport: MultiplayerTransport
   readonly wordLength?: number
 }
 
@@ -49,12 +46,11 @@ export function createCustomGameLobby(input: CreateCustomGameLobbyInput): Custom
     createdAt,
     createdByUserId: input.createdByUserId,
     expiresAt,
-    id: input.id ?? createId(`custom-${input.transport}-${input.mode}`),
+    id: input.id ?? createId(`custom-multiplayer-${input.mode}`),
     mode: input.mode,
     ranked: input.ranked === true,
     scope: input.scope,
     status: 'waiting',
-    transport: input.transport,
     wordLength: input.wordLength,
   }
 }
@@ -69,7 +65,6 @@ export function normalizeCustomGameLobby(value: unknown): CustomGameLobby | unde
     || typeof record.code !== 'string'
     || (record.mode !== 'og' && record.mode !== 'go')
     || (record.scope !== 'practice' && record.scope !== 'daily')
-    || (record.transport !== 'async' && record.transport !== 'live')
   ) {
     return undefined
   }
@@ -83,7 +78,6 @@ export function normalizeCustomGameLobby(value: unknown): CustomGameLobby | unde
     ranked: record.ranked === true,
     scope: record.scope,
     status: record.status === 'matched' || record.status === 'expired' || record.status === 'cancelled' ? record.status : 'waiting',
-    transport: record.transport,
     wordLength: typeof record.wordLength === 'number' ? Math.trunc(record.wordLength) : undefined,
   }
 }

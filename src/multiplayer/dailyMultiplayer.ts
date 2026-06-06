@@ -3,7 +3,6 @@ import { DEFAULT_DIFFICULTY_TIER, type DifficultyTier } from '../data/difficulty
 import { DAILY_WORD_LENGTH, DEFAULT_GO_PUZZLE_COUNT, type GoPuzzleCount } from '../game/constants'
 import type { GoSessionSetup } from '../game/go/session'
 import type { OgPuzzleSetup } from '../game/og/session'
-import type { MultiplayerTransport } from './rating'
 
 export interface MultiplayerProfileSummary {
   readonly accentColor?: string
@@ -109,7 +108,7 @@ export function normalizeMultiplayerProfileMap<PlayerId extends string>(
   return entries.length > 0 ? Object.fromEntries(entries) as Partial<Record<PlayerId, MultiplayerProfileSummary>> : undefined
 }
 
-function transportAnswerIndex(dateKey: string, answerCount: number, transport: MultiplayerTransport, family: 'go' | 'og'): number {
+function multiplayerAnswerIndex(dateKey: string, answerCount: number, family: 'go' | 'og'): number {
   if (answerCount < 1) {
     throw new Error('At least one answer candidate is required for daily multiplayer.')
   }
@@ -120,15 +119,8 @@ function transportAnswerIndex(dateKey: string, answerCount: number, transport: M
   const baseIndex = family === 'go'
     ? getDailyGoSeedIndex(dateKey, answerCount)
     : getDailyAnswerIndex(dateKey, answerCount)
-  const offset = 1 + (hashString(`${dateKey}:${family}:${transport}`) % (answerCount - 1))
-  let candidate = (baseIndex + offset) % answerCount
-  if (transport === 'live') {
-    const asyncIndex = transportAnswerIndex(dateKey, answerCount, 'async', family)
-    if (candidate === asyncIndex) {
-      candidate = (candidate + 1) % answerCount
-    }
-  }
-  return candidate
+  const offset = 1 + (hashString(`${dateKey}:${family}:multiplayer`) % (answerCount - 1))
+  return (baseIndex + offset) % answerCount
 }
 
 function answerSequence(answers: readonly { readonly word: string }[], seedIndex: number, puzzleCount: GoPuzzleCount): readonly string[] {
@@ -141,14 +133,13 @@ function answerSequence(answers: readonly { readonly word: string }[], seedIndex
 export function createDailyMultiplayerOgSetup(
   date = new Date(),
   difficulty: DifficultyTier = DEFAULT_DIFFICULTY_TIER,
-  transport: MultiplayerTransport = 'async',
 ): OgPuzzleSetup {
   const repository = getWordRepository({ difficulty, length: DAILY_WORD_LENGTH, mode: 'og', scope: 'daily' })
   if (!repository.ok) {
     throw new Error(repository.message)
   }
   const dateKey = getDailyDateKey(date)
-  const index = transportAnswerIndex(dateKey, repository.answers.length, transport, 'og')
+  const index = multiplayerAnswerIndex(dateKey, repository.answers.length, 'og')
   return {
     answer: repository.answers[index]!.word,
     dateKey,
@@ -161,14 +152,13 @@ export function createDailyMultiplayerGoSetup(
   date = new Date(),
   difficulty: DifficultyTier = DEFAULT_DIFFICULTY_TIER,
   puzzleCount: GoPuzzleCount = DEFAULT_GO_PUZZLE_COUNT,
-  transport: MultiplayerTransport = 'async',
 ): GoSessionSetup {
   const repository = getWordRepository({ difficulty, length: DAILY_WORD_LENGTH, mode: 'go', scope: 'daily' })
   if (!repository.ok) {
     throw new Error(repository.message)
   }
   const dateKey = getDailyDateKey(date)
-  const seedIndex = transportAnswerIndex(dateKey, repository.answers.length, transport, 'go')
+  const seedIndex = multiplayerAnswerIndex(dateKey, repository.answers.length, 'go')
   const answers = answerSequence(repository.answers, seedIndex, puzzleCount)
   const priorAnswers: string[] = []
   const puzzles = answers.map((answer) => {
