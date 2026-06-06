@@ -1,8 +1,9 @@
 import { useEffect, useId, useState } from 'react'
 import { Button, Dialog } from '../ui'
+import { AUTH_MODAL_PASSWORD_ACTION_LABELS } from './authModalConstants'
 
 type AuthMethod = 'magic-link' | 'password'
-type PasswordMode = 'sign-in' | 'sign-up'
+type PasswordAction = 'sign-in' | 'sign-up'
 type Phase = 'auth' | 'forgot-password'
 
 interface AuthModalProps {
@@ -25,7 +26,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u
  *
  * Replaces the duplicate-buttons pattern of the inline AuthPanel with:
  *   - one Magic Link / Email + Password tab pair
- *   - a single primary CTA whose label and action follow the active sub-mode
+ *   - direct password actions ordered as Sign in, Create account, Forgot password
  *   - a Forgot Password inline flow with three states: form, busy, success
  *
  * Errors are shown via the parent-provided `authMessage` which is computed in
@@ -44,7 +45,6 @@ export function AuthModal({
   authenticated,
 }: AuthModalProps) {
   const [method, setMethod] = useState<AuthMethod>('magic-link')
-  const [passwordMode, setPasswordMode] = useState<PasswordMode>('sign-in')
   const [phase, setPhase] = useState<Phase>('auth')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -83,30 +83,35 @@ export function AuthModal({
     setResetSent(false)
   }
 
-  function handlePrimary() {
+  function handleMagicLink() {
     clearStatus()
     if (!isEmailValid) {
       setValidationError('Please enter a valid email address.')
       return
     }
-    if (method === 'magic-link') {
-      onSendMagicLink(trimmedEmail)
-      setMagicLinkSent(true)
-      return
-    }
-    if (passwordMode === 'sign-up' && password.length < 8) {
-      setValidationError('Password must be at least 8 characters.')
+    onSendMagicLink(trimmedEmail)
+    setMagicLinkSent(true)
+  }
+
+  function handlePasswordAction(action: PasswordAction) {
+    clearStatus()
+    if (!isEmailValid) {
+      setValidationError('Please enter a valid email address.')
       return
     }
     if (!password) {
       setValidationError('Please enter your password.')
       return
     }
-    if (passwordMode === 'sign-in') {
-      onSignInWithPassword(trimmedEmail, password)
-    } else {
-      onSignUpWithPassword(trimmedEmail, password)
+    if (action === 'sign-up' && password.length < 8) {
+      setValidationError('Password must be at least 8 characters.')
+      return
     }
+    if (action === 'sign-in') {
+      onSignInWithPassword(trimmedEmail, password)
+      return
+    }
+    onSignUpWithPassword(trimmedEmail, password)
   }
 
   function handleSendReset() {
@@ -118,12 +123,6 @@ export function AuthModal({
     onRequestPasswordReset(trimmedEmail)
     setResetSent(true)
   }
-
-  const primaryLabel = method === 'magic-link'
-    ? 'Send magic link'
-    : passwordMode === 'sign-in'
-      ? 'Sign in'
-      : 'Create account'
 
   const statusMessage = validationError
     ?? authMessage
@@ -195,35 +194,12 @@ export function AuthModal({
 
           {method === 'password' ? (
             <>
-              <div role="radiogroup" aria-label="Password sub-mode" className="flex flex-wrap gap-2">
-                <Button
-                  aria-checked={passwordMode === 'sign-in'}
-                  isActive={passwordMode === 'sign-in'}
-                  onClick={() => { setPasswordMode('sign-in'); clearStatus() }}
-                  role="radio"
-                  size="sm"
-                  variant="secondary"
-                >
-                  Sign in
-                </Button>
-                <Button
-                  aria-checked={passwordMode === 'sign-up'}
-                  isActive={passwordMode === 'sign-up'}
-                  onClick={() => { setPasswordMode('sign-up'); clearStatus() }}
-                  role="radio"
-                  size="sm"
-                  variant="secondary"
-                >
-                  Create account
-                </Button>
-              </div>
-
               <label className="grid gap-1 font-semibold text-cyan-100">
                 Password
                 <div className="flex gap-2">
                   <input
                     aria-label="Password"
-                    autoComplete={passwordMode === 'sign-up' ? 'new-password' : 'current-password'}
+                    autoComplete="current-password"
                     className="flex-1 rounded-xl border border-slate-600 bg-slate-950 px-3 py-2 text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
                     onChange={(event) => { setPassword(event.target.value); clearStatus() }}
                     type={showPassword ? 'text' : 'password'}
@@ -248,16 +224,24 @@ export function AuthModal({
             <p className="text-xs text-slate-400">We will email you a one-time sign-in link.</p>
           )}
 
-          {/* Single primary CTA. Its label and action follow the active sub-mode. */}
           <div className="flex flex-wrap items-center gap-2">
-            <Button onClick={handlePrimary} variant="primary" disabled={busy}>
-              {primaryLabel}
-            </Button>
-            {method === 'password' && passwordMode === 'sign-in' ? (
-              <Button onClick={() => { setPhase('forgot-password'); clearStatus() }} variant="ghost" size="sm">
-                Forgot password?
+            {method === 'magic-link' ? (
+              <Button onClick={handleMagicLink} variant="primary" disabled={busy}>
+                Send magic link
               </Button>
-            ) : null}
+            ) : (
+              <>
+                <Button onClick={() => handlePasswordAction('sign-in')} variant="primary" disabled={busy}>
+                  {AUTH_MODAL_PASSWORD_ACTION_LABELS[0]}
+                </Button>
+                <Button onClick={() => handlePasswordAction('sign-up')} variant="secondary" disabled={busy}>
+                  {AUTH_MODAL_PASSWORD_ACTION_LABELS[1]}
+                </Button>
+                <Button onClick={() => { setPhase('forgot-password'); clearStatus() }} variant="ghost" size="sm" disabled={busy}>
+                  {AUTH_MODAL_PASSWORD_ACTION_LABELS[2]}
+                </Button>
+              </>
+            )}
           </div>
 
           {statusMessage ? (

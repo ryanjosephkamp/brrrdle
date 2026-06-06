@@ -34,12 +34,21 @@ export function Dialog({ children, description, isOpen, onClose, title }: Dialog
   }
 
   const dialog = (
-    <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/80 p-4 backdrop-blur-sm" role="presentation">
+    <div
+      className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/80 p-4 backdrop-blur-sm"
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose()
+        }
+      }}
+      role="presentation"
+    >
       <section
         aria-describedby={description ? descriptionId : undefined}
         aria-labelledby={titleId}
         aria-modal="true"
         className="w-full max-w-lg rounded-3xl border border-[var(--color-ice-300)]/30 bg-slate-950 p-6 text-slate-100 shadow-2xl shadow-cyan-950/40"
+        onPointerDown={(event) => event.stopPropagation()}
         role="dialog"
       >
         <div className="flex items-start justify-between gap-4">

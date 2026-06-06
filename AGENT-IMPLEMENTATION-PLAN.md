@@ -1,10 +1,48 @@
 # AGENT-IMPLEMENTATION-PLAN.md
 
-**Project**: brrrdle  
-**Plan Version**: 3.0
-**Date**: 2026-06-03
+**Project**: brrrdle
+**Plan Version**: 3.19
+**Date**: 2026-06-05
 **Status**: Draft for user review — amended with Hugging Face word-list source integration; further amended on 2026-05-27 with the `ADDITIONS-2026-05-27.md` addendum (see §18); further amended on 2026-05-27 with the `DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27.md` addendum (see §19); further amended on 2026-05-27 with the `AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27.md` addendum (see §20); further amended on 2026-05-28 with the Mobile & Tablet Responsiveness phase (see §21); further amended on 2026-05-28 with the Local Word Lists addendum (`LOCAL-WORD-LISTS-SPEC-2026-05-28.md`) as Phase 17 (see §22); further amended on 2026-05-28 with the Word List Difficulty Tiers + Word Explorer / Go / Settings improvements addendum (`PHASE-18-WORD-DIFFICULTY-AND-GO-IMPROVEMENTS-SPEC-2026-05-28.md`) as Phase 18 (see §23), whose §23.2 (Phase 18.0) performs an approved model-agnostic governance/repo cleanup and a root `README.md` upgrade in the planning stage; further amended on 2026-05-30 (v1.9) to integrate the user's definitive answers to the five §23.11 open questions (now recorded as resolved decisions) and to record the Phase 18.0 `README.md` upgrade; further amended on 2026-05-30 (v2.0) to record that Phase 18 **Prompt 2** has applied the approved constitution phase-range amendment (`CONSTITUTION.md` §1/§4/§5/§5.2/§17, v3.1 → v3.2) and the associated repo/doc adjustments, ahead of Prompt 3 (full Phase 18 feature execution); further amended on 2026-05-30 (v2.1) to append the Phase 19 addendum (`PHASE-19-ENHANCED-STATS-RESUME-CONFIGURABLE-GO-AND-POLISH-SPEC-2026-05-30.md`) as §24 (Phase 19 — Enhanced Statistics Visualizations, Configurable Go Puzzle Count, Full Resume-Most-Recent-Game Activation, Advanced Polish & Theming Foundations), whose §24.2 (Phase 19.0) performs the approved planning-stage governance/repo cleanup and a root `README.md` polish while deferring all game code changes (sub-phases 19.1–19.6) to explicit user approval ("Start Prompt 2" or equivalent); further amended on 2026-05-30 (v2.2) to record that Phase 19 **Prompt 2** has confirmed the planning-stage progress-step numbering decision (`phase_id = 46` / `progress/PROGRESS-STEP-46.md`, approved by the user) and applied the associated small clarity/governance adjustments (no game code), ahead of Prompt 3 (full Phase 19 feature execution, sub-phases 19.1–19.6); further amended on 2026-05-31 (v2.3) to upgrade `CONSTITUTION.md` to v3.3 for multi-agent workflow governance and append the Phase 20 addendum (`PHASE-20-DRAMATIC-UI-LAYOUT-EXPLORATION-SPEC-2026-05-30.md`) as §25, with governance-only tracking at `phase_id = 54`; further amended on 2026-06-01 (v2.4) to record Phase 20 completion (Variant 03 "Lunar Signal Deck" finalized) and append the Phase 21 addendum (`PHASE-21-UI-POLISH-AND-THEMING-FOUNDATION-SPEC-2026-06-01.md`) as §26 (Phase 21 — UI Polish & Theming Foundation), whose Prompt 1 is a planning + governance-only step (no UI polish, layout, or theming-foundation code) tracked at `phase_id = 59`, ahead of Prompt 2 (full Phase 21 execution); further amended on 2026-06-01 (v2.5) to record Phase 21 **Prompt 2**, a governance-only refined-instruction update incorporating the user's clarifications (keep the Lunar Signal Deck layout/tab structure mostly the same, adopt a very minimalist default background of plain black or a simple grid pattern, and capture the current Lunar Signal Deck visual style as one individual theme to be enabled in Phase 22) into the spec, §26, changelog, and progress at `phase_id = 60` — with no code, UI, layout, or theming-foundation changes — ahead of Prompt 3 (full Phase 21 execution); further amended on 2026-06-02 (v2.6) to record Phase 21 **Prompt 3** (full execution, `phase_id = 61`): added the `src/theme/surface.ts` surface-theme foundation (`minimal` default + `lunar-signal`), adopted a minimalist near-black default backdrop with a faint static grid, captured the original Lunar Signal Deck treatment as the single opt-in `lunar-signal` surface (gated by a `data-surface` attribute, to be enabled in Phase 22), and removed dead Phase-20 exploration CSS (`prism` and `command-shell` shells) plus the unused `Layout` component — with the Lunar Signal Deck layout/tab structure and every gameplay/accent-theme/stats/auth/resume/economy/sharing behavior preserved, and the Phase 22 theming system itself not implemented; further amended on 2026-06-02 (v2.7) to incorporate the **Phase 21 Addendum – Theme Proposal Templates** spec (`PHASE-21-THEME-PROPOSAL-TEMPLATES-SPEC-2026-06-02.md`) as a governance/planning-only step appended at §26.8, recording the new `themes/proposals/template_proposals/` + `full_proposals/` + `theme_proposals.csv` structure that Phase 21 must produce before closing, tracked at `phase_id = 62` — with no theme code, no proposal Markdown files, no CSV population, and no folder creation in this step (the requested "§26.1" addendum is recorded as §26.8 because the §26.1–§26.7 slots were already occupied, and the version advances to v2.7 because v2.6 was already consumed by the Phase 21 Prompt 3 full-execution amendment above); further amended on 2026-06-02 (v2.8) to incorporate the **Phase 22 – Advanced Calendar / Midnight Handling + Timezone-Aware Daily Reset (+ Targeted Bug Fixes)** spec (`PHASE-22-CALENDAR-MIDNIGHT-AND-BUGFIXES-SPEC-2026-06-02.md`) as §27, a planning + governance-only step (Prompt 1) that records the phase goals, scope, deliverables, verification requirements, and two-prompt workflow and makes Phase 22 the active next phase — with **no** daily-rollover, timezone, countdown, reset-alert, sound, dev-tool, or other source code implemented in this step (tracked at `phase_id = 64`), ahead of Prompt 2 (full Phase 22 execution); further amended on 2026-06-03 (v2.9) to record that Phase 22 **Prompt 2** (full execution) is complete (`phase_id = 65`) — timezone-aware local-midnight daily reset, balanced anti-gaming, cross-page countdown indicator, reset alert + brand-new unique sound, global Settings toggle, dev-mode Simulate Time tool, and the modular `src/daily/` service — and to incorporate the **Phase 22 Addendum – Calendar (Central Daily Hub) & Countdown Positioning** spec (`PHASE-22-ADDENDUM-CALENDAR-AND-COUNTDOWN-POSITIONING-2026-06-03.md`) as §27.10, a planning + governance-only step that records the Calendar-as-central-daily-hub feature (first tab, "Play Today's OG/GO" quick-access buttons, coin-gated past dailies with a one-guess-permanently-unlocks rule, past dailies treated as full daily experiences), the countdown repositioning to the top of the UI (context-aware on the landing page vs. game tabs), and the deliverables/scope/verification — with **no** calendar, navigation, routing, state-management, countdown-repositioning, economy, or other source code implemented in this step (tracked at `phase_id = 66`), ahead of a separately approved full-execution prompt.
 **Authority**: Must follow `CONSTITUTION.md`, `BRRRDLE-SPEC.md`, and the approved v2.6 plan in `BRRRDLE-OVERVIEW.md`.
+
+**Latest amendment (v3.1, 2026-06-03)**: Phase 23 is now approved and incorporated as §28 from `PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`. Stage 1 is authorized and executed first: targeted UI/UX bug fixes, the `DailyVariant` multiplayer split, async/turn-based multiplayer foundations for Practice and Daily, Calendar multiplayer indicators/archive access, and the second UTC Daily Multiplayer countdown. Stage 2 (live/real-time multiplayer), Stage 3 (ELO/matchmaking/scoring), and optional Stage 4 remain gated pending explicit user approval.
+
+**Latest amendment (v3.2, 2026-06-03)**: Phase 23 Stage 2 planning is now documented under §28.5–§28.8 as a governance-only update (`phase_id = 70`). Stage 1 remains complete (`phase_id = 69`). Stage 2 implementation is still **not authorized**; the new sections only define the proposed live/real-time multiplayer architecture, likely modules, verification strategy, risks, and Stage 3/Stage 4 direction.
+
+**Latest amendment (v3.3, 2026-06-04)**: Phase 23 multi-agent workflow scaffolding is now documented under §28.9 as a governance/documentation/infrastructure-only update (`phase_id = 71`). This step creates root `agents.md`, root `memory.md`, `docs/planning-index.md`, and `progress/README.md`; upgrades `CONSTITUTION.md` to v3.4 with targeted coordination-file rules; and records that Stage 2 implementation remains **not authorized**.
+
+**Latest amendment (v3.4, 2026-06-04)**: Phase 23 Stage 2 implementation is now explicitly authorized by the user and opened under `phase_id = 72`. §28.10 records the Stage 2 execution coordination plan, file-ownership slices, and final verification gate. Stage 3 ELO/rating/scoring, PR creation, and merge remain gated.
+
+**Latest amendment (v3.5, 2026-06-04)**: Phase 23 Stage 2 implementation is complete and verified under `phase_id = 72`. Live Practice and Daily Multiplayer now have a reducer/domain foundation, live lobby/match UI, Practice Live word-length selection, Calendar Daily Live entry and `L-OG`/`L-GO` indicators, a local/Supabase repository seam, Supabase migration/RLS/realtime hooks, and documentation/progress updates. Stage 3 ELO/rating/scoring, PR creation, and merge remain gated pending explicit user approval.
+
+**Latest amendment (v3.6, 2026-06-04)**: Phase 23 Stage 3 planning is now documented under §28.6 and tracked under `phase_id = 73` as a governance/documentation-only update. The plan defines the ELO/rating model, advanced matchmaking, custom-game/ranked split, scoring/performance model, multiplayer stats surfaces, data-model approach, Supabase/RLS considerations, fairness and anti-abuse policy, work-slice plan, risks, and verification strategy. No Stage 3 code is authorized or implemented; PR creation and merge remain gated.
+
+**Latest amendment (v3.7, 2026-06-04)**: Phase 23 Stage 3 implementation is complete under `phase_id = 74`. The implementation adds pure ELO/rating, scoring, matchmaking, and custom-game modules with tests; additive ranked/custom metadata on async/live matches; competitive result/rating display state in guest progress schema v6; ranked/custom controls and scoring summaries in async/live panels; multiplayer rating/result summaries in Stats; additive Supabase Stage 3 migration and docs; and progress/changelog updates. Rating eligibility remains strict: ELO changes require ranked, authenticated, distinct-player, durable result evidence, while guest/local preview and custom-unranked games remain unrated. PR creation and merge remain gated pending explicit user approval.
+
+**Latest amendment (v3.8, 2026-06-04)**: Phase 23 Stage 3 stabilization is complete under `phase_id = 75`. This targeted follow-up fixes the user-reported multiplayer architecture gap by making async and live multiplayer signed-in, durable online experiences instead of one-device simulations; adds a Supabase-backed async repository and `async_multiplayer_games` migration; corrects live lobby joining/seat ownership and Realtime refresh semantics; removes dual-side controls from async/live panels; fixes mobile Calendar indicator density; and portals Settings tooltips above clipped containers. PR creation, merge, release, and optional Stage 4 remain gated pending explicit user approval.
+
+**Latest amendment (v3.9, 2026-06-04)**: Phase 23 Stage 3 stabilization follow-up is complete under `phase_id = 76`. This targeted bug-fix pass verifies and hardens real account-backed async/live matchmaking, switches multiplayer play surfaces back to canonical solo-style boards plus on-screen keyboard input, disables consumable/pay-to-continue affordances in multiplayer, adds async/live forfeit handling for loss/rating projection, fixes Supabase RLS/write seams for second-player joins and matched live lobbies, and adds a dedicated password-reset interface for Supabase recovery links. PR creation, merge, release, and optional Stage 4 remain gated pending explicit user approval.
+
+**Latest amendment (v3.10, 2026-06-04)**: Phase 23 next stabilization follow-up planning is documented under §28.13 and tracked as `phase_id = 77` as a governance-only response to `brrrdle_observations_2026_06_04.md`. The plan scopes realtime refresh fixes for Daily Async and Live selection entry, the Daily Multiplayer once-per-day participation rule, separate Daily Async and Daily Live answer selection, async header copy corrections, rival identity display, clickable Daily Multiplayer countdown navigation, and the clean path toward a future dedicated Multiplayer tab. No implementation, source-code changes, Supabase migrations, tests, PR creation, merge, release, or optional Stage 4 work is authorized by this amendment.
+
+**Latest amendment (v3.11, 2026-06-04)**: Phase 23 stabilization follow-up execution for §28.13 is complete under `phase_id = 78`. The implementation adds automatic derived selection/entry behavior for Daily Async and Live surfaces, deterministic separate Daily Async vs Daily Live answer selection, client and Supabase-backed Daily Multiplayer claim guards for `async:og`, `async:go`, `live:og`, and `live:go`, safe rival identity display, Daily Multiplayer countdown navigation into Daily Async, corrected async headers, and lightweight groundwork for a future dedicated Multiplayer tab without replacing Calendar/Practice entry points. PR creation, merge, release, and optional Stage 4 remain gated pending explicit user approval.
+
+**Latest amendment (v3.12, 2026-06-05)**: Phase 23 Stage 4 planning is documented under §28.15 and tracked under `phase_id = 79` as a governance/documentation-only update using `PHASE-23-STAGE-4-DAILY-MULTIPLAYER-FIXES-AND-SPECTATOR-SPEC-2026-06-04.md` as the dedicated Stage 4 source. The plan scopes Daily Async/Daily Live lobby visibility fixes, Daily claim bypass closure, per-player five-lobby limit confirmation, creator cancellation for unjoined lobbies, safe rival identity carry-forward, and Live spectator foundations. No implementation, source-code edits, UI work, Supabase migrations, tests, PR creation, merge, release, or dedicated Multiplayer tab work is authorized by this amendment.
+
+**Latest amendment (v3.13, 2026-06-05)**: Phase 23 Stage 4 implementation is complete under `phase_id = 80`. This execution adds per-authenticated-user active limits for async/live multiplayer, closes Daily create bypasses in domain and authenticated repository-save failure paths, adds creator-only cancellation for unjoined async/live lobbies, preserves cancelled Daily claims while releasing active slots, introduces Live spectator foundations as a distinct read-only role with Supabase persistence/RLS, and updates docs/tests/progress. PR creation, merge, release, and dedicated Multiplayer tab implementation remain gated pending explicit user approval.
+
+**Latest amendment (v3.14, 2026-06-05)**: Phase 23 Stage 5 planning is documented under §28.17 and tracked under `phase_id = 81` as a governance/documentation-only update using `PHASE-23-STAGE-5-MULTIPLAYER-UX-FIXES-AND-POLISH-SPEC-2026-06-05.md` as the dedicated Stage 5 source. The plan scopes sign-in flow cleanup, corrected four-bucket Daily Multiplayer participation behavior, Daily Live join/pulse reliability, Daily GO fixed-length flow cleanup, Practice Live entry, and Practice Live word-length timing fixes. No implementation, source-code edits, UI/component work, Supabase migrations, tests, PR creation, merge, release, dedicated Multiplayer tab work, notification system, history/theme tab, bot opponent, or broader UX redesign is authorized by this amendment.
+
+**Latest amendment (v3.15, 2026-06-05)**: Phase 23 Stage 5 implementation is complete under `phase_id = 82` through `phase_id = 85`. The execution removes the duplicate Email + Password sign-in affordance and orders auth actions consistently, adds regressions for the independent `async:og`, `async:go`, `live:og`, and `live:go` Daily Multiplayer buckets, hardens Daily Live so Daily games cannot fall back into Practice word-length selection, improves Practice/Live joined-match entry by preferring the viewer's active match, adds an accessible reduced-motion-safe pulse affordance for actionable non-host `Join live lobby`, verifies remote Supabase claim/join behavior, and records the completed verification gate. PR creation, merge, release, dedicated Multiplayer tab work, notification system, floating manager, History/Theme tabs, bots, exports/GIFs, broader redesign work, and later-phase work remain gated pending explicit user approval.
+
+**Latest amendment (v3.16, 2026-06-05)**: Phase 23 Stage 6 planning is documented under §28.19 and tracked under `phase_id = 86` as a governance/documentation-only update using `PHASE-23-STAGE-6-LIVE-MULTIPLAYER-STABILITY-AND-DAILY-CLAIM-FIXES-SPEC-2026-06-05.md` as the dedicated Stage 6 source. The plan scopes six critical bug fixes only: Daily Multiplayer claim release after pre-join cancellation, live board/history realtime synchronization, Practice Live post-selection flashing, creator-side word-length selection visibility, refresh preserving the current multiplayer tab/game, and general live multiplayer state instability. No implementation, source-code edits, UI/component work, tests, Supabase migrations, build/config changes, PR creation, merge, release, spectator work, dedicated Multiplayer tab work, deferred feature work, or new feature work is authorized by this amendment.
+
+**Latest amendment (v3.17, 2026-06-05)**: Phase 23 Stage 6 planning is tightened and Phase 23 Stage 7 is proposed under `phase_id = 87` as a governance/documentation-only update. Stage 6 execution, if later authorized, must include meaningful real multiplayer testing inside Codex using two distinct authenticated browser contexts plus remote Supabase probes for the listed live flows. The broader autonomous whole-game debugging pass is intentionally split into Stage 7 (§28.20) so Stage 6 remains the critical six-bug live-multiplayer stability pass. No implementation, source-code edits, UI/component work, tests, Supabase migrations, build/config changes, PR creation, merge, release, spectator work, dedicated Multiplayer tab work, deferred feature work, or broad debugging execution is authorized by this amendment.
+
+**Latest amendment (v3.18, 2026-06-05)**: Phase 23 Stage 6 implementation is complete and verified under `phase_id = 88` through `phase_id = 90`. The execution resolves the six approved live-multiplayer stability bugs only: pre-join Daily cancellation now releases the creator's Daily claim for that exact bucket, live match projection saves reconcile concurrent player updates, live clients receive refresh wakeups for board/history changes, Practice Live word-length selection no longer remounts on ordinary realtime updates, creators and rivals enter selection/gameplay without manual refresh, and route/Calendar multiplayer surfaces restore after browser refresh. Remote Supabase migration `phase23_stage6_daily_claim_release` was applied and probed, and real two-client browser verification passed for Practice Live and Daily Live on desktop-style and 390px mobile viewports. PR creation, merge, release, Stage 7 broad debugging, dedicated Multiplayer tab work, spectator expansion, deferred features, and later-phase work remain gated pending explicit user approval.
+
+**Latest amendment (v3.19, 2026-06-05)**: The user explicitly authorized a narrow safety-backup PR and squash merge of the current local Phase 23 Stage 6 state to GitHub `main` before Stage 7. This backup is tracked under `phase_id = 91`; it does not close Phase 23, start Stage 7, create a release, expand the dedicated Multiplayer tab, or authorize deferred feature work. Further PRs, merges, releases, Stage 7 execution, and later-phase work remain gated pending explicit user approval.
 
 ---
 
@@ -35,9 +73,10 @@
 | Phase 20 | §25 | Complete — Variant 03 "Lunar Signal Deck" finalized |
 | Phase 21 | §26 | Implementation complete (Prompt 3): minimalist default surface + Lunar Signal Deck captured as one opt-in surface theme; theming-foundation and CSS-architecture cleanup done |
 | Phase 21 Addendum – Theme Proposal Templates | §26.8 | Governance/planning only (`phase_id = 62`): incorporates `PHASE-21-THEME-PROPOSAL-TEMPLATES-SPEC-2026-06-02.md`; records the `themes/proposals/template_proposals/` + `full_proposals/` + `theme_proposals.csv` structure to produce before Phase 21 closes; templates authored (`phase_id = 63`) |
-| **Phase 22 (active phase)** | §27 | **Prompt 1 (planning + governance) complete (`phase_id = 64`)** and **Prompt 2 (full execution) complete (`phase_id = 65`)**: timezone-aware local-midnight daily reset, balanced anti-gaming, cross-page countdown, reset alert + new unique sound, dev-mode Simulate Time tool, modular `src/daily/` service. **Addendum (§27.10) — Calendar & Countdown Positioning — governance complete (`phase_id = 66`) and full execution complete (`phase_id = 67`)**: the Calendar is the central first-tab hub for all dailies (current + past, OG + GO) with "Play Today's OG/GO" buttons, coin-gated past dailies (fixed 60 coins, one guess permanently unlocks), past dailies as full daily experiences, the dedicated OG/GO Daily tabs removed (legacy deep links redirect into the Calendar), calendar history fixed to start 2025-01-01, and the countdown repositioned to the top of the UI. Verified (lint clean; 390/390 tests; build succeeds; `tsc -b` clean; `git diff --check` clean); halting for explicit user review before the Phase 22 PR |
+| Phase 22 | §27 | Complete through addendum follow-up (`phase_id = 68`): timezone-aware local-midnight daily reset, Calendar central hub, coin-gated past dailies, top countdown positioning, and landing tab-row follow-up are implemented and verified. |
+| **Phase 23 (active phase)** | §28 | **Stage 1 complete (`phase_id = 69`); Stage 2 planning documented (`phase_id = 70`); multi-agent scaffolding complete (`phase_id = 71`); Stage 2 implementation complete and verified (`phase_id = 72`); Stage 3 planning documented (`phase_id = 73`); Stage 3 implementation complete (`phase_id = 74`); Stage 3 stabilization complete (`phase_id = 75`); account-backed multiplayer/UX stabilization follow-up complete (`phase_id = 76`); next stabilization follow-up planning documented (`phase_id = 77`); §28.13 stabilization follow-up implemented (`phase_id = 78`); Stage 4 planning documented (`phase_id = 79`); Stage 4 implemented (`phase_id = 80`); Stage 5 planning documented (`phase_id = 81`); Stage 5 implemented and verified (`phase_id = 82`-`85`); Stage 6 planning documented (`phase_id = 86`); Stage 6 testing addendum + Stage 7 planning documented (`phase_id = 87`); Stage 6 implemented and verified (`phase_id = 88`-`90`); Stage 6 safety backup to GitHub `main` authorized/tracked (`phase_id = 91`)**: Stage 1 delivered bug fixes and async multiplayer. Stage 2 delivered live Practice/Daily multiplayer foundations, Practice Live word-length selection, Calendar Daily Live, live indicators, repository seam, and Supabase migration/RLS/realtime hooks. Stage 3 delivered ELO/rating, scoring, matchmaking, custom-game support, Stats summaries, and additive Supabase competitive tables. Stabilization corrected online async/live ownership, persistence, account-backed matchmaking, multiplayer play surfaces, forfeit, password reset, mobile Calendar, Settings tooltips, realtime refresh/entry behavior, daily participation limits, separate Daily Async/Live answer lists, rival identity, Daily Multiplayer countdown navigation, creator-only cancellation, per-user active limits, Live spectator foundations, Stage 5 UX/correctness issues, and Stage 6 live realtime/Daily cancellation stability bugs. Stage 7 is planned as a separately authorized whole-game autonomous bug bash. Further PRs, merges, releases, dedicated Multiplayer tab work, and later-phase work remain gated. |
 
-> **Upcoming planned roadmap (not yet specced into this plan):** following Phase 22, additional planned phases through Phase 26 cover future scope such as a dramatic theming system (built on the Phase 21 foundation and the §26.8 theme proposal templates), a consumables shop, and multiplayer. These are listed here only for roadmap awareness; no work on Phases 23–26 may begin until each is approved and added as its own addendum.
+> **Upcoming planned roadmap:** Phase 23 Stage 6 is complete and verified under `phase_id = 88`-`90`, with the current Stage 6 local state backed up to GitHub `main` under `phase_id = 91` before Stage 7. Phase 23 Stage 7 broad autonomous debugging is planned under §28.20 but not authorized. No Stage 7 implementation, further PR, merge, release, spectator expansion, dedicated Multiplayer tab implementation, notification system, history/theme tab, bot work, broader redesign, or later phase work may begin until explicitly approved.
 
 ## 1. Operating Rules
 
@@ -2954,6 +2993,1057 @@ All four open questions were answered by the user and applied in the `phase_id =
 3. **Tab removal scope** — Confirmed: the dedicated OG Daily / GO Daily tabs are fully removed; the Calendar is the single source of truth, and legacy deep links redirect into the Calendar with the appropriate mode/day pre-selected.
 4. **Calendar history depth** — Confirmed: fixed start date **January 1, 2025** (not rolling); any daily from 2025-01-01 onward is selectable; earlier days are out of scope.
 
+
+---
+
+## 28. Phase 23 – Multiplayer Foundations and Polish
+
+**Source of truth**: `PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`, `CONSTITUTION.md` v3.4, and this §28 addendum. If this section conflicts with the spec on Phase 23 scope or sequencing, stop and ask the user rather than inferring.
+
+> Status: **Stage 1 complete under `phase_id = 69`; Stage 2 planning documented under `phase_id = 70`; multi-agent workflow scaffolding documented under `phase_id = 71`; Stage 2 implementation complete and verified under `phase_id = 72`; Stage 3 planning documented under `phase_id = 73`; Stage 3 implementation complete under `phase_id = 74`; Stage 3 stabilization complete under `phase_id = 75`; account-backed multiplayer/UX stabilization follow-up complete under `phase_id = 76`; next stabilization follow-up planning documented under `phase_id = 77`; §28.13 follow-up implemented under `phase_id = 78`; Stage 4 planning documented under `phase_id = 79`; Stage 4 implemented under `phase_id = 80`; Stage 5 planning documented under `phase_id = 81`; Stage 5 implemented and verified under `phase_id = 82`-`85`; Stage 6 planning documented under `phase_id = 86`; Stage 6 real multiplayer testing addendum and Stage 7 planning documented under `phase_id = 87`; Stage 6 implemented and verified under `phase_id = 88`-`90`; Stage 6 safety backup to GitHub `main` authorized/tracked under `phase_id = 91`.** Phase 23 is intentionally staged. Stage 1 covers bug fixes, foundations, async/turn-based multiplayer, Calendar/countdown updates, and persistence. Stage 2 covers live/real-time Practice and Daily multiplayer foundations. Stage 3 covers advanced multiplayer/ELO, scoring, matchmaking, custom games, and competitive persistence. Stabilization corrects online transport/ownership defects, account-backed matchmaking, gameplay parity, auth recovery, mobile UI regressions, realtime Daily Multiplayer refresh/entry behavior, daily participation limits, separate Daily Async/Live answer lists, rival identity, countdown navigation, creator cancellation, per-user active limits, Live spectator foundations, Stage 5 multiplayer UX/correctness issues, and Stage 6 live realtime/Daily cancellation stability bugs. Stage 7 remains the later broad bug bash. Further PR creation, merge, release, dedicated Multiplayer tab work, and later phase work remain gated until the user explicitly approves them.
+
+### 28.1 Stage Structure
+
+1. **Stage 1 — Foundations + Bug Fixes + Async/Turn-based Core**: complete under `phase_id = 69`.
+2. **Stage 2 — Live / Real-time Multiplayer Features**: complete and verified under `phase_id = 72`.
+3. **Stage 3 — Advanced Multiplayer Features**: ELO, matchmaking, scoring, custom games, and related refinements; planning documented under `phase_id = 73`, implementation complete under `phase_id = 74`.
+4. **Stage 4 — Daily Multiplayer Fixes & Spectator Foundations**: planned in detail under §28.15 from `PHASE-23-STAGE-4-DAILY-MULTIPLAYER-FIXES-AND-SPECTATOR-SPEC-2026-06-04.md`; implementation requires explicit user authorization.
+5. **Stage 5 — Multiplayer UX Fixes & Polish**: planned under §28.17 and implemented under §28.18 from `PHASE-23-STAGE-5-MULTIPLAYER-UX-FIXES-AND-POLISH-SPEC-2026-06-05.md`; complete under `phase_id = 82`-`85`.
+6. **Stage 6 — Live Multiplayer Stability & Daily Claim Fixes**: implemented and verified under §28.19 from `PHASE-23-STAGE-6-LIVE-MULTIPLAYER-STABILITY-AND-DAILY-CLAIM-FIXES-SPEC-2026-06-05.md`.
+7. **Stage 7 — Whole-Game Autonomous Bug Bash & Stabilization**: planned under §28.20 as a separate broad debugging pass after Stage 6; implementation requires explicit user authorization.
+
+### 28.2 Stage 1 Binding Requirements
+
+- Fix the Stage 1 bug list: dynamic landing title (`COMMAND CENTER`), outside-click dismissal for popups/modals, mobile-safe Settings tooltips, mobile-safe Calendar indicators, and hidden answer/definitions on loss until the player explicitly declines continuation.
+- Fully introduce the `DailyVariant` system with a solo/local daily variant and a multiplayer/UTC daily variant.
+- Build an async/turn-based multiplayer foundation for Practice and Daily modes without disrupting solo gameplay.
+- Practice async multiplayer supports word lengths 2-35, no time limit, persistent turns, and up to five active async games.
+- Daily async multiplayer is current-day only for active play, uses midnight UTC, expires unfinished games when the UTC day changes, and exposes past daily multiplayer games as view-only archives with full move history, final answer, and definitions.
+- Calendar must show distinct OG/GO indicators for both solo and multiplayer.
+- Add a second Daily Multiplayer countdown near the solo countdown, controlled by its own Settings toggle and unique reset sound.
+- Preserve all existing solo mechanics: daily OG/GO, practice OG/GO, difficulty tiers, Word Explorer, definitions, stats, auth/sync, sounds, themes, economy, resume, sharing, and admin behavior.
+
+### 28.3 Stage 1 Implementation Summary
+
+- `src/ui/Dialog.tsx` and `src/ui/Tooltip.tsx` gained outside-click/tap dismissal and mobile-safe tooltip placement.
+- `src/app/LunarSignalStage.tsx` exposes a dynamic `commandTitle` with `Command Center` as the default.
+- OG/GO session serialization now preserves explicit answer-reveal loss state, and OG/GO gameplay hides answers, share output, and definitions until the player explicitly chooses reveal instead of continuing.
+- `src/daily/` now supports the `multiplayer` `DailyVariant` with UTC day keys, UTC reset math, countdown labels, and a separate storage namespace.
+- `src/sound/soundEngine.ts` adds the unique `daily-multiplayer-reset` event.
+- `src/account/` schema v5 adds `dailyMultiplayerCountdownEnabled` and persisted async multiplayer progress with guest/cloud merge support.
+- `src/multiplayer/` adds the async multiplayer model and UI panel: game creation, turn submission, move history, answer/definition archive display, daily expiry, and the five-active-game cap.
+- `src/calendar/CalendarPanel.tsx` adds Daily Multiplayer access, view-only past daily multiplayer archives, and four per-day text indicators: solo OG, solo GO, multiplayer OG, multiplayer GO.
+- `src/app/App.tsx` wires multiplayer state persistence, UTC expiry, the second countdown, Settings updates, and Practice/Calendar multiplayer entry points.
+
+### 28.4 Verification and Gate
+
+Stage 1 must end with:
+
+1. `npm run lint`
+2. `npm run test`
+3. `npm run build`
+4. `npx tsc -p tsconfig.api.json --noEmit`
+5. `git diff --check`
+6. Browser smoke on desktop and mobile-sized viewports
+
+After Stage 1 verification, halt for user review. Do not begin Stage 2 or create the Phase 23 PR until explicitly approved.
+
+### 28.5 Stage 2 Planning — Live / Real-time Multiplayer Features (Governance Only)
+
+**Authorization status**: planning documented only. Do not implement Stage 2 until the user explicitly approves a Stage 2 execution prompt.
+
+Stage 2 will add live/real-time multiplayer on top of the Stage 1 async model. The implementation should reuse the existing multiplayer vocabulary (`mode`, `scope`, `DailyVariant`, UTC daily deadline, player ids, status, move history) but introduce a distinct live-match layer so async games and live games do not collide in persistence, UI, or stats.
+
+#### 28.5.1 Proposed Technical Approach
+
+- **Backend transport**: prefer Supabase Realtime channels backed by persistent Postgres rows, since the project already uses Supabase auth/sync. Realtime should be treated as a transport for presence and live updates; the durable match record must still live in storage so reloads, reconnects, and cross-device resume are possible.
+- **Durable match model**: introduce live-specific models parallel to `src/multiplayer/asyncMultiplayer.ts`, likely `src/multiplayer/liveMultiplayer.ts`, with explicit match phases: `lobby`, `word-length-selection`, `countdown`, `playing`, `finished`, `aborted`, and `expired`.
+- **Realtime repository seam**: create a narrow abstraction such as `LiveMultiplayerRepository` so UI code can operate against a typed interface. The first implementation can use Supabase; tests can use an in-memory fake. This prevents live UI from depending directly on Supabase client calls.
+- **Presence and clock policy**: live play needs a server-time anchor for phase deadlines. Use server timestamps where possible; client timers should be display-only and reconciled against authoritative match timestamps.
+- **Daily Multiplayer live variant**: reuse the Stage 1 multiplayer `DailyVariant` UTC date key and deadline. Live Daily Multiplayer must be available only for the current UTC day and must expire/abort at midnight UTC.
+- **Practice Multiplayer live variant**: support all word lengths 2-35 through the required pre-game word-length selection phase. Do not assume both players choose the same length before matching.
+- **No local-only live state as source of truth**: local state may drive optimistic UI, but the match result, guesses, winner, abort reason, and timestamps must be recoverable from durable match records.
+
+#### 28.5.2 Likely Files and Modules
+
+- `src/multiplayer/liveMultiplayer.ts` — framework-agnostic live match types, phase reducer, scoring-free winner resolution, deadline handling, and serialization.
+- `src/multiplayer/liveRepository.ts` or `src/multiplayer/supabaseLiveRepository.ts` — typed persistence/realtime adapter.
+- `src/multiplayer/LiveMultiplayerPanel.tsx` — shared live lobby/match shell for Practice and Daily entry points.
+- `src/multiplayer/WordLengthSelectionPanel.tsx` — dedicated pre-game screen for the required 1-minute Practice Live word-length choice.
+- `src/multiplayer/liveMultiplayer.test.ts` and repository fake tests — deterministic tests for phase transitions, timeout/abort behavior, word-length selection, and winner resolution.
+- `src/app/App.tsx` — route-level state wiring and auth/sync integration, kept thin.
+- `src/calendar/CalendarPanel.tsx` — Daily Live Multiplayer entry point and UTC deadline messaging.
+- `src/account/storageSchema.ts` / `guestStorage.ts` / `guestTransfer.ts` — only if local guest live state needs durable queueing or recovery beyond Supabase rows.
+- Supabase SQL migrations or schema docs — likely needed for live lobbies/matches, participants, events, and optional presence metadata. Any migration must include RLS rules and tests/review notes.
+
+#### 28.5.3 Live Match Data Model — Proposed Shape
+
+Stage 2 should distinguish:
+
+- **Lobby records**: discovery/matchmaking state, scope (`practice`/`daily`), mode (`og`/`go`), live/async kind, optional requested constraints, created/updated timestamps, and participant count.
+- **Match records**: durable match id, daily UTC key when applicable, selected word length, difficulty, mode, scope, phase, players, first player id, current winner/result, deadline timestamps, and final answer references.
+- **Event records**: append-only events for joins, ready state, word-length choices, guesses, phase transitions, disconnects/reconnects, aborts, expiry, and finish. Event streams make debugging easier and reduce race-condition ambiguity.
+- **Client projection**: a derived view used by React components. Components should render from this projection and submit commands, not directly mutate records.
+
+This model intentionally leaves ELO/rating fields out of Stage 2 except for nullable future-safe placeholders if they simplify Stage 3. Do not implement ELO scoring early.
+
+#### 28.5.4 Practice Live Word-Length Selection
+
+The spec requires a dedicated pre-game screen:
+
+- After a match forms, both players have **1 minute** to choose a preferred word length.
+- Players may change their choice during the minute.
+- If one player chooses and the other does not, the chosen length wins.
+- If both choose different lengths, select randomly between the two with a non-skippable bounce/highlight animation before locking the result.
+- If neither chooses, abort the match.
+- The random choice must be recorded in the durable match/event log so both clients converge on the same result after reconnect.
+- The animation is UI-only; the chosen result should be committed once, then displayed consistently.
+
+#### 28.5.5 Gameplay Semantics for Live Matches
+
+- **Practice Live**: no UTC deadline; optional time limits may be offered only if they do not conflict with the required word-length selection. First player is random after the pre-game phase.
+- **Daily Live**: current UTC day only; current day key comes from the multiplayer `DailyVariant`; matches must expire at midnight UTC.
+- **Simultaneous vs turn semantics**: the spec says players play simultaneously. Stage 2 should model live play as simultaneous submissions against the same puzzle state where appropriate, with deterministic tie handling if both clients finish nearly at once. If a turn-like interaction is retained for any mode, document the reason and confirm with the user before implementation.
+- **Definitions and reveal**: finished live matches may reuse existing definition surfaces. Do not reveal answers before match completion or expiry.
+- **Stats/economy**: keep solo stats unchanged. Multiplayer stats can be tracked separately or deferred to Stage 3, but Stage 2 must not corrupt existing solo statistics, streaks, coins, or resume lanes.
+
+#### 28.5.6 UX and Navigation Plan
+
+- Keep **Daily** entry through the Calendar. Add Daily Live Multiplayer alongside the Stage 1 Daily Async Multiplayer surface, clearly labeled.
+- Keep **Practice** entry through the Practice tab. Add a live lobby surface near the async multiplayer panel, but avoid crowding the solo game area.
+- Make live status obvious: looking for player, matched, selecting length, countdown, playing, finished, reconnecting, opponent disconnected, aborted, expired.
+- Provide graceful anonymous/local-only messaging. If true live play requires Supabase authentication, say so in the UI and provide an account path rather than failing silently.
+- Preserve mobile layout first: live lobbies and the word-length selection screen must fit common phone widths and be usable by touch.
+
+#### 28.5.7 Risks and Mitigations
+
+- **Race conditions**: use append-only events and server timestamps; make reducers idempotent.
+- **Clock drift**: use server-authoritative phase timestamps; client timers are display-only.
+- **Disconnects**: store match phases durably and support reconnect/resume; define timeout/forfeit behavior before implementation.
+- **Authentication/RLS**: live multiplayer will likely require stronger Supabase policies than guest local progress. Design RLS before writing UI that depends on it.
+- **Daily UTC expiry**: keep Daily Live tied to the existing multiplayer `DailyVariant`; test around UTC boundary.
+- **Bundle/UI complexity**: keep live logic in `src/multiplayer/`; do not spread realtime command handling across `App.tsx` or gameplay components.
+
+#### 28.5.8 Stage 2 Verification Plan
+
+Stage 2 execution must include:
+
+1. Unit tests for the live match reducer and word-length selection phase.
+2. Repository/fake tests for realtime command handling and reconnect projections.
+3. Component tests for lobby, pre-game screen, live match status, and Daily Live entry points.
+4. Full local gate: `npm run lint`, `npm run test`, `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, `git diff --check`.
+5. Browser smoke across desktop and mobile for Practice Live, Daily Live, reconnect/refresh, and UTC deadline messaging.
+6. Supabase/RLS review if migrations are added.
+
+### 28.6 Stage 3 Planning — Advanced Multiplayer Features (Governance Only)
+
+**Authorization status**: planning documented only under `phase_id = 73`. Do not implement Stage 3 until the user explicitly approves a Stage 3 execution prompt.
+
+Stage 3 should add skill-based ratings, ranked matchmaking, custom games, scoring/performance tracking, and multiplayer stats by layering on top of the Stage 1 async model and Stage 2 live model. It must not rewrite canonical solo gameplay rules in `src/game/`, corrupt existing solo stats/economy/resume lanes, or blur the user-visible separation between Daily via Calendar and Practice via Practice tab.
+
+#### 28.6.1 Stage 3 Product Goals
+
+- Give players a clear multiplayer skill signal through a conservative ELO-style rating system.
+- Improve basic Stage 2 lobby matching with fair ranked matchmaking that considers rating, mode, scope, transport (`async` vs `live`), wait time, and daily eligibility.
+- Add custom/unranked games so players can invite or replay friends without distorting ranked ratings.
+- Add explainable multiplayer scoring/performance summaries without changing Wordle/Hurdle answer validation or tile coloring.
+- Add multiplayer stats surfaces separate from solo stats so solo streaks, coins, XP, history, and resume behavior remain intact.
+- Preserve the Stage 2 live/realtime architecture so Stage 3 is mostly additive: new rating/scoring/matchmaking modules, new persistence records, and UI surfaces that consume existing async/live match results.
+
+#### 28.6.2 Rating Model
+
+Use a compact ELO-style rating model rather than a complex hidden MMR system for the first ranked release.
+
+- **Rating buckets**: keep ratings separate by transport and mode to avoid mixing fundamentally different skill profiles:
+  - `async:og`
+  - `async:go`
+  - `live:og`
+  - `live:go`
+- **Scope handling**: start with Practice-ranked matches as the primary rating source. Daily ranked support may record rated outcomes only if both players enter the same current UTC day and the match finishes before deadline; otherwise Daily results should remain view-only/unrated until fairness is reviewed.
+- **Initial rating**: default new players to `1200`, with `provisional = true` until a minimum number of rated results, recommended 10 per bucket.
+- **K-factor**:
+  - Provisional: higher K (recommended 40) so ratings settle quickly.
+  - Established: lower K (recommended 24).
+  - Large mismatch or inactivity adjustments should be deferred unless needed during execution.
+- **Expected score**: standard ELO expected-score formula using rating difference. Treat draw/tie as `0.5`; win as `1`; loss as `0`.
+- **Rated eligibility**: only completed ranked matches between two authenticated distinct users with durable server-side result evidence should update ratings. Local-only smoke matches, anonymous fallback matches, custom unranked matches, aborted matches, expired matches, guest-progress-only async matches, and matches with incomplete result evidence must not update ratings.
+- **Async ranked caveat**: current Stage 1 async state is local/guest-progress-first. Stage 3 must add an authenticated durable result/settlement path before async matches can affect ratings; otherwise async remains unranked until that path exists.
+- **Idempotency**: each rated match must produce at most one rating transaction per affected rating bucket. Replaying or reconnecting a match projection must not double-apply rating deltas.
+
+#### 28.6.3 Scoring and Performance Model
+
+Scoring should explain how a player won without becoming a second hidden game.
+
+- **Primary result**: win/loss/tie remains the source of truth for rating.
+- **Performance metrics**:
+  - OG: solved/lost, attempts used, remaining attempts, time-to-finish for live matches, invalid/aborted state excluded.
+  - GO: number of puzzles solved, total attempts used, final status, chain progress, time-to-finish for live matches.
+  - Daily: UTC deadline compliance and final status.
+- **Tie handling**:
+  - Live simultaneous ties should first compare completion status, then timestamp/server event order, then attempts/progress, and finally deterministic player order only as a last resort.
+  - Async ties should be rare; if both lose or both reach equivalent terminal state, treat the rating score as `0.5` only when the match format truly permits a draw.
+- **Score display**: expose an explainable result summary such as `Won in 4 guesses`, `Solved 4/5 boards`, `Faster finish`, or `More chain progress`; avoid opaque point formulas unless the user approves a more game-like scoring layer.
+- **No solo contamination**: Stage 3 multiplayer scoring must not alter existing solo `StatsDashboard` math, daily streaks, coins, XP, Pay-to-Continue, or resume slots unless a later prompt explicitly approves multiplayer economy/stats integration.
+
+#### 28.6.4 Advanced Matchmaking
+
+Upgrade Stage 2 basic lobbies into a matching service/pure selector that can be tested without Supabase.
+
+- **Queue model**: introduce ranked matchmaking requests with mode, scope, transport, rating bucket, rating at enqueue time, queued-at timestamp, optional word length for async practice, and a generated idempotency key.
+- **Initial search band**: match within roughly +/-100 rating points for established players; provisional users may use a wider band (recommended +/-200).
+- **Wait-time widening**: widen the search band over time, for example +50 rating points every 15 seconds for live queues and every 10 minutes for async queues, with a sensible max band.
+- **Compatibility filters**:
+  - Same transport (`async` or `live`).
+  - Same mode (`og` or `go`).
+  - Same scope (`practice` or eligible current UTC daily).
+  - Same word length when required by async practice; live practice can continue using Stage 2's word-length selection after matching.
+  - Distinct authenticated users.
+  - No blocked/self/rematch-abuse candidate if those controls exist by execution time.
+- **Daily policy**: Daily ranked matchmaking must use the multiplayer UTC `DailyVariant` day key and must not match after the day expires. Past daily matches remain view-only and should not start new ranked games.
+- **Fallback**: if no fair ranked match appears, the UI should offer to keep waiting, widen the search, or create an unranked custom game rather than silently matching a very unfair opponent.
+- **Implementation style**: keep the ranking/matching selector pure and deterministic; Supabase/RPC integration can persist queues and atomically claim matches after the pure selector chooses a candidate.
+
+#### 28.6.5 Custom Games and Ranked/Unranked Split
+
+Custom games should support friendly play without damaging ranked integrity.
+
+- **Custom game default**: unranked by default.
+- **Invite/share model**: create a custom lobby with a shareable code or link, scope/mode/transport, optional word length or live selection rules, and expiration.
+- **Ranked custom games**: defer or require strict constraints if introduced later. A custom game should be rated only if both players explicitly opt into ranked and the match passes the same eligibility and anti-abuse checks as matchmaking-created ranked games.
+- **Replay/rematch**: allow unranked rematches freely; rate-limited ranked rematches should either be capped or have abuse checks before affecting ELO.
+- **Storage**: custom lobby metadata should be separate from rating transactions so deleting/expiring a lobby cannot erase the immutable match result/rating audit trail.
+
+#### 28.6.6 Data Model and Persistence Plan
+
+Prefer additive, auditable data structures.
+
+Likely new or extended TypeScript modules:
+
+- `src/multiplayer/rating.ts` — pure ELO calculations, rating bucket normalization, provisional logic, idempotent transaction application.
+- `src/multiplayer/rating.test.ts` — K-factor, expected-score, provisional, draw, idempotency, and per-bucket tests.
+- `src/multiplayer/matchmaking.ts` — pure queue/candidate selection, wait-band widening, compatibility filters, ranked/unranked split.
+- `src/multiplayer/matchmaking.test.ts` — deterministic matching, widening, daily UTC eligibility, no-self-match, provisional band tests.
+- `src/multiplayer/scoring.ts` — result summary and performance metric projection from async/live match data.
+- `src/multiplayer/scoring.test.ts` — OG/GO/live/async result summaries and tie handling.
+- `src/multiplayer/MultiplayerStatsPanel.tsx` or route-local components — multiplayer ratings, recent rated matches, mode/transport filters, and explanatory copy.
+- `src/multiplayer/RankedMatchmakingPanel.tsx` or additions to existing async/live panels — ranked queue controls and custom game creation/entry.
+- `src/account/storageSchema.ts`, `guestStorage.ts`, `guestTransfer.ts` — only if local display/cache shapes are needed; authenticated Supabase tables should remain the durable source for ranked records.
+- `supabase/migrations/` — additive Stage 3 migration.
+- `docs/supabase.md` — setup notes for ranked multiplayer tables/RLS/RPCs.
+
+Likely Supabase additions:
+
+- `multiplayer_rating_profiles`: user id, rating bucket, rating, games played, wins/losses/draws, provisional flag, updated timestamp.
+- `multiplayer_rating_transactions`: immutable transaction id, match id, bucket, player ids, old/new ratings, deltas, expected scores, reason, created timestamp, idempotency key.
+- `multiplayer_match_results`: immutable rated/unrated result summary keyed by source match id, transport, mode, scope, daily key, ranked flag, terminal status, winner/tie outcome, and settled timestamp.
+- `multiplayer_player_results`: per-player result metrics such as attempts, solved boards, finish time, rating bucket, and participant id.
+- `multiplayer_matchmaking_queue`: user id, request id, transport, mode, scope, rating bucket, rating snapshot, status, queued-at, expires-at, matched match id.
+- `custom_game_lobbies`: code/id, creator, transport, mode, scope, ranked flag, status, expires-at, optional constraints.
+
+RLS/RPC guidance:
+
+- Rating profiles should be readable by authenticated users where appropriate; only trusted RPCs or secure server-side flows should mutate rating values.
+- Rating transactions should be append-only and participant-readable; direct client inserts should be avoided if possible.
+- Match results and per-player results should be append-only after settlement; clients may submit commands/events, but must not directly write old/new rating deltas.
+- Queue insert/update should be user-owned, but atomic match claiming should happen in an RPC to avoid two clients claiming the same opponent.
+- No service-role keys may be exposed to the browser.
+
+#### 28.6.7 Integration Points With Stage 1 and Stage 2
+
+- **Async matches**: consume `AsyncMultiplayerGame` terminal results and moves from `src/multiplayer/asyncMultiplayer.ts`; do not change turn mechanics merely to support scoring.
+- **Async ranked settlement**: because async currently persists through guest/cloud progress rather than shared match tables, Stage 3 must create authenticated result-settlement records before applying ELO to async matches. Guest/local async remains unranked.
+- **Live matches**: consume `LiveMultiplayerMatch` terminal phases and player progress from `src/multiplayer/liveMultiplayer.ts`; keep Stage 2's simultaneous-play semantics.
+- **Repository seam**: extend or add repositories beside `liveRepository.ts` rather than putting rating writes into React components.
+- **Calendar**: Daily ranked status may appear in Calendar only as a concise indicator or entry point; avoid crowding day cells beyond the existing solo/async/live chips.
+- **Practice route**: primary home for ranked practice queues and custom game setup.
+- **Stats route**: preferred long-term home for multiplayer rating/stats summaries so gameplay panels do not become dashboards.
+- **Auth/account**: ranked play should require authenticated users. Anonymous/local-only users can still use unranked local previews if the UI clearly labels them as unrated.
+
+#### 28.6.8 Fairness and Anti-Abuse
+
+- Require distinct authenticated users for rated matches.
+- Prevent duplicate rating application through idempotency keys and immutable transactions.
+- Do not rate aborted, expired, local-only, anonymous, or corrupted matches.
+- Define disconnect handling before rating live matches: a disconnect after match start may count as loss only after a documented grace period; a pre-start disconnect should abort/unrate.
+- Daily ranked matches must expire at UTC midnight and should not award ratings if the deadline invalidates completion.
+- Rematch abuse: track recent repeated rated pairings and either cap rating impact or force unranked rematches after a threshold.
+- Sandbagging: provisional ratings may move quickly, but avoid exploitable large rating deltas from repeated obvious mismatches.
+- Transparency: show enough rating-change explanation that users understand why a result changed their rating.
+- Privacy: expose display names and ratings, not private auth emails or internal Supabase ids in public UI.
+
+#### 28.6.9 Stage 3 Work Slices for Parallel Agents
+
+When Stage 3 execution is authorized, split work into narrow, low-conflict lanes:
+
+- **Rating domain lane**: `rating.ts`, rating tests, transaction normalization, idempotency rules.
+- **Scoring domain lane**: `scoring.ts`, result projection from async/live matches, tie handling tests.
+- **Matchmaking domain lane**: `matchmaking.ts`, queue model, compatibility filters, widening tests.
+- **Supabase lane**: Stage 3 migration/RLS/RPC documentation, Supabase setup docs, security review notes.
+- **UI lane**: ranked/custom controls in multiplayer panels and multiplayer stats/rating surface, after domain shapes stabilize.
+- **Coordinator lane**: `App.tsx`, Calendar/Practice/Stats integration, progress/changelog/memory updates, final verification.
+
+High-conflict files (`src/app/App.tsx`, `src/calendar/CalendarPanel.tsx`, `src/account/storageSchema.ts`, `CHANGELOG.md`, `progress/PROGRESS.csv`, and this plan) should stay coordinator-owned unless explicitly sequenced.
+
+#### 28.6.10 Risks and Mitigations
+
+- **Ranking volatility**: keep conservative K-factors and provisional flags; add tests for expected deltas.
+- **Race conditions**: make queue matching and rating transaction creation idempotent; prefer RPC/transaction boundaries in Supabase.
+- **Scope creep**: do not implement leaderboards, social graph, economy rewards, or public profiles unless separately approved.
+- **Calendar density**: keep ranked Daily UI compact; put detailed stats elsewhere.
+- **Data migration risk**: keep Stage 3 schema additive; do not mutate existing guest progress unless unavoidable.
+- **Rating fairness**: do not rate matches without complete terminal evidence.
+- **Security/RLS**: require participant ownership and authenticated access; never trust client-provided old/new rating deltas.
+
+#### 28.6.11 Stage 3 Verification Strategy
+
+Stage 3 execution must include:
+
+1. Unit tests for ELO calculations, provisional behavior, expected score, draw handling, and idempotent transaction application.
+2. Unit tests for scoring projections from async/live OG and GO terminal matches.
+3. Unit tests for matchmaking compatibility filters, wait-band widening, no-self-match, daily UTC eligibility, and ranked/unranked split.
+4. Repository/RPC adapter tests with in-memory fakes for queue and rating transaction flows.
+5. Component tests for ranked queue controls, custom game labels, rating summaries, and empty/unrated states.
+6. Supabase migration/RLS review; local SQL validation if Supabase tooling is available.
+7. Full gate: `npm run lint`, `npm run test`, `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, `git diff --check`.
+8. Browser smoke across desktop and mobile for ranked Practice, custom unranked flow, rating display, and no Calendar overflow.
+
+### 28.7 Stage 4 Planning — Optional UI / Front-end Polish (Governance Only)
+
+This subsection captured the original high-level optional Stage 4 direction before the user provided a dedicated Stage 4 spec. It remains useful as UI-polish context only. The binding Stage 4 planning for the next authorized work is now §28.15, which keeps Daily Multiplayer fixes and Live spectator foundations in scope while deferring the broader dedicated Multiplayer tab.
+
+Stage 4 was originally optional and should only be triggered after Stage 3 if the multiplayer surfaces feel inconsistent, crowded, or fragile.
+
+- **Live/ranked lobby polish**: simplify queue state, opponent found, reconnect, timeout, and match-result screens.
+- **Mobile ergonomics**: audit Practice and Calendar multiplayer panels at common phone widths; ensure touch targets, dropdowns, and match-history surfaces remain usable.
+- **Accessibility**: add or refine focus management, `aria-live` status updates for queue/matchmaking events, reduced-motion handling for word-length/randomized/result animations, and keyboard navigation for custom game flows.
+- **Calendar density**: revisit solo/async/live/ranked indicators after Stage 3; move dense detail to drill-down panels instead of adding more day-cell clutter.
+- **Stats presentation**: polish multiplayer rating/stats charts or summaries after the underlying model is stable.
+- **Copy and onboarding**: clarify ranked vs unranked, provisional ratings, Daily UTC rules, and rating-change explanations without adding tutorial clutter.
+- **Constraint**: Stage 4 must remain UI/front-end polish. It must not add new multiplayer rules, rating formulas, scoring formulas, economy rewards, or social systems unless the user explicitly approves expanded scope.
+
+### 28.8 Phase 23 Governance Workflow
+
+| Stage / step | `phase_id` | Scope | Status / gate |
+| --- | --- | --- | --- |
+| Stage 1 | 69 | Bug fixes, DailyVariant, async multiplayer core, Calendar/countdown updates | Complete; awaiting user review |
+| Stage 2 planning | 70 | Documentation/governance only for live/real-time multiplayer | Complete in plan; no Stage 2 code authorized |
+| Multi-agent workflow scaffolding | 71 | Documentation/infrastructure only: coordination guide, project memory, planning index, progress README, targeted constitution update | Complete; no Stage 2 code authorized |
+| Stage 2 execution | 72 | Live Practice + Daily Multiplayer, realtime lobby, word-length selection | Complete and verified; halt for user review |
+| Stage 3 planning | 73 | ELO/rating, advanced matchmaking, custom games, scoring, fairness, verification strategy | Complete in plan; no Stage 3 code authorized |
+| Stage 3 execution | 74 | ELO/rating implementation, matchmaking, custom games, scoring/stats UI, Supabase competitive migration | Complete locally; PR/merge gated |
+| Stage 3 stabilization | 75 | True online async/live ownership/persistence fixes, mobile Calendar indicators, Settings tooltip layering | Complete locally; PR/merge gated |
+| Stage 3 stabilization follow-up | 76 | Account-backed matchmaking hardening, canonical multiplayer play surface, forfeit, password reset, RLS/write hardening | Complete locally; PR/merge gated |
+| Next stabilization follow-up planning | 77 | Realtime refresh, Daily Multiplayer participation limits, separate daily answer lists, rival identity, countdown navigation, Multiplayer-tab path | Planning documented; implementation not authorized |
+| Stage 4 optional | TBD | UI polish/cleanup if needed | Trigger only after Stage 3 if needed |
+
+### 28.9 Multi-Agent Workflow Scaffolding (Governance / Infrastructure Only)
+
+**Authorization status**: complete as a documentation and infrastructure step. This subsection does not authorize Stage 2 implementation.
+
+This step creates durable coordination surfaces so later Phase 23 work can use parallel sub-agents without weakening the one-stage-at-a-time governance model.
+
+#### 28.9.1 New Coordination Surfaces
+
+- `agents.md` — practical multi-agent workflow guide, including startup checklist, work-packet template, file ownership rules, Stage 2 work-slice suggestions, handoff format, integration checklist, and stop conditions.
+- `memory.md` — compact persistent project memory with the current Phase 23 gate, Stage 1 completion summary, Stage 2 planning summary, core invariants, module map, recent progress IDs, and update policy.
+- `docs/planning-index.md` — low-churn index for the current planning/progress source files. It avoids moving root specs during an active dirty working state while still giving future sessions an obvious navigation map.
+- `progress/README.md` — progress tracking guide documenting the 12-column CSV shape, monotonic `phase_id` rule, exact `PROGRESS-STEP-N.md` parity preference going forward, and no-secrets rule.
+
+#### 28.9.2 Targeted Constitution Update
+
+`CONSTITUTION.md` is updated to v3.4 with minimal coordination-file rules:
+
+- Coordination files are subordinate operational aids and cannot authorize new scope, implementation, merges, releases, or stage progression.
+- Stale or contradictory coordination files are an explicit halt condition.
+- `agents.md` and `memory.md` should be updated only at approved governance/progress gates when durable state changes.
+- Sub-agents should read `agents.md`, and the coordinating agent resolves conflicts against the authority stack before work proceeds.
+
+#### 28.9.3 Document Reorganization Decision
+
+No root-level phase specs are moved in this step. The current root spec filenames are referenced throughout `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, and progress reports. Moving them during Phase 23 would create broad reference churn and increase integration risk while Stage 1 source changes are already present in the working tree.
+
+A future docs-only reorganization may move specs into `docs/planning/specs/` if the user approves a dedicated cleanup pass. That pass must update every reference atomically and record the move in progress tracking.
+
+#### 28.9.4 Gate
+
+After this scaffolding update, before the later Stage 2 authorization prompt:
+
+- Stage 1 remains complete.
+- Stage 2 planning remains documented.
+- Stage 2 implementation remains unauthorized until explicit user approval.
+- The coordinating agent must halt for user review before any live/realtime multiplayer implementation.
+
+### 28.10 Stage 2 Execution Coordination Plan
+
+**Authorization status**: explicitly authorized by the user on 2026-06-04, implemented, verified, and tracked under `phase_id = 72`.
+
+Stage 2 implementation should use the multi-agent scaffolding from §28.9 while keeping high-conflict surfaces under coordinator control.
+
+#### 28.10.1 Work Slices
+
+- **Domain / reducer / repository seam**: implement framework-agnostic live match models, lobby/match phases, word-length selection resolution, deterministic winner/abort/expiry handling, serialization, and an in-memory realtime-style repository fake for tests.
+- **Supabase schema and RLS planning**: add migration/schema documentation for durable live lobbies, matches, participants, and events, with RLS notes. Do not require production credentials for local verification.
+- **UI components**: implement Practice/Daily live lobby surfaces, dedicated Practice Live word-length selection screen, live status/projection display, non-skippable random-length highlight animation, reconnect/expired/aborted messaging, and mobile-safe component tests.
+- **Coordinator integration**: wire Practice and Calendar entry points, persistence/repository state, and route-level behavior in `src/app/App.tsx`, preserving solo and async behavior.
+- **Verification/docs**: update changelog, progress, `memory.md`, and `agents.md`; run full local verification plus desktop/mobile browser smoke.
+
+#### 28.10.2 File Ownership Rules
+
+- The coordinator owns `src/app/App.tsx`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-72.md`, `AGENT-IMPLEMENTATION-PLAN.md`, `memory.md`, and final integration.
+- Domain work should stay in `src/multiplayer/live*.ts` and tests where possible.
+- UI work should stay in `src/multiplayer/*Live*.tsx`, `src/multiplayer/WordLengthSelectionPanel.tsx`, and related tests until coordinator integration.
+- Calendar work should be limited to adding Daily Live entry points and indicators without rewriting the central Calendar hub.
+- Do not edit canonical `src/game/` rules except for a small, reviewed helper if absolutely necessary.
+
+#### 28.10.3 Stage 2 Exit Gate
+
+Stage 2 must end with:
+
+1. `npm run lint`
+2. `npm run test`
+3. `npm run build`
+4. `npx tsc -p tsconfig.api.json --noEmit`
+5. `git diff --check`
+6. Desktop and mobile browser smoke covering Practice Live, Daily Live, word-length selection, refresh/reconnect projection, and UTC deadline messaging
+
+After Stage 2 verification, halt for user review. Do not create a PR, merge, or begin Stage 3 until explicitly approved.
+
+#### 28.10.4 Stage 2 Completion Summary
+
+Stage 2 is complete and verified under `phase_id = 72`.
+
+- Added `src/multiplayer/liveMultiplayer.ts` with live lobby/match phases, Practice Live word-length selection, countdown, simultaneous guess submission, winner resolution, daily UTC expiry, answer extraction, normalization, and merge helpers.
+- Added `src/multiplayer/liveRepository.ts` with memory/localStorage repositories and a Supabase-backed adapter for durable live projections plus realtime broadcasts.
+- Added `WordLengthSelectionPanel` and `LiveMultiplayerPanel` for the dedicated pre-game selection screen, live lobby, match status, countdown, live arena, move history, finished/expired answer + definitions, and aborted states.
+- Integrated Practice Live through the Practice route and Daily Live through the Calendar hub, including `L-OG` and `L-GO` live indicators.
+- Added `supabase/migrations/20260604024500_phase23_live_multiplayer.sql` and updated `docs/supabase.md`.
+- Verification: `npm run lint` clean; `npm run test` 417/417; `npm run build` succeeds with existing large-chunk advisory; `npx tsc -p tsconfig.api.json --noEmit` clean; `git diff --check` clean; Playwright browser smoke clean for desktop Practice Live, desktop Daily Live, reload persistence, UTC messaging, mobile Calendar live indicators, and no horizontal overflow.
+- Gate: halt for user review. Stage 3 ELO/rating/scoring, PR creation, merge, and release remain unauthorized.
+
+### 28.11 Stage 3 Stabilization — Online Multiplayer Corrections
+
+**Authorization status**: explicitly authorized by the user on 2026-06-04 as targeted fixes after Stage 3 review; implemented and tracked under `phase_id = 75`.
+
+This follow-up corrects user-reported defects in the Stage 1/2/3 multiplayer transport rather than adding optional Stage 4 scope. The binding issue was that async and live panels could still simulate both sides on one device. The stabilized architecture now requires a signed-in viewer to own exactly one player seat for online match mutation.
+
+#### 28.11.1 Durable Async Transport
+
+- Async multiplayer now has a repository seam (`asyncRepository.ts`) parallel to the live repository, with localStorage fallback and a Supabase-backed adapter.
+- Authenticated async state is persisted through `async_multiplayer_games` rows and Realtime `postgres_changes` subscriptions so a second browser/device can see waiting games and submitted turns after refresh.
+- Async games have an explicit `waiting` status. Creating a signed-in async match opens a waiting game with `player-one` owned by the creator. A separate signed-in user must join to claim `player-two` before turns can begin.
+- The async UI exposes only the current viewer's seat and only enables the guess form when it is that viewer's turn. Waiting games never reveal answer/definition content.
+
+#### 28.11.2 Live Realtime Ownership
+
+- Live lobbies now carry the creator's `hostUserId`; a second signed-in user joins a waiting lobby and becomes `player-two`.
+- The Supabase live repository now saves only rows the current user owns or participates in, writes participant rows with the correct `player_id`, and refreshes from Realtime Postgres change events on `live_lobbies`, `live_matches`, and `live_match_participants`.
+- Live UI no longer renders two simultaneous local guess inputs. It shows one viewer-owned guess form and limits Practice Live word-length selection to the signed-in player's seat.
+- A new additive migration updates the live lobby RLS policy so a second authenticated user can claim a waiting lobby without broadening rating-settlement permissions.
+
+#### 28.11.3 Mobile/UI Stabilization
+
+- Calendar day cells use compact mobile-visible indicator labels while preserving full accessible labels for `S-OG`, `S-GO`, `M-OG`, `M-GO`, `L-OG`, and `L-GO`.
+- Settings tooltips render through a body portal with a high stacking layer, avoiding clipping by the Lunar Signal playfield's overflow/backdrop container.
+- Settings label rows wrap on narrow screens and tooltip triggers do not shrink.
+
+#### 28.11.4 Gate
+
+After stabilization verification, halt for user review. Do not create a PR, merge, release, or begin optional Stage 4 until explicitly approved.
+
+### 28.12 Stage 3 Stabilization Follow-up — Account-Backed Multiplayer UX and Password Recovery
+
+**Authorization status**: explicitly authorized by the user on 2026-06-04 as targeted fixes after `phase_id = 75`; implemented and tracked under `phase_id = 76`.
+
+This follow-up remains within Phase 23 stabilization scope. It does not begin optional Stage 4, create a PR, merge, release, add leaderboards, add social systems, or change solo gameplay rules.
+
+#### 28.12.1 Account-backed async/live matchmaking hardening
+
+- Supabase async and live repositories now avoid broad upserts against waiting-room rows they do not own. Host-owned rows use explicit insert/update handling, while joined/visible rows are updated only through the current participant path.
+- Live Realtime projection publishing now uses the available Realtime channel send path instead of a REST fallback that can warn or fail in browser clients.
+- Additional additive Supabase migrations grant the expected authenticated table/function access and refine live-lobby RLS so a second authenticated user can claim a waiting lobby and still read the matched lobby row after the update.
+- Remote cross-client probes were run against the configured Supabase project using generated authenticated sessions for the two confirmed test accounts after the supplied passwords were rejected by Supabase Auth. Those probes verified async lobby visibility/join/turn sync and live lobby visibility/join/start/play sync between distinct authenticated users.
+
+#### 28.12.2 Multiplayer play-surface parity
+
+- Async and live multiplayer now share a dedicated `MultiplayerGameSurface` that renders the full blank puzzle grid from match start and uses the same on-screen `Keyboard` interaction model as solo play.
+- Multiplayer guesses are validated through the canonical OG/GO session reducers, preserving valid-guess checks, word length, Hard Mode constraints, tile coloring, and keyboard letter-state updates.
+- Multiplayer does not render consumables, Pay-to-Continue, reveal-answer, or extra-guess purchase affordances.
+- Async and live modes now expose a forfeit action. Forfeit marks the forfeiting player as the loser and feeds the result projection path as a loss for rating purposes when the match is otherwise rated/eligible.
+
+#### 28.12.3 Password recovery
+
+- Supabase password-reset redirect URLs now carry an explicit reset marker and `PASSWORD_RECOVERY` auth events open a dedicated password-reset modal instead of silently treating the link like a normal magic-link resume.
+- The reset UI validates password confirmation and calls Supabase password update through the existing account boundary.
+
+#### 28.12.4 Mobile/UI carry-forward checks
+
+- Calendar mobile indicators now visibly render the full `S-OG`, `S-GO`, `M-OG`, `M-GO`, `L-OG`, and `L-GO` labels without clipping or page overflow by stacking the indicators inside narrow mobile day cells while preserving the denser two-column desktop layout.
+- Settings tooltips remain portaled and viewport-aware with a high stacking layer.
+
+#### 28.12.5 Gate
+
+After follow-up verification, halt for user review. Do not create a PR, merge, release, or begin optional Stage 4 until explicitly approved.
+
+### 28.13 Stage 3 Stabilization Follow-up Planning — Realtime Refresh, Daily Limits, Rival Identity, and Multiplayer Navigation
+
+**Authorization status**: planning and governance only, tracked under `phase_id = 77`. This subsection documents the next targeted Phase 23 follow-up requested from `brrrdle_observations_2026_06_04.md`. It does not authorize implementation, source-code edits, Supabase migrations, tests, PR creation, merge, release, or optional Stage 4 work.
+
+This follow-up should stay narrowly inside Phase 23 stabilization. The goal is to polish the multiplayer architecture that already exists rather than add a broad new competitive system.
+
+#### 28.13.1 Binding Scope
+
+The next implementation pass, if explicitly approved, should address only these items:
+
+1. **Daily Async realtime refresh**: waiting-game lists must update automatically when another signed-in player creates a Daily Async lobby; the creator's screen must also transition automatically when a second player joins. Manual page refresh must not be required for lobby visibility, join state, or active-game entry.
+2. **Live selection and entry refresh**: Practice Live and Daily Live must resolve "Resolve Selection" automatically when both players submit. If the word-length selection clock expires, both clients should enter the game automatically from current Realtime/repository state without a manual refresh.
+3. **Daily Multiplayer one-play-per-day rule**: for each signed-in user and UTC day, each of the four Daily Multiplayer buckets (`async:og`, `async:go`, `live:og`, `live:go`) allows only one Daily Multiplayer participation. One owned/open lobby and one joined game are the same daily claim for that bucket; after the game finishes, expires, is forfeited, or otherwise becomes terminal, the user cannot create or join another game in that same bucket for that UTC day. Existing participated games must remain viewable from the Calendar/history surfaces.
+4. **Separate Daily Async and Daily Live answers**: Daily Async and Daily Live must use distinct deterministic answer selections so the answer lists do not match by transport. This must preserve the daily 5-letter invariant, valid-guess lists, solo Daily OG/GO answer selection, and Practice behavior.
+5. **Async header copy corrections**: Practice async should be labeled "Practice Async Multiplayer"; Daily async should be labeled "Daily Async Multiplayer". Existing Live labels should remain clear and separate.
+6. **Rival identity display**: all multiplayer modes should show safe rival profile details where available: display name, avatar, accent color, initials/fallback, and room for future non-private profile fields. The UI must not expose private emails or internal Supabase ids as public-facing rival identity.
+7. **Clickable Daily Multiplayer countdown**: the `DAILY MULTIPLAYER` countdown should remain visually unchanged but become clickable like `NEXT DAILY`, navigating to the current UTC day's Daily Async Multiplayer surface.
+8. **Dedicated Multiplayer tab path**: analyze and prepare the cleanest path toward a future Multiplayer tab that centralizes lobby browsing and multiplayer entry without breaking existing Calendar and Practice flows. Implementation of the new tab should not occur unless the user explicitly authorizes it in the execution prompt.
+
+#### 28.13.2 Proposed Technical Approach
+
+- Treat async and live repository subscriptions as the first place to debug manual-refresh behavior. Realtime callbacks should trigger a normalized reload/merge of the relevant async games, live lobbies, live matches, and participant rows, then update the React state that panels derive from. Avoid local optimistic state that hides the latest Supabase projection.
+- Add or reuse a small Daily Multiplayer participation helper that answers: "Has this authenticated user already claimed this UTC date + transport + mode bucket?" The helper should check both owned waiting lobbies and joined/participated games, including terminal states. A waiting lobby should block opening a second lobby; the user may re-enter the existing waiting lobby instead.
+- Prefer an additive persistence guard for the daily one-play rule. A client-side guard is necessary for UX, but a server-side guard or unique participation record should be considered during implementation so two tabs cannot race into duplicate Daily Multiplayer claims.
+- Add a transport-specific Daily Multiplayer answer variant or deterministic seed salt, for example separate `daily-multiplayer-async` and `daily-multiplayer-live` variants. Store enough metadata on multiplayer rows to keep existing in-progress games stable while new games use the corrected variant.
+- Reuse the account profile boundary for rival display. Project only safe fields such as `displayName`, `avatarUrl`, `accentColor`, initials, and label. If a profile is missing, render a non-private fallback such as "Rival" plus a generated accent.
+- Make countdown navigation additive. If the existing countdown component already supports click handlers, use that seam; otherwise add a generic accessible button/link affordance without changing the visual treatment. Navigation should deep-link to Daily Async Multiplayer for the current UTC date, likely through the Calendar launch model.
+- Treat a dedicated Multiplayer tab as a follow-up routing/architecture step. The cleanest path is an additive `multiplayer` route that aggregates Practice Async, Practice Live, Daily Async, and Daily Live entry cards using the same repository state, while Calendar countdown/deep links and Practice entry points remain as aliases until the new surface proves stable.
+
+#### 28.13.3 Recommended Work Slices
+
+If the user later authorizes implementation, split the work carefully:
+
+- **Lane A - Repository and domain refresh**: async/live subscription reload semantics, Daily Multiplayer participation helper, transport-specific daily-answer variant metadata, and unit tests. Avoid `src/app/App.tsx` until coordinator integration.
+- **Lane B - UI polish**: async header copy, rival identity components, countdown click affordance, waiting/re-entry messaging, and component tests.
+- **Lane C - Supabase/RLS review**: identify whether a small additive migration or RPC is needed for daily participation uniqueness and profile projection. Keep it minimal and backward-compatible.
+- **Coordinator lane**: `src/app/App.tsx`, Calendar launch/deep-link behavior, Daily countdown wiring, final docs/progress updates, and full verification.
+
+`src/app/App.tsx`, `src/calendar/CalendarPanel.tsx`, `src/daily/dailyVariant.ts`, async/live repository adapters, Supabase migrations, `CHANGELOG.md`, `progress/PROGRESS.csv`, `agents.md`, and `memory.md` should remain coordinator-owned or explicitly sequenced.
+
+#### 28.13.4 Risks and Mitigations
+
+- **Duplicate daily participation race**: client-only checks can fail across two tabs or devices. Mitigate with repository-level checks and, if feasible, a server-side unique participation constraint or transactional RPC.
+- **Breaking existing Daily history**: adding transport-specific answer variants could change in-progress or archived answers if not versioned. Mitigate by persisting variant metadata and keeping existing stored game answers authoritative.
+- **Realtime churn or infinite loops**: subscription callbacks that blindly save/reload can loop. Mitigate with read-only refresh callbacks, debouncing if needed, and repository tests that simulate cross-client updates.
+- **Profile privacy**: rival identity should not leak raw auth emails or ids. Mitigate by using safe derived profile fields and fallbacks.
+- **Navigation churn**: a new Multiplayer tab could duplicate state and confuse users. Mitigate by planning it as an additive aggregator route after the targeted fixes are stable, while retaining Calendar and Practice aliases.
+- **Calendar density**: Daily participation lockout/status should avoid adding more cramped day-cell labels. Prefer concise messaging in the selected-day panel or future Multiplayer tab.
+
+#### 28.13.5 Verification Strategy
+
+The execution pass must finish with the full local gate:
+
+1. `npm run lint`
+2. `npm run test`
+3. `npm run build`
+4. `npx tsc -p tsconfig.api.json --noEmit`
+5. `git diff --check`
+
+Additional required verification:
+
+- Remote or Supabase-shaped two-client tests proving Daily Async lobby creation, visibility, join transition, and active-game entry update without manual refresh.
+- Live two-client tests proving word-length selection resolves and both clients enter the match automatically after both submissions and after countdown expiry.
+- Tests for the Daily Multiplayer one-play-per-day rule across `async:og`, `async:go`, `live:og`, and `live:go`, including waiting lobbies, joined games, terminal games, expired games, and Calendar view-only access.
+- Tests that Daily Async and Daily Live answer selection differs while solo daily and practice answer behavior remain unchanged.
+- Component/browser smoke for corrected async headers, rival identity rendering, clickable Daily Multiplayer countdown navigation, desktop and 390px mobile layouts, and no console errors.
+
+#### 28.13.6 Gate
+
+After this planning update, halt for user review. Do not implement §28.13 until the user explicitly authorizes the execution pass. Do not create a PR, merge, release, or begin optional Stage 4 unless separately approved.
+
+### 28.14 Stage 3 Stabilization Follow-up Execution — Realtime Refresh, Daily Claims, Rival Identity, and Countdown Navigation
+
+**Status**: implemented under `phase_id = 78` after explicit user authorization. This execution remains inside the §28.13 targeted stabilization scope. It does not create a PR, merge, release, replace Calendar/Practice entry points, or begin optional Stage 4.
+
+#### 28.14.1 Delivered Scope
+
+- **Daily Async refresh and entry**: Async panels now derive the active selected game from live repository state when the previous selection disappears or a user's existing daily claim appears. This lets Supabase subscription refreshes surface newly visible lobbies, joined games, and re-entry state without requiring a page refresh.
+- **Live selection and entry refresh**: Live panels derive selected lobby/match state from current repository snapshots, automatically resolve Practice Live word-length selection when both players submit or the one-minute clock expires, automatically complete the selection animation, and automatically enter the live arena when the countdown expires.
+- **Daily Multiplayer participation rule**: Added client/domain helpers and reducer guards so each authenticated user can claim only one Daily Multiplayer participation per UTC date, transport, and mode bucket: `async:og`, `async:go`, `live:og`, and `live:go`. Existing waiting lobbies count as the claim and remain re-enterable.
+- **Supabase claim guard**: Added `supabase/migrations/20260604223000_phase23_daily_multiplayer_claims.sql`, which creates `multiplayer_daily_claims`, adds live lobby `host_profile`, and enforces the same daily-claim invariant through additive triggers for async games, live lobbies, and live matches.
+- **Separate Daily Async and Daily Live answer variants**: Added deterministic transport-specific Daily Multiplayer setup helpers. Async and Live use separate answer offsets while preserving solo Daily answers, daily five-letter length, valid-guess lists, and Practice behavior.
+- **Header and rival identity polish**: Async section headers now read `Practice Async Multiplayer` and `Daily Async Multiplayer`; async/live waiting and active surfaces render safe rival identity summaries with display label, avatar, initials, and accent-compatible metadata without exposing raw emails or internal ids.
+- **Countdown navigation**: The `DAILY MULTIPLAYER` countdown now launches the current UTC Daily Async Multiplayer surface through the Calendar launch request model.
+- **Future Multiplayer tab groundwork**: The implementation keeps Calendar and Practice entry points intact and limits groundwork to reusable launch/profile/daily-claim helpers, leaving any dedicated Multiplayer tab as separately gated future work.
+
+#### 28.14.2 Files and Modules Involved
+
+- `src/multiplayer/dailyMultiplayer.ts` for transport-specific daily setups and safe public profile summaries.
+- `src/multiplayer/asyncMultiplayer.ts` and `src/multiplayer/liveMultiplayer.ts` for daily participation helpers, duplicate-claim guards, profile metadata, and live auto-resolution support.
+- `src/multiplayer/AsyncMultiplayerPanel.tsx`, `LiveMultiplayerPanel.tsx`, `WordLengthSelectionPanel.tsx`, `RivalIdentityCard.tsx`, and `MultiplayerGameSurface.tsx` for UI wiring, rival identity display, selection refresh, and transport-aware validation.
+- `src/calendar/CalendarPanel.tsx` and `src/app/App.tsx` for Daily Multiplayer launch/deep-link behavior and profile propagation.
+- `src/multiplayer/liveRepository.ts`, `docs/supabase.md`, and the new Supabase migration for persistence and setup documentation.
+
+#### 28.14.3 Verification
+
+Required verification for this pass includes:
+
+1. `npm run lint`
+2. `npm run test`
+3. `npm run build`
+4. `npx tsc -p tsconfig.api.json --noEmit`
+5. `git diff --check`
+6. Desktop and 390px mobile browser smoke, especially Daily Async launch, Daily Live/Practice Live surfaces, Calendar indicators, and console cleanliness.
+
+Focused regression coverage added:
+
+- Daily Async and Daily Live use separate deterministic answer sequences.
+- Daily Async and Daily Live duplicate claims are rejected at the domain layer.
+- Rival profile summaries are sanitized and preserved in match projections.
+- Live host profile metadata is persisted by the Supabase repository adapter.
+- Calendar launch requests can open Daily Async Multiplayer from the countdown path.
+
+#### 28.14.4 Gate
+
+After implementation and verification, halt for user review. Do not create a PR, merge, release, replace existing multiplayer entry points, implement a dedicated Multiplayer tab, or begin optional Stage 4 until the user explicitly approves that later step.
+
+### 28.15 Stage 4 Planning — Daily Multiplayer Fixes and Spectator Foundations
+
+**Authorization status**: planning and governance only, tracked under `phase_id = 79`. This subsection documents the next approved Stage 4 plan from `PHASE-23-STAGE-4-DAILY-MULTIPLAYER-FIXES-AND-SPECTATOR-SPEC-2026-06-04.md`. It does not authorize implementation, source-code edits, UI work, Supabase migrations, tests, PR creation, merge, release, or dedicated Multiplayer tab work.
+
+This stage should stay narrowly focused on multiplayer reliability, correctness, and small UX gaps. It should not become a broad redesign, competitive-system expansion, social feature pass, or dedicated Multiplayer tab implementation.
+
+#### 28.15.1 Binding Scope
+
+The next implementation pass, if explicitly approved, should address these items:
+
+1. **Daily Multiplayer lobby visibility**: Daily Async and Daily Live lobby lists must update automatically when another signed-in player creates a lobby, matching the reliability currently observed in Practice multiplayer. Manual page refresh must not be required for a waiting lobby to appear.
+2. **Daily claim bypass closure**: if a signed-in user has already claimed a Daily Multiplayer bucket for the current UTC day, the create/open-lobby action must be blocked before a new lobby row is created. The warning state is not sufficient if the action still persists a lobby.
+3. **Per-player five-lobby limit**: confirm and enforce that the five-active-lobby/game cap is per authenticated user, not global. A user's own waiting lobbies, active games, and other non-terminal in-scope multiplayer rows should count for that user only.
+4. **Creator lobby cancellation**: a lobby creator may cancel/close their own unjoined lobby before another player joins. Cancellation must make the lobby unavailable to rivals and must release the creator's active-lobby slot.
+5. **Lobby cancellation UI**: render a clear `Cancel Lobby` or `Close Lobby` action only when the viewer is the creator/host and the lobby is still unjoined. The action must not be available to rivals, spectators, or either player after a second player has joined.
+6. **Rival identity carry-forward**: if gaps remain after `phase_id = 78`, waiting lobbies, active matches, terminal states, and spectator views should consistently show safe public identity fields only: label/display name, avatar, accent, initials, and non-private fallbacks.
+7. **Live spectator foundations**: authenticated users may join an active Live match as read-only spectators. Spectators should see current board/guess/result state update in near real time, must not submit guesses or mutate match state, and must see a clear spectating status.
+8. **Dedicated Multiplayer tab deferral**: planning and architectural thinking may continue, but implementation of a central Multiplayer tab remains out of scope for this Stage 4 pass.
+
+#### 28.15.2 Daily Lobby Refresh Approach
+
+Daily Async and Daily Live refresh should be debugged against the Practice multiplayer behavior before adding new abstractions.
+
+- First compare subscription setup, repository reload callbacks, and derived selected-lobby state between Practice Async/Live and Daily Async/Live. The expected fix is likely state reconciliation rather than a separate polling loop.
+- Realtime callbacks should trigger read-only reload/merge of relevant waiting lobbies, active games/matches, and participant rows. They must not blindly write visible public waiting rows back to Supabase.
+- UI panels should derive visible lobby lists from the latest repository snapshot and current viewer identity. Avoid stale local copies that are only updated after a full page load.
+- If Supabase Realtime does not deliver a specific table/update path for Daily rows, add the smallest persistence/repository hook needed so Daily creation, join, cancellation, and terminal transitions publish the same way Practice rows do.
+- Tests should simulate two repository clients: client A creates a Daily lobby, client B receives it without refresh, client B joins, and client A sees the joined/active state without refresh.
+
+#### 28.15.3 Claim, Limit, and Cancellation Approach
+
+The existing Daily claim system should remain the authority for one-play-per-day behavior; Stage 4 should close gaps around create/open timing and cancellation.
+
+- Use the existing `multiplayer_daily_claims` concept and `src/multiplayer/dailyMultiplayer.ts` helpers rather than creating a parallel claim store.
+- Add a preflight guard before lobby creation/open actions. If the user already has a claim for `user + UTC date + transport + mode`, show the existing claim/re-entry state and do not create a new row.
+- A waiting lobby counts as a daily claim while it exists. If the creator cancels the unjoined lobby, the implementation should decide whether the daily claim is released or terminally consumed. For this spec, the operational goal is to release the creator's active-lobby slot; the daily-claim release policy should be implemented consistently with the existing claim table and documented in the execution report.
+- Prefer cancellation as an explicit lobby status such as `cancelled` or `aborted`, not a hard delete, so Realtime can notify viewers, history can ignore/categorize it, and debugging remains possible.
+- Ensure cancellation is allowed only before a second player joins. Once a rival has joined, the existing forfeit/terminal flow is the correct player exit path.
+- Count active multiplayer capacity per authenticated user. Include owned waiting lobbies and joined active games; exclude cancelled/unjoined lobbies after cancellation and other terminal records that no longer occupy an active slot.
+- If client-side checks are insufficient for races, plan a minimal additive Supabase guard/RPC/migration during execution, but do not weaken RLS or grant browser clients direct authority over other users' rows.
+
+#### 28.15.4 Live Spectator Foundation Approach
+
+Spectators should be modeled as a third role, separate from `player-one` and `player-two`.
+
+- Add spectator participation as read-only identity/presence metadata in the Live repository/domain model. Do not overload player seats or use player controls with disabled styling only.
+- A spectator may subscribe to and render an active Live match projection but may not submit guesses, resolve word-length selection, forfeit on behalf of a player, edit lobby metadata, or settle rating.
+- The UI should use the existing multiplayer board surface in read-only mode where practical: full board state, keyboard state if useful for visualization, move history, result, answer/definition archive when the match is terminal, and a clear `Spectating` status.
+- Spectator count/presence is nice-to-have. If added, keep it ephemeral or additive and avoid adding chat, moderation, async spectator mode, or public profile expansion in this stage.
+- Rating, scoring, and forfeit logic must ignore spectators entirely.
+- RLS must distinguish participant-player write permissions from spectator read permissions. If a migration is needed, it should grant spectators read access only to the intended live match/lobby projection.
+
+#### 28.15.5 Recommended Work Slices
+
+If the user later authorizes implementation, use these slices:
+
+- **Lane A - Daily repository refresh and limits**: inspect Practice vs Daily subscription paths; fix Daily Async/Daily Live lobby-list refresh; add per-user active-count helpers; add unit/repository tests.
+- **Lane B - Claim and cancellation domain**: close create/open claim bypass; add cancellation status/action model; define claim/slot release behavior; add reducer/domain tests for own waiting lobby, already-claimed bucket, cancellation, and terminal states.
+- **Lane C - Live spectator domain and persistence**: add spectator role/read-only model, repository projection, any minimal Supabase/RLS changes, and tests that spectators cannot mutate state.
+- **Lane D - UI integration**: cancellation controls, spectator entry/read-only views, safe rival identity carry-forward, accessible empty/error states, and mobile layout checks.
+- **Coordinator lane**: `src/app/App.tsx`, Calendar/Practice routing/deep links, high-conflict docs/progress updates, final integration review, full verification, and Vercel preview.
+
+Keep `src/app/App.tsx`, `src/calendar/CalendarPanel.tsx`, `src/multiplayer/liveRepository.ts`, `src/multiplayer/asyncMultiplayer.ts`, `src/multiplayer/liveMultiplayer.ts`, Supabase migrations, `CHANGELOG.md`, `progress/PROGRESS.csv`, `agents.md`, and `memory.md` coordinator-owned or explicitly sequenced.
+
+#### 28.15.6 Risks and Considerations
+
+- **Realtime refresh regressions**: fixing Daily subscriptions could accidentally duplicate Practice behavior or create reload loops. Mitigate with two-client repository tests and read-only refresh callbacks.
+- **Claim/cancellation ambiguity**: a cancelled unjoined Daily lobby may either release only the active slot or also release the daily claim. The implementation must choose the policy that best matches the spec and existing Supabase claim constraints, then document it clearly.
+- **Race conditions**: two browser tabs can try to create or cancel simultaneously. Mitigate with repository-level checks and server-side constraints/RPCs if client-only guards are insufficient.
+- **RLS leakage**: spectator read access must not expose private profile fields, auth emails, service data, or matches outside the intended active Live spectator surface.
+- **Player/spectator role confusion**: avoid disabled player controls as the only signal. Spectators need a distinct read-only state, and player actions must check role before mutating state.
+- **Scope creep**: do not implement chat, async spectator mode, broad dashboard navigation, social graph, leaderboards, moderation, or economy rewards as part of this pass.
+- **Mobile density**: cancellation, spectator, and rival identity affordances must not crowd Calendar or multiplayer panels. Prefer concise action rows and collapsible/secondary details where needed.
+
+#### 28.15.7 Verification Strategy
+
+The execution pass must finish with the standard gate:
+
+1. `npm run lint`
+2. `npm run test`
+3. `npm run build`
+4. `npx tsc -p tsconfig.api.json --noEmit`
+5. `git diff --check`
+
+Additional required verification:
+
+- Two-client Daily Async and Daily Live tests proving lobby creation appears for the other user without refresh.
+- Daily claim bypass regression tests proving no new lobby row is created after an existing claim for the same UTC date/transport/mode bucket.
+- Per-player active-limit tests proving five-lobby limits are per user and are released for cancelled unjoined lobbies.
+- Creator-only cancellation tests proving the host can cancel before join, rivals cannot cancel, and joined lobbies use forfeit/terminal flows instead.
+- Live spectator tests proving an authenticated spectator can view an active match, receives live updates, and cannot submit guesses, forfeit, resolve selection, or mutate match state.
+- Browser smoke on desktop and 390px mobile for Daily lobby refresh, cancellation UI, spectator read-only mode, rival identity display, no horizontal overflow, and no console errors.
+- Supabase/RLS manual verification if a migration/RPC is added, including no direct browser write access to rating/settlement rows and no raw email/id exposure in spectator or rival identity surfaces.
+
+#### 28.15.8 Gate
+
+After this planning update, halt for user review. Do not implement Stage 4, add Supabase migrations, change UI/components, create tests, create a PR, merge, release, or implement a dedicated Multiplayer tab until the user explicitly authorizes the execution pass.
+
+### 28.16 Stage 4 Execution — Daily Multiplayer Fixes and Live Spectator Foundations
+
+**Status**: implemented under `phase_id = 80` after explicit user authorization. This execution remains inside `PHASE-23-STAGE-4-DAILY-MULTIPLAYER-FIXES-AND-SPECTATOR-SPEC-2026-06-04.md`; it does not create a PR, merge, release, replace Calendar/Practice multiplayer entry points, or implement the deferred dedicated Multiplayer tab.
+
+#### 28.16.1 Implemented Scope
+
+- **Per-user active limits**: async and live active-count helpers now scope the five-active-game limit to the authenticated user instead of all visible public lobbies.
+- **Daily claim bypass closure**: async and live domain create helpers reject duplicate Daily claims for the same authenticated user, UTC date, transport, and mode. Authenticated repository save failures now reload the authoritative repository snapshot instead of preserving rejected optimistic Daily creates locally.
+- **Creator cancellation**: async and live lobby creators can cancel their own unjoined waiting lobbies. Rivals cannot cancel another user's lobby, and joined games continue to use the existing forfeit/terminal flow.
+- **Cancellation policy**: cancelled unjoined lobbies release the creator's active-game slot but still consume the Daily Multiplayer claim for that UTC bucket. This avoids an open/cancel/open loophole while satisfying the Stage 4 active-slot requirement.
+- **Live spectators**: Live matches now support authenticated spectators as a third read-only role, separate from `player-one` and `player-two`. Spectators can join active Live matches, see board/history state, and are blocked from guess submission, word-length selection, forfeit, lobby cancellation, and rating mutation paths.
+- **Supabase persistence/RLS**: added `supabase/migrations/20260605043000_phase23_stage4_lobby_cancel_spectators.sql` to allow async `cancelled` status and create the additive `live_match_spectators` table/policies/publication hook.
+- **UI and identity**: async/live panels expose cancellation only to eligible creators, show cancellation status safely, provide Live spectator entry/read-only surfaces, and continue to use safe public profile summaries for identity display.
+- **Docs/tests**: added/updated focused domain, repository, and panel tests plus Supabase documentation for Stage 4 migration and manual checks.
+
+#### 28.16.2 Important Decisions
+
+- Cancellation is a terminal/unavailable state rather than a hard delete, so Realtime subscribers can reconcile the lobby state and logs/history remain debuggable.
+- Daily cancellation releases active capacity only, not the Daily claim, because the existing `multiplayer_daily_claims` table is intentionally one-way for a daily bucket.
+- Spectators are persisted in `live_match_spectators`, not `live_match_participants`, so player-seat uniqueness and participant write policies remain intact.
+- The live repository tolerates a missing spectator table during read refresh so existing live multiplayer does not fail if a deployment briefly runs before the Stage 4 migration is applied; spectator joining requires the migration.
+
+#### 28.16.3 Verification Requirements
+
+Before reporting Stage 4 complete, run:
+
+1. `npm run lint`
+2. `npm run test`
+3. `npm run build`
+4. `npx tsc -p tsconfig.api.json --noEmit`
+5. `git diff --check`
+6. Desktop and 390px mobile browser smoke for Daily Async/Live lobby surfaces, creator cancellation, spectator read-only mode, Calendar/Settings regressions, and console cleanliness.
+
+After verification, halt for user review. PR creation, merge, release, dedicated Multiplayer tab implementation, and later-phase work remain gated.
+
+### 28.17 Stage 5 Planning — Multiplayer UX Fixes and Polish
+
+**Authorization status**: planning and governance only, tracked under `phase_id = 81`. This subsection documents the next approved Stage 5 plan from `PHASE-23-STAGE-5-MULTIPLAYER-UX-FIXES-AND-POLISH-SPEC-2026-06-05.md`. It does not authorize implementation, source-code edits, UI/component work, Supabase migrations, tests, PR creation, merge, release, dedicated Multiplayer tab work, notification-system work, history/theme tab work, bot opponents, or broader design exploration.
+
+Stage 5 should be a narrow bug-fix and polish pass driven by real-account testing feedback after Stage 4. The goal is to make Daily and Practice multiplayer feel reliable and intuitive without changing the broader Phase 23 architecture or reopening deferred feature tracks.
+
+#### 28.17.1 Binding Scope
+
+The next implementation pass, if explicitly approved, should address these items:
+
+1. **Sign-in flow cleanup**: remove the duplicate first `Sign in` action in the Email + Password flow and order the remaining actions as `Sign in`, `Create account`, then `Forgot password?`. This is a polish fix only; auth behavior, Supabase recovery handling, and password-reset semantics should not change.
+2. **Daily Multiplayer four-bucket participation limit**: ensure each authenticated user can claim exactly one of each Daily Multiplayer bucket per UTC day: `live:og`, `live:go`, `async:og`, and `async:go`. The implementation must not accidentally restrict the user to one total live claim plus one total async claim.
+3. **Daily Live join affordance**: make `Join live lobby` visibly pulse/flash for non-host viewers when a joinable lobby is selected or visible, while preserving accessibility and reduced-motion expectations.
+4. **Daily Live join reliability**: joining as a non-host must reliably enter the game for both players without manual refresh. This is the highest-risk live-flow fix and should be verified with two clients.
+5. **Daily Live GO fixed-length behavior**: Daily Live GO must not briefly show a Practice-style word-length selection phase. Daily games are fixed at five letters; after a Daily Live join, the state should proceed directly to countdown/playing according to the existing Daily Live flow.
+6. **Practice Live entry reliability**: Practice Live lobbies must be enterable after a rival joins for both OG and GO. If the current state says the rival joined, the UI must surface the appropriate Practice Live word-length selection/countdown/play state instead of a dead message-only surface.
+7. **Practice Live word-length timing**: Practice Live word-length selection countdown should start only after a rival joins and a match exists, not when the host merely opens a lobby.
+8. **Practice Live word-length UI visibility**: when a Practice Live match enters the word-length selection phase, both clients should see the actual selection UI rather than only a status message.
+
+#### 28.17.2 Explicitly Deferred Items
+
+Do not implement these during Stage 5 unless a later user prompt explicitly expands scope:
+
+- Browser notifications.
+- Floating multiplayer game manager.
+- Multiplayer game timestamps.
+- Dedicated Themes tab or custom theme system expansion.
+- Dedicated History tab.
+- Turn transparency / guess attribution beyond what is required to fix entry state.
+- Game-data exports or GIF generation.
+- Practice vs Bots.
+- Lichess-inspired redesign exploration.
+- Dedicated Multiplayer tab implementation.
+- Any new competitive/rating features.
+
+#### 28.17.3 Recommended Implementation Order
+
+If the user later authorizes execution, implement in this order:
+
+1. **Sign-in cleanup**: inspect `src/account/AuthModal.tsx`, its tests, and related auth helpers; make the lowest-risk layout/action-order correction first.
+2. **Daily bucket audit**: trace client/domain and Supabase claim checks for `hasDailyAsyncMultiplayerParticipation`, `hasDailyLiveMultiplayerParticipation`, `multiplayer_daily_claims`, and repository save/reload paths. Confirm mode is preserved in all checks and UI gating.
+3. **Live join state reconciliation**: inspect `matchLiveMultiplayerLobby`, live repository save/load/update behavior, selected lobby/match derivation in `LiveMultiplayerPanel`, and App/Calendar/Practice callback wiring. Fix reliable entry before adding animation polish.
+4. **Daily Live phase correction**: ensure Daily Live OG/GO joins never pass through Practice-only word-length selection. Daily match creation should commit the five-letter countdown path immediately.
+5. **Practice Live selection timing**: ensure word-length selection records and timers are created only after a two-player match forms, and both clients receive/render that phase.
+6. **Join button pulsing polish**: add the non-host visual cue after correctness is stable, with accessible copy/state and no layout shifts.
+7. **Focused tests and smoke**: add or update unit, repository, component, and browser/remote probes for the corrected flows.
+
+#### 28.17.4 Suggested Work Slices
+
+If parallel sub-agents are used during the later execution pass, split work conservatively:
+
+- **Lane A - Auth UI polish**: `src/account/AuthModal.tsx` and auth modal tests only. No multiplayer files.
+- **Lane B - Daily claim/domain audit**: async/live daily participation helpers, claim guards, and Supabase claim migration/RLS review. This lane should be sequenced with Live join changes if both need `src/multiplayer/liveMultiplayer.ts`.
+- **Lane C - Live join/phase domain and repository**: `src/multiplayer/liveMultiplayer.ts`, `src/multiplayer/liveRepository.ts`, and focused live tests. Owns reliable join, Daily fixed-length phase, and Practice selection timing.
+- **Lane D - Live UI integration**: `src/multiplayer/LiveMultiplayerPanel.tsx`, `WordLengthSelectionPanel.tsx` if needed, and panel tests. Owns visible selection UI, join affordance, and mobile polish after Lane C stabilizes state shapes.
+- **Coordinator lane**: `src/app/App.tsx`, `src/calendar/CalendarPanel.tsx`, `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, progress files, `agents.md`, `memory.md`, final verification, remote Supabase probe, and Vercel preview.
+
+Because `src/multiplayer/liveMultiplayer.ts`, `src/multiplayer/LiveMultiplayerPanel.tsx`, `src/app/App.tsx`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `agents.md`, and `memory.md` are high-conflict surfaces, only one writer should own each at a time. If more than one fix needs the same file, sequence those edits rather than merging overlapping patches.
+
+#### 28.17.5 Risks and Considerations
+
+- **Daily claim regression risk**: Stage 4 intentionally preserved Daily claims after cancellation. Stage 5 must correct bucket granularity without weakening the one-claim-per-user/date/transport/mode invariant or reopening create/cancel/recreate loopholes.
+- **Live join fragility**: previous phases repeatedly touched live lobby/match persistence, selected state, participant rows, and realtime reconciliation. Treat join reliability as an architectural correctness issue, not only a UI refresh issue.
+- **Daily vs Practice phase confusion**: Daily Live should be fixed-length and skip Practice selection; Practice Live should delay selection until the rival joins. Tests should cover both directions to avoid swapping one bug for the other.
+- **Realtime and reload races**: two clients may see lobby, matched lobby, match, and participant updates in different orders. UI should derive from authoritative match state and recover on refresh.
+- **Visual cue accessibility**: pulsing/flashing should not be the only signal. Pair animation with clear enabled button state, disabled state, and reduced-motion-safe styling.
+- **Scope creep**: defer all optional ideas from the Stage 5 spec unless the user explicitly authorizes them.
+
+#### 28.17.6 Verification Strategy
+
+The later execution pass must finish with the standard gate:
+
+1. `npm run lint`
+2. `npm run test`
+3. `npm run build`
+4. `npx tsc -p tsconfig.api.json --noEmit`
+5. `git diff --check`
+
+Additional required verification:
+
+- Auth modal test or browser smoke proving there is one Email + Password `Sign in` action and the order is `Sign in`, `Create account`, `Forgot password?`.
+- Daily Multiplayer bucket tests proving one user can claim `async:og`, `async:go`, `live:og`, and `live:go` independently on the same UTC day, while duplicate claims in the same bucket remain blocked.
+- Two-client Daily Live remote or Supabase-shaped repository test proving host/rival join visibility, match entry for both users, and no manual refresh requirement.
+- Daily Live GO regression test proving no word-length selection screen flashes or becomes selectable.
+- Practice Live test proving word-length selection starts only after a rival joins and both clients render the selection UI.
+- Browser smoke on desktop and 390px mobile for sign-in modal, Daily Live join flow, Practice Live join/selection flow, no console errors, and no horizontal overflow.
+- Remote Supabase verification where applicable, especially if join/claim fixes touch repository or RLS behavior.
+
+#### 28.17.7 Gate
+
+After this planning update, halt for user review. Do not implement Stage 5, edit source files, add tests, add Supabase migrations, create a PR, merge, release, implement the dedicated Multiplayer tab, or begin optional/deferred feature work until the user explicitly authorizes the execution pass.
+
+### 28.18 Stage 5 Execution — Multiplayer UX Fixes and Polish
+
+**Authorization status**: complete under `phase_id = 82` through `phase_id = 85` after explicit user authorization. This execution remained within the narrow Stage 5 bug-fix and polish scope. No PR, merge, release, dedicated Multiplayer tab, notification system, floating multiplayer manager, History/Theme tab, bot opponent, exports/GIFs, broader redesign, or later-phase work was performed.
+
+#### 28.18.1 Implemented Changes
+
+1. **Sign-in flow cleanup**: removed the duplicate password-mode `Sign in` affordance from the clean auth modal and ordered Email + Password actions as `Sign in`, `Create account`, then `Forgot password?`. The Settings inline auth fallback now presents the same action order without changing Supabase auth behavior.
+2. **Daily Multiplayer four-bucket regressions**: added explicit tests proving `async:og`, `async:go`, `live:og`, and `live:go` remain independently claimable on the same UTC day while duplicate claims inside a bucket stay blocked.
+3. **Daily Live fixed-length safety**: hardened live match normalization so Daily Live matches cannot fall back into Practice word-length selection when remote phase metadata is missing or invalid.
+4. **Practice/Live entry reconciliation**: updated the Live panel to prefer the viewer's active joined match across Practice and Daily scopes, so host and rival clients can enter the active match state after joins instead of remaining on a stale lobby/status surface.
+5. **Practice-only word-length rendering**: restricted the word-length selection UI to Practice Live matches. Daily Live OG/GO stays on the fixed five-letter Daily flow.
+6. **Join live lobby affordance**: added a visible, reduced-motion-safe pulse/ring to actionable non-host `Join live lobby` buttons without changing disabled states or layout structure.
+
+#### 28.18.2 Verification
+
+Stage 5 completion verification:
+
+1. `npm run lint` — clean.
+2. `npm run test` — clean, 473 tests passing.
+3. `npm run build` — clean, with the existing Vite large-chunk advisory.
+4. `npx tsc -p tsconfig.api.json --noEmit` — clean.
+5. `git diff --check` — clean.
+6. Focused tests for auth, async multiplayer, live multiplayer domain, and live multiplayer panel behavior — clean.
+7. Remote Supabase probe using temporary authenticated users — passed for async/live four-bucket behavior, duplicate guards, live lobby visibility/join, and cross-client live phase updates.
+8. Desktop and 390px mobile browser smoke — clean for landing, Practice multiplayer, Settings/auth actions, no horizontal overflow, and no console errors.
+
+#### 28.18.3 Remaining Gates
+
+The following remain explicitly gated and require a later user prompt:
+
+- PR creation.
+- Merge.
+- Release/deployment promotion.
+- Dedicated Multiplayer tab implementation.
+- Browser notifications, floating multiplayer manager, multiplayer timestamps, History/Theme tabs, bot opponents, exports/GIFs, lichess-style redesign work, or any later-phase scope.
+
+### 28.19 Stage 6 Planning — Live Multiplayer Stability and Daily Claim Fixes
+
+**Authorization status**: complete and verified under `phase_id = 88`-`90`. This subsection documents the critical Stage 6 bug-fix plan and completion record from `PHASE-23-STAGE-6-LIVE-MULTIPLAYER-STABILITY-AND-DAILY-CLAIM-FIXES-SPEC-2026-06-05.md`. PR creation, merge, release, Stage 7 broad debugging, spectator expansion, dedicated Multiplayer tab work, deferred feature work, and later-phase work remain gated.
+
+Stage 6 is a bug-only stability pass. The goal is to make live multiplayer playable and reliable again while correcting the Daily Multiplayer claim behavior introduced by the current cancellation policy. Async multiplayer is explicitly stable enough to use as a behavioral reference for live realtime state reconciliation.
+
+#### 28.19.1 Binding Bug Scope
+
+The next implementation pass, if explicitly approved, must address exactly these six bugs:
+
+1. **Daily Multiplayer claim release after early cancellation**: when the creator cancels an unjoined Daily lobby before a rival joins, the active slot and the daily claim for that `transport:mode` bucket should be released. This applies to `async:og`, `async:go`, `live:og`, and `live:go`.
+2. **Live board and turn-history realtime updates**: both players must see board state and turn history update without manual refresh during Live Practice and Live Daily games. Stale state and board/history mismatch are considered blocking defects.
+3. **Practice Live flashing after word-length selection**: after word-length selection resolves, both players must transition cleanly into gameplay without rapid flashing between selection and gameplay surfaces.
+4. **Creator-side word-length selection visibility**: when a rival joins a Practice Live lobby, the creator must see the word-length selection UI in realtime without refreshing.
+5. **Browser refresh route preservation**: refreshing inside a multiplayer game should preserve the current tab/game context instead of returning to the Command Center/dashboard.
+6. **General live instability cleanup**: delayed board updates, flashing puzzle areas, and inconsistent state between Live clients should be fixed where they share causes with the five specific bugs above.
+
+#### 28.19.2 Explicitly Out of Scope
+
+Do not implement during Stage 6 unless a later user prompt explicitly expands scope:
+
+- New features of any kind.
+- Spectator feature implementation, redesign, or testing beyond avoiding regressions.
+- Dedicated Multiplayer tab.
+- Browser notifications, floating game manager, History/Theme tabs, bots, exports/GIFs, timestamps, turn transparency, or lichess-style redesign work.
+- Broad refactors that are not necessary to fix the listed bugs.
+
+#### 28.19.3 Recommended Implementation Approach
+
+If the user later authorizes execution, implement in this order:
+
+1. **Reproduce and instrument first**: run two-client local and remote Supabase probes for the listed Live flows before changing behavior. Record the exact stale-state/flashing sequence so fixes are aimed at the failing transition rather than at symptoms.
+2. **Daily claim release on pre-join cancellation**: audit `src/multiplayer/dailyMultiplayer.ts`, async/live cancellation helpers, repository save paths, and `multiplayer_daily_claims` handling. Change the policy narrowly so creator cancellation before a rival joins releases both active slot and Daily claim, while joined/terminal games still preserve the claim.
+3. **Live realtime reconciliation**: compare live subscription/load/update behavior in `src/multiplayer/liveRepository.ts` and `src/app/App.tsx` against the more reliable async repository pattern. Prefer authoritative repository snapshots plus idempotent selected-match derivation over local optimistic oscillation.
+4. **Word-length phase transition**: inspect `src/multiplayer/liveMultiplayer.ts`, `src/multiplayer/LiveMultiplayerPanel.tsx`, and `src/multiplayer/WordLengthSelectionPanel.tsx` for phase derivation races. Ensure Practice Live selection starts once after the second player joins, resolves once, and cannot re-enter selection from stale lobby/match data.
+5. **Creator realtime visibility**: ensure the host subscribes to and reconciles the same joined match/participant updates as the joining rival. The creator should not need a refresh to leave the waiting lobby surface.
+6. **Refresh route preservation**: inspect route persistence and launch state in `src/app/App.tsx` and related storage. Preserve the current tab/game context on reload without changing the route model or introducing the deferred Multiplayer tab.
+7. **Tight verification loop**: add focused regressions after each bug fix, then finish with two authenticated browser sessions against Supabase for Live Practice, Live Daily, cancellation/reclaim, refresh preservation, board updates, and turn history.
+
+#### 28.19.4 Suggested Work Slices
+
+If parallel sub-agents are used during a later execution prompt, keep ownership narrow:
+
+- **Lane A - Claim and cancellation policy**: `src/multiplayer/dailyMultiplayer.ts`, async/live cancellation helpers, repository claim/reload behavior, and relevant domain tests. Coordinate with any Supabase/RLS review before touching migrations.
+- **Lane B - Live repository/realtime**: `src/multiplayer/liveRepository.ts`, subscription handling, remote snapshot normalization, and repository tests. This lane owns board/history freshness.
+- **Lane C - Live domain/phase transitions**: `src/multiplayer/liveMultiplayer.ts`, word-length selection resolution, idempotent transition rules, and live domain tests. This lane owns flashing/glitch prevention.
+- **Lane D - Live UI/rendering**: `src/multiplayer/LiveMultiplayerPanel.tsx`, `src/multiplayer/WordLengthSelectionPanel.tsx`, `src/multiplayer/MultiplayerGameSurface.tsx`, and component tests after Lane B/C state shapes are stable.
+- **Lane E - Route preservation**: `src/app/App.tsx`, route launch/persistence state, and focused browser smoke. This lane must be coordinator-owned or explicitly sequenced because `App.tsx` is high-conflict.
+- **Coordinator lane**: final integration, `CHANGELOG.md`, `progress/PROGRESS.csv`, progress reports, `agents.md`, `memory.md`, remote Supabase verification, desktop/mobile smoke, and Vercel preview after implementation.
+
+Keep `src/app/App.tsx`, `src/multiplayer/liveMultiplayer.ts`, `src/multiplayer/liveRepository.ts`, `src/multiplayer/LiveMultiplayerPanel.tsx`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `agents.md`, and `memory.md` single-writer or explicitly sequenced. Do not let one lane revert or overwrite another lane's changes.
+
+#### 28.19.5 Risks and Considerations
+
+- **Claim policy reversal risk**: Stage 4 deliberately preserved Daily claims after cancellation. Stage 6 intentionally changes only the pre-join cancellation case. Joined, finished, forfeited, expired, or spectator-involved flows must not become claim-reset loopholes.
+- **Realtime race risk**: live lobbies, live matches, participant rows, phase updates, and local selected-state derivation can arrive in different orders. Fixes should be idempotent and recoverable from fresh snapshots.
+- **Flashing/glitching risk**: the selection-to-gameplay flash may come from dueling local timers, stale normalized phases, optimistic local state, or route/selected-match fallback. Treat UI flicker as a state-machine bug until proven otherwise.
+- **Refresh preservation risk**: route persistence must not corrupt solo resume slots, Calendar daily launch state, or the dedicated Daily Multiplayer countdown route behavior.
+- **Schema/RLS caution**: no Supabase migration is expected. If a schema or RLS adjustment becomes necessary during implementation, it must be minimal, additive, documented, and verified remotely.
+- **Scope creep**: spectator testing, dedicated Multiplayer tab work, notifications, redesign, and other deferred features remain out of scope.
+
+#### 28.19.6 Verification Strategy
+
+The later execution pass must finish with the standard gate:
+
+1. `npm run lint`
+2. `npm run test`
+3. `npm run build`
+4. `npx tsc -p tsconfig.api.json --noEmit`
+5. `git diff --check`
+
+Additional required verification:
+
+- Focused unit/domain tests for Daily claim release after creator cancellation before a rival joins, with duplicate-claim guards still enforced after a joined/terminal game.
+- Async and Live cancellation/reclaim repository tests where relevant.
+- Live repository/realtime tests proving both players receive board and turn-history updates.
+- Practice Live two-client test proving the creator and joiner both see word-length selection without refresh, then transition once into gameplay without flashing.
+- Live Daily test proving fixed five-letter Daily flow remains intact while board/history updates synchronize.
+- Browser refresh test proving the active multiplayer tab/game is restored rather than falling back to the dashboard.
+- Remote Supabase verification with two distinct authenticated clients for cancellation/reclaim, Practice Live selection, Live Daily/Practice board updates, and turn-history updates.
+- Desktop and 390px mobile browser smoke with no console errors, no horizontal overflow, and no manual refresh needed for the listed Live flows.
+
+#### 28.19.7 Meaningful Real Multiplayer Testing Requirement
+
+Stage 6 execution must include real cross-client testing inside the Codex environment, not only unit tests or local single-browser simulation.
+
+The execution agent should:
+
+1. Run the app locally against the configured Supabase project.
+2. Open at least two isolated authenticated browser contexts using Playwright/browser tooling.
+3. Sign into two distinct real or temporary accounts.
+4. Use those two accounts to create, discover, join, and play Live Practice and Live Daily matches.
+5. Verify that the host and rival independently see lobby changes, word-length selection, countdown/gameplay transitions, board updates, turn history updates, cancellation/reclaim behavior, and browser-refresh restoration without manual refresh.
+6. Pair browser E2E evidence with remote Supabase probes that validate RLS, durable row updates, subscriptions, and cleanup.
+7. Record what was verified through browser contexts, what was verified through repository/domain tests, and what was verified through remote Supabase probes in the final progress report.
+
+If real browser sign-in is blocked by credentials, Supabase project configuration, email verification, rate limits, Vercel/Supabase outages, or a connector/auth limitation, the agent must halt only if it cannot make meaningful progress. Otherwise, it should create temporary authenticated users through the available Supabase/admin path, run remote probes plus browser tests with those users, document the limitation clearly, and continue within the approved bug-fix scope.
+
+#### 28.19.8 Gate
+
+Stage 6 implementation is now complete under `phase_id = 88`-`90`. Halt for user review. Do not create a PR, merge, release, begin Stage 7, expand spectator work, implement a dedicated Multiplayer tab, or begin deferred/new feature work until the user explicitly authorizes that later step.
+
+#### 28.19.9 Completion Record (`phase_id = 88`-`90`)
+
+Stage 6 resolved the six approved bugs without adding new features:
+
+- **Daily claim release**: unjoined creator-cancelled Daily Async games and Daily Live lobbies now release the creator's exact daily bucket claim (`async:og`, `async:go`, `live:og`, or `live:go`) while joined, terminal, forfeited, expired, and matched states remain claimed.
+- **Supabase claim policy**: added and remotely applied `supabase/migrations/20260605223500_phase23_stage6_daily_claim_release.sql`; a service-role probe confirmed Live and Async claims exist after creation and are deleted after creator cancellation before a rival joins.
+- **Live realtime synchronization**: Supabase live match saves now merge with the latest persisted projection and run a short post-write reconciliation loop so near-simultaneous player updates converge instead of erasing word-length choices, initialized sessions, moves, or turn history.
+- **Realtime wakeups**: successful Supabase live saves broadcast lightweight refresh events to affected player channels; Postgres rows remain the source of truth.
+- **Practice Live transition stability**: word-length selection rendering uses a stable match key so ordinary `updatedAt` refreshes do not remount the selection surface or create visible flashing.
+- **Creator/rival realtime entry**: two-client testing confirmed the host and rival both see Practice Live word-length selection, countdown/gameplay transitions, and Daily Live gameplay without manual refresh.
+- **Browser refresh preservation**: app route/practice mode and Calendar daily/async/live surfaces persist in browser storage so refreshes restore the active multiplayer context.
+
+Verification completed:
+
+- Focused tests for live/async domain/repository, Live panel, word-length selection, and Calendar restoration.
+- Full gate: `npm run lint`, `npm run test`, `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, and `git diff --check`.
+- Real two-client browser E2E against the configured Supabase project with temporary authenticated users for Practice Live and Daily Live on desktop-style and 390px mobile viewports.
+- 390px route smoke for landing, Practice, Calendar, and Settings with no console errors and no horizontal overflow.
+
+### 28.20 Stage 7 Planning — Whole-Game Autonomous Bug Bash and Stabilization
+
+**Authorization status**: planned only under `phase_id = 87`. This is intentionally split from Stage 6. Stage 6 must stay focused on the six critical live multiplayer and Daily claim bugs; Stage 7 is the later broad autonomous debugging pass across the whole game. This subsection does not authorize implementation, source-code edits, UI/component work, tests, Supabase migrations, build/config changes, PR creation, merge, release, dedicated Multiplayer tab work, deferred feature work, or feature development.
+
+#### 28.20.1 Rationale for Splitting Stage 7
+
+Combining the broad bug bash with Stage 6 would blur the critical bug-only boundary in `PHASE-23-STAGE-6-LIVE-MULTIPLAYER-STABILITY-AND-DAILY-CLAIM-FIXES-SPEC-2026-06-05.md`. Stage 6 should be small enough to finish with high confidence and should not become a catch-all stabilization phase. Stage 7 can then intentionally search for and fix additional defects after the live multiplayer firebreak is resolved.
+
+#### 28.20.2 Proposed Stage 7 Scope
+
+If later authorized, Stage 7 should be a bug-fix and quality pass across:
+
+1. **Core solo gameplay**: Daily OG/GO, Practice OG/GO, word lengths 2-35, hard mode, tile coloring, keyboard behavior, loss/reveal, give-up/reveal, definitions, and resume.
+2. **Calendar and daily systems**: current dailies, past-daily unlocks, countdowns, midnight/reset behavior, local vs UTC daily variants, indicators, and mobile calendar rendering.
+3. **Async multiplayer**: lobby creation/discovery/join, claims, cancellation, turn submission, turn history, rival identity, forfeit, refresh/reload, and mobile layout.
+4. **Live multiplayer**: after Stage 6 fixes, re-test Practice/Daily live flows, board/history sync, route persistence, cancellation, forfeit, spectator non-regression, and mobile layout.
+5. **Auth and sync**: sign-in, sign-up, magic link, password reset, sign-out, guest/cloud progress merge, profile, settings sync, and no duplicate GoTrue clients.
+6. **Stats/economy/history**: stats dashboard, multiplayer rating summaries, coins/XP, past-daily unlock costs, history entries, sharing, and no solo/multiplayer contamination.
+7. **Words/definitions/admin**: Word Explorer filtering/pagination/definition modals, definition fallbacks, admin route gating, and protected refresh behavior.
+8. **Responsive/accessibility/performance**: desktop, tablet-like, and 390px mobile smoke, no console errors, no horizontal overflow, reduced-motion behavior, keyboard/touch ergonomics, and obvious loading/error states.
+
+#### 28.20.3 Proposed Method
+
+- Start with a written test matrix that maps routes/features to automated/unit/browser/remote checks.
+- Use parallel sub-agents for read-only audits and focused lanes, but keep high-conflict source and governance surfaces coordinator-owned.
+- Prefer fixing clear bugs discovered during testing; do not add new features or redesigns unless a bug cannot be resolved without a minimal UI adjustment.
+- Update `CHANGELOG.md`, `progress/PROGRESS.csv`, matching `PROGRESS-STEP-N.md` files, `memory.md`, and `agents.md` after major milestones.
+- Run the full verification gate and deploy a Vercel preview before halting.
+
+#### 28.20.4 Proposed Stage 7 Verification
+
+Stage 7 should finish with:
+
+1. `npm run lint`
+2. `npm run test`
+3. `npm run build`
+4. `npx tsc -p tsconfig.api.json --noEmit`
+5. `git diff --check`
+6. Desktop, tablet-like, and 390px mobile browser smoke for major routes.
+7. Remote Supabase verification for auth/sync and multiplayer flows.
+8. A concise bug-fix inventory listing every issue found, every issue fixed, any issues deferred, and the reason for each deferral.
+
+#### 28.20.5 Gate
+
+Stage 7 requires a separate explicit execution prompt after Stage 6 is complete and reviewed. Do not begin Stage 7 from a Stage 6 execution prompt unless the user explicitly authorizes Stage 7 in that same prompt and clearly overrides the original Stage 6 bug-only boundary.
+
+### 28.21 Stage 6 Safety Backup Merge (`phase_id = 91`)
+
+**Authorization status**: the user explicitly authorized this one backup/safety PR and squash merge of the current local Stage 6 state into GitHub `main` before Stage 7. This is not the official end of Phase 23 and does not authorize Stage 7 execution, a release, the dedicated Multiplayer tab, spectator expansion, deferred feature work, or later-phase work.
+
+Purpose:
+
+- Preserve the verified Stage 6 state on GitHub `main` before the broader Stage 7 bug bash begins.
+- Give the user a clean backup/reversion point if Stage 7 introduces difficult-to-undo problems.
+- Keep the backup PR focused on the current local state through Stage 6 plus this tracking record.
+
+Gate after merge:
+
+- Halt for user review.
+- Do not begin Stage 7 until the user provides a separate explicit Stage 7 execution prompt.
+- Do not create additional PRs, merges, releases, dedicated Multiplayer tab work, deferred features, or later-phase work without later explicit approval.
 
 ---
 

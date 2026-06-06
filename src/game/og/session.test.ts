@@ -5,7 +5,7 @@ import { createDailyOgSetup, createOgSession, createPracticeOgSetup, getAvailabl
 
 describe('og session setup', () => {
   it('creates daily og setups fixed at five letters', () => {
-    const setup = createDailyOgSetup(new Date('2026-05-26T00:00:00.000Z'))
+    const setup = createDailyOgSetup(new Date(2026, 4, 26, 12, 0, 0))
 
     expect(setup.wordLength).toBe(DAILY_WORD_LENGTH)
     expect(setup.answer).toHaveLength(DAILY_WORD_LENGTH)
@@ -30,5 +30,20 @@ describe('og session setup', () => {
     expect(restored.status).toBe('won')
     expect(restored.hardMode).toBe(true)
     expect(restored.guesses[0].guess).toBe(setup.answer)
+  })
+
+  it('persists the explicit answer-revealed loss state', () => {
+    const restored = restoreOgSession({
+      answer: 'crane',
+      continuationCount: 0,
+      currentGuess: '',
+      guesses: ['slate'],
+      hardMode: false,
+      maxAttempts: 1,
+      revealedAnswer: true,
+    }, new Set(['crane', 'slate']))
+
+    expect(restored.status).toBe('lost')
+    expect(restored.revealedAnswer).toBe(true)
   })
 })

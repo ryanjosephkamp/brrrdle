@@ -52,6 +52,29 @@ export function getMillisUntilNextLocalMidnight(date = new Date()): number {
   return getNextLocalMidnight(date).getTime() - date.getTime()
 }
 
+function padDatePart(value: number): string {
+  return `${value}`.padStart(2, '0')
+}
+
+/** UTC calendar key used by the Daily Multiplayer variant. */
+export function getUtcDailyDateKey(date = new Date()): string {
+  return [
+    date.getUTCFullYear(),
+    padDatePart(date.getUTCMonth() + 1),
+    padDatePart(date.getUTCDate()),
+  ].join('-')
+}
+
+/** The next midnight UTC strictly after `date`. */
+export function getNextUtcMidnight(date = new Date()): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1, 0, 0, 0, 0))
+}
+
+/** Milliseconds remaining until the next UTC reset for Daily Multiplayer. */
+export function getMillisUntilNextUtcMidnight(date = new Date()): number {
+  return getNextUtcMidnight(date).getTime() - date.getTime()
+}
+
 /**
  * Format a non-negative millisecond duration as a zero-padded `HH:MM:SS`
  * countdown string. Durations are clamped at 0; anything ≥ 24h is allowed to

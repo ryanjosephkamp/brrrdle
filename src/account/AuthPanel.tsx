@@ -3,7 +3,6 @@ import { Button, Panel } from '../ui'
 import { getSupabaseRuntimeConfig } from './supabaseClient'
 
 type AuthMethod = 'magic-link' | 'password'
-type PasswordMode = 'sign-in' | 'sign-up'
 
 interface AuthPanelProps {
   readonly authEmail?: string
@@ -11,6 +10,7 @@ interface AuthPanelProps {
   readonly onSendMagicLink?: (email: string) => void
   readonly onSignInWithPassword?: (email: string, password: string) => void
   readonly onSignUpWithPassword?: (email: string, password: string) => void
+  readonly onRequestPasswordReset?: (email: string) => void
   readonly onSignOut?: () => void
   readonly authMessage?: string
 }
@@ -22,10 +22,10 @@ export function AuthPanel({
   onSendMagicLink,
   onSignInWithPassword,
   onSignUpWithPassword,
+  onRequestPasswordReset,
   onSignOut,
 }: AuthPanelProps) {
   const [method, setMethod] = useState<AuthMethod>('magic-link')
-  const [passwordMode, setPasswordMode] = useState<PasswordMode>('sign-in')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -100,7 +100,7 @@ export function AuthPanel({
             <div className="flex gap-2">
               <input
                 aria-label="Password"
-                autoComplete={passwordMode === 'sign-up' ? 'new-password' : 'current-password'}
+                autoComplete="current-password"
                 className="flex-1 rounded-xl border border-slate-600 bg-slate-950 px-3 py-2 text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
                 onChange={(event) => setPassword(event.target.value)}
                 type={showPassword ? 'text' : 'password'}
@@ -117,41 +117,19 @@ export function AuthPanel({
             </div>
           </label>
 
-          <div role="radiogroup" aria-label="Password sub-mode" className="flex flex-wrap gap-2">
-            <Button
-              aria-checked={passwordMode === 'sign-in'}
-              isActive={passwordMode === 'sign-in'}
-              onClick={() => setPasswordMode('sign-in')}
-              role="radio"
-              size="sm"
-              variant="secondary"
-            >
+          <div className="flex flex-wrap items-center gap-2">
+            <Button onClick={() => onSignInWithPassword?.(email, password)} variant="primary">
               Sign in
             </Button>
-            <Button
-              aria-checked={passwordMode === 'sign-up'}
-              isActive={passwordMode === 'sign-up'}
-              onClick={() => setPasswordMode('sign-up')}
-              role="radio"
-              size="sm"
-              variant="secondary"
-            >
+            <Button onClick={() => onSignUpWithPassword?.(email, password)} variant="secondary">
               Create account
             </Button>
+            {onRequestPasswordReset ? (
+              <Button onClick={() => onRequestPasswordReset(email)} size="sm" variant="ghost">
+                Forgot password?
+              </Button>
+            ) : null}
           </div>
-
-          <Button
-            onClick={() => {
-              if (passwordMode === 'sign-in') {
-                onSignInWithPassword?.(email, password)
-              } else {
-                onSignUpWithPassword?.(email, password)
-              }
-            }}
-            variant="primary"
-          >
-            {passwordMode === 'sign-in' ? 'Sign in' : 'Create account'}
-          </Button>
           <p className="text-xs text-slate-400">
             Passwords must be at least 8 characters. Email + password auth must be enabled in the Supabase project.
           </p>

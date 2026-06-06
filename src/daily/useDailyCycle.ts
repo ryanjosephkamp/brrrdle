@@ -16,7 +16,7 @@ import { useEffect, useRef, useState } from 'react'
 import { formatCountdown, getDeviceTimeZone } from './dailyClock'
 import { resolveDaily } from './dailyCycle'
 import { subscribeSimulatedClock } from './simulatedClock'
-import type { DailyVariant } from './dailyVariant'
+import { getDailyVariantDescriptor, type DailyVariant } from './dailyVariant'
 
 export interface DailyResetInfo {
   readonly dateKey: string
@@ -46,6 +46,8 @@ const DEFAULT_TICK_MS = 1_000
 
 export function useDailyCycle(options: UseDailyCycleOptions = {}): DailyCycleState {
   const { variant, tickMs = DEFAULT_TICK_MS } = options
+  const descriptor = getDailyVariantDescriptor(variant)
+  const timeZoneLabel = descriptor.resetClock === 'utc' ? descriptor.timeZoneLabel : getDeviceTimeZone()
 
   const optionsRef = useRef(options)
   useEffect(() => {
@@ -62,7 +64,7 @@ export function useDailyCycle(options: UseDailyCycleOptions = {}): DailyCycleSta
       clamped: resolved.clamped,
       msUntilReset: resolved.msUntilReset,
       countdownLabel: formatCountdown(resolved.msUntilReset),
-      timeZone: getDeviceTimeZone(),
+      timeZone: timeZoneLabel,
     }
   })
 
@@ -91,7 +93,7 @@ export function useDailyCycle(options: UseDailyCycleOptions = {}): DailyCycleSta
         clamped: resolved.clamped,
         msUntilReset: resolved.msUntilReset,
         countdownLabel: formatCountdown(resolved.msUntilReset),
-        timeZone: getDeviceTimeZone(),
+        timeZone: timeZoneLabel,
       })
     }
 
@@ -105,7 +107,7 @@ export function useDailyCycle(options: UseDailyCycleOptions = {}): DailyCycleSta
       clearInterval(intervalId)
       unsubscribe()
     }
-  }, [tickMs, variant])
+  }, [tickMs, timeZoneLabel, variant])
 
   return state
 }

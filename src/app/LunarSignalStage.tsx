@@ -11,6 +11,8 @@ interface LunarSignalStageProps {
   readonly accountControls: ReactNode
   readonly activeRoute: AppRoute
   readonly children: ReactNode
+  /** Theme-overridable subtitle shown in the brand control. */
+  readonly commandTitle?: string
   /**
    * Phase 22 Addendum (§27.10) — the daily countdown indicator, rendered at the
    * top of the shell (inside the account stack) in a context-aware, non-intrusive
@@ -263,6 +265,7 @@ export function LunarSignalStage({
   accountControls,
   activeRoute,
   children,
+  commandTitle = 'Command Center',
   dailyCountdown,
   metrics,
   onNavigate,
@@ -325,18 +328,19 @@ export function LunarSignalStage({
   }
 
   const shellStyle = {
-    '--signal-color': getRouteColor(isAwake ? activeRouteIndex : focusedRouteIndex),
+    '--signal-color': getRouteColor((activeRoute.id === 'home' ? isAwake : true) ? activeRouteIndex : focusedRouteIndex),
     '--signal-client-x': '62vw',
     '--signal-client-y': '54vh',
     '--signal-x': '62%',
     '--signal-y': '54%',
   } as CSSProperties
+  const shellIsAwake = activeRoute.id === 'home' ? isAwake : true
 
   return (
-    <div className={`brrrdle-lunar-shell min-h-svh min-h-dvh text-white ${isAwake ? 'is-awake' : 'is-dormant'}`} data-surface={isLunarSurface ? 'lunar-signal' : undefined} onPointerMove={handleShellPointerMove} ref={shellRef} style={shellStyle}>
+    <div className={`brrrdle-lunar-shell min-h-svh min-h-dvh text-white ${shellIsAwake ? 'is-awake' : 'is-dormant'}`} data-surface={isLunarSurface ? 'lunar-signal' : undefined} onPointerMove={handleShellPointerMove} ref={shellRef} style={shellStyle}>
       {isLunarSurface ? (
         <>
-          <SignalCanvas activeRouteId={activeRoute.id} focusedRouteId={focusedRoute.id} isAwake={isAwake} onActivateRoute={activateRoute} onFocusRoute={focusRoute} routes={routes} />
+          <SignalCanvas activeRouteId={activeRoute.id} focusedRouteId={focusedRoute.id} isAwake={shellIsAwake} onActivateRoute={activateRoute} onFocusRoute={focusRoute} routes={routes} />
           <div className="brrrdle-lunar-cursor" aria-hidden="true" />
         </>
       ) : null}
@@ -353,14 +357,14 @@ export function LunarSignalStage({
             type="button"
           >
             <span>brrrdle</span>
-            <small>Lunar Command Deck</small>
+            <small>{commandTitle}</small>
           </button>
           <div className="brrrdle-lunar-account-stack">
             <div className="brrrdle-lunar-account">
               {accountControls}
             </div>
             {dailyCountdown}
-            {!isAwake ? (
+            {!shellIsAwake ? (
               <span className="brrrdle-lunar-daily-status">
                 <span aria-hidden="true" />
                 Daily puzzle ready
@@ -369,7 +373,7 @@ export function LunarSignalStage({
           </div>
         </header>
 
-        {!isAwake ? (
+        {!shellIsAwake ? (
           <main className="brrrdle-lunar-intro" aria-label="Brrrdle route selector">
             <section className="brrrdle-lunar-hero">
               <span>

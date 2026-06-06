@@ -1,8 +1,8 @@
 # brrrdle Constitution
 
-**Version**: 3.3
-**Date**: 2026-05-31
-**Status**: Final upgraded project constitution with the progress tracking amendment, the phase-range generalization amendment (Phases 0–11 plus all subsequently approved addenda, Phases 12+), and the multi-agent workflow amendment — binding until revised with explicit user approval.
+**Version**: 3.4
+**Date**: 2026-06-04
+**Status**: Final upgraded project constitution with the progress tracking amendment, the phase-range generalization amendment (Phases 0–11 plus all subsequently approved addenda, Phases 12+), the multi-agent workflow amendment, and the Phase 23 coordination-file amendment — binding until revised with explicit user approval.
 
 ---
 
@@ -30,6 +30,8 @@ Treat these sources as authoritative in this order:
 No feature, dependency, architecture choice, route, data model, UX behavior, monetization behavior, or deployment change may be added simply because it seems useful. If it is not supported by the authoritative sources, it is out of scope unless explicitly approved by the user.
 
 Sub-agent instructions, branch-local notes, preview notes, or implementation handoffs are never higher authority than the ordered sources above. If a sub-agent report conflicts with an authoritative source, the coordinating agent must stop, identify the conflict, and ask the user for clarification.
+
+Operational coordination files such as `agents.md`, `memory.md`, `docs/planning-index.md`, and `progress/README.md` are supporting aids only. They may summarize current state, file ownership, workflow conventions, and handoff expectations, but they cannot authorize new scope, implementation, commits, merges, releases, production actions, or phase/stage progression.
 
 ---
 
@@ -85,6 +87,7 @@ The agent must halt and wait for explicit user approval:
 - After Phase 0 and after every later phase in `AGENT-IMPLEMENTATION-PLAN.md` (including all subsequently approved addenda, Phases 12+).
 - Whenever a phase's pause point says to halt.
 - Whenever requirements conflict.
+- Whenever coordination files are stale, contradictory, or imply authorization that is not confirmed by the current user prompt, this constitution, the implementation plan, and the progress records.
 - Whenever verification cannot be completed.
 - Whenever a critical issue cannot be fixed with a small, clearly scoped change.
 - Before merging, squashing, rebasing, deleting, or otherwise finalizing any sub-agent work branch.
@@ -173,6 +176,8 @@ The project must maintain progress artifacts for user transparency, session resu
 - Each progress markdown report must summarize the phase changes, verification, known blockers or critical errors, required user action, and whether the user is safe/authorized to proceed to the next phase.
 - If a blocker or critical error arises during a phase, the relevant progress markdown report must be annotated before halting.
 - Progress artifacts must never contain secrets, credentials, or private deployment data.
+- When `agents.md` or `memory.md` exists, the coordinating agent should update them at approved governance or progress gates when the durable project state changes.
+- `agents.md`, `memory.md`, planning indexes, and progress README files supplement progress tracking but never replace `progress/PROGRESS.csv` or the relevant `progress/PROGRESS-STEP-N.md` report.
 
 ### 5.5 Multi-Agent Coordination Rules
 
@@ -243,6 +248,16 @@ Phase 20 has additional binding workflow rules:
 - Design inspiration from user-provided references is encouraged, but the implementation must preserve all existing mechanics, data, auth, stats, sharing, definitions, accessibility, and daily/practice invariants.
 - The About Brrrdle section must remain a dedicated page-compatible surface, not be collapsed into a required tab-only experience.
 - No Phase 20 work may change word-list filtering, canonical game logic, or monetization mechanics.
+
+#### 5.5.6 Agent Coordination Files
+
+When coordination files exist, all agents must treat them as practical workflow aids rather than authority sources.
+
+- The coordinating agent should read `agents.md` and `memory.md` before assigning parallel work in a phase that uses sub-agents.
+- Sub-agents should read `agents.md` before accepting a work packet and should read `memory.md` when the packet depends on current project state.
+- If `agents.md`, `memory.md`, or any planning index conflicts with the authority stack in §2, the coordinating agent must resolve the conflict against the higher-authority source before work continues.
+- Coordination files must not contain secrets, credentials, private deployment data, or speculative authorization.
+- Coordination files should be updated only when they capture durable state or workflow decisions, not for transient command output or scratch notes.
 
 ---
 
@@ -582,7 +597,7 @@ Implementation and tests must explicitly consider:
 
 ## 17. Constitution Evolution
 
-This constitution includes the approved second upgrade, a progress tracking amendment, a phase-range generalization amendment (Phases 0–11 plus all subsequently approved addenda, Phases 12+), and a multi-agent workflow amendment. Future revisions require explicit user approval and must preserve:
+This constitution includes the approved second upgrade, a progress tracking amendment, a phase-range generalization amendment (Phases 0–11 plus all subsequently approved addenda, Phases 12+), a multi-agent workflow amendment, and a coordination-file amendment. Future revisions require explicit user approval and must preserve:
 
 - Scope fidelity.
 - Mandatory review gates.
@@ -595,6 +610,7 @@ This constitution includes the approved second upgrade, a progress tracking amen
 - Progress logging for transparency, resumability, and coordination.
 - Phase-range continuity, so every approved addendum (Phases 12+) remains bound by the same rules as Phases 0–11.
 - Multi-agent conflict avoidance, explicit handoff reporting, coordinating-agent integration responsibility, and user approval before merges, commits where gated, layout-variant selection, and production releases.
+- Coordination-file hierarchy, so `agents.md`, `memory.md`, and planning indexes remain subordinate to the authority stack and cannot authorize new scope or phase progression.
 
 ---
 

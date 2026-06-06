@@ -27,7 +27,10 @@ import {
 import {
   getDailyDateKey,
   getMillisUntilNextLocalMidnight,
+  getMillisUntilNextUtcMidnight,
   getNextLocalMidnight,
+  getNextUtcMidnight,
+  getUtcDailyDateKey,
 } from './dailyClock'
 import { getDailyVariantDescriptor, type DailyVariant } from './dailyVariant'
 import { getDailyNow, type DailyNow } from './simulatedClock'
@@ -124,7 +127,7 @@ export function resolveDaily(options: ResolveDailyOptions = {}): ResolvedDaily {
     previous = loadDailyGuardAnchor(storage, variant.storagePrefix)
   }
 
-  const rawDateKey = getDailyDateKey(now.date)
+  const rawDateKey = variant.resetClock === 'utc' ? getUtcDailyDateKey(now.date) : getDailyDateKey(now.date)
   const result = evaluateDailyGuard({
     rawDateKey,
     nowWallMs: now.wallMs,
@@ -148,13 +151,16 @@ export function resolveDaily(options: ResolveDailyOptions = {}): ResolvedDaily {
     liveAnchor = result.anchor
   }
 
-  const nextReset = getNextLocalMidnight(now.date)
+  const nextReset = variant.resetClock === 'utc' ? getNextUtcMidnight(now.date) : getNextLocalMidnight(now.date)
+  const msUntilReset = variant.resetClock === 'utc'
+    ? getMillisUntilNextUtcMidnight(now.date)
+    : getMillisUntilNextLocalMidnight(now.date)
   return {
     grantedDateKey: result.grantedDateKey,
     rawDateKey: result.rawDateKey,
     clamped: result.clamped,
     reason: result.reason,
-    msUntilReset: getMillisUntilNextLocalMidnight(now.date),
+    msUntilReset,
     nextResetAt: nextReset.getTime(),
     anchor: result.anchor,
     now,

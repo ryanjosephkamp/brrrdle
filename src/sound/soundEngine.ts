@@ -15,6 +15,7 @@ export type SoundEvent =
   | 'keyboard-click'
   | 'invalid-guess'
   | 'daily-reset'
+  | 'daily-multiplayer-reset'
 
 /**
  * Phase 19.4 — coarse categories layered over the individual sound events. They
@@ -26,6 +27,7 @@ export type SoundCategory = 'keypress' | 'submit' | 'win' | 'loss' | 'ui'
 
 export const SOUND_CATEGORIES: Record<SoundEvent, SoundCategory> = {
   'correct-guess': 'submit',
+  'daily-multiplayer-reset': 'ui',
   'daily-reset': 'ui',
   'game-over-loss': 'loss',
   'game-over-win': 'win',
@@ -106,6 +108,14 @@ const TONE_SPECS: Record<SoundEvent, readonly ToneSpec[]> = {
     { frequency: 783.99, type: 'triangle', duration: 0.12, peakGain: 0.055 },
     { frequency: 1046.5, type: 'triangle', duration: 0.14, peakGain: 0.06 },
     { frequency: 1318.51, type: 'sine', duration: 0.22, peakGain: 0.05 },
+  ],
+  // Phase 23 — separate UTC Daily Multiplayer reset cue. Lower, glassier, and
+  // more syncopated than the solo daily chime so players can distinguish it.
+  'daily-multiplayer-reset': [
+    { frequency: 392, type: 'sine', duration: 0.1, peakGain: 0.045 },
+    { frequency: 622.25, type: 'triangle', duration: 0.1, peakGain: 0.05 },
+    { frequency: 932.33, type: 'sine', duration: 0.16, peakGain: 0.052 },
+    { frequency: 739.99, type: 'triangle', duration: 0.2, peakGain: 0.046 },
   ],
 }
 

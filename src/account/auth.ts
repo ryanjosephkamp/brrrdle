@@ -158,7 +158,9 @@ async function refreshSessionBestEffort(client: BrrrdleSupabaseClient): Promise<
   }
 }
 
-export type AuthChangeListener = (state: AuthState) => void
+export type AuthChangeEventName = string
+
+export type AuthChangeListener = (state: AuthState, event?: AuthChangeEventName) => void
 
 export interface AuthSubscription {
   readonly unsubscribe: () => void
@@ -178,10 +180,10 @@ export function subscribeToAuthChanges(
 
   const { data } = client.auth.onAuthStateChange((event, session) => {
     if (!session?.user) {
-      listener({ status: 'anonymous' })
+      listener({ status: 'anonymous' }, event)
       return
     }
-    listener({ status: 'authenticated', user: summarizeUser(session.user) })
+    listener({ status: 'authenticated', user: summarizeUser(session.user) }, event)
 
     if (!ROLE_REFRESHING_EVENTS.has(event) || pendingRefresh) {
       return
@@ -191,7 +193,7 @@ export function subscribeToAuthChanges(
       try {
         const fresh = await getCurrentAuthState(client)
         if (fresh.status === 'authenticated') {
-          listener(fresh)
+          listener(fresh, event)
         }
       } catch {
         // Best-effort refresh: never surface to the UI; never log tokens.
@@ -278,6 +280,47 @@ function getRedirectOrigin(): string | undefined {
   return window.location.origin
 }
 
+function getPasswordResetRedirectTo(): string | undefined {
+  if (typeof window === 'undefined' || !window.location) {
+    return undefined
+  }
+
+  const url = new URL(window.location.href)
+  url.hash = ''
+  url.searchParams.set('auth_action', 'reset-password')
+  return url.toString()
+}
+
+function getHashParams(hash: string): URLSearchParams {
+  return new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : hash)
+}
+
+export interface PasswordResetLocationLike {
+  readonly hash?: string
+  readonly search?: string
+}
+
+export function isPasswordResetUrl(location: PasswordResetLocationLike = typeof window === 'undefined' ? {} : window.location): boolean {
+  const query = new URLSearchParams(location.search ?? '')
+  if (query.get('auth_action') === 'reset-password') {
+    return true
+  }
+
+  const hashParams = getHashParams(location.hash ?? '')
+  return hashParams.get('type') === 'recovery'
+}
+
+export function clearPasswordResetUrlMarker(): void {
+  if (typeof window === 'undefined' || !window.history || !window.location) {
+    return
+  }
+
+  const url = new URL(window.location.href)
+  url.searchParams.delete('auth_action')
+  url.hash = ''
+  window.history.replaceState({}, document.title, `${url.pathname}${url.search}`)
+}
+
 /**
  * Sends a Supabase password-reset email. Never surfaces the raw provider
  * error; the returned message is always safe to render directly.
@@ -291,11 +334,29 @@ export async function sendPasswordResetEmail(
     return { message: 'Enter the email on your account first.', ok: false }
   }
   try {
-    const redirectTo = getRedirectOrigin()
+    const redirectTo = getPasswordResetRedirectTo() ?? getRedirectOrigin()
     const { error } = await client.auth.resetPasswordForEmail(
       normalizedEmail,
       redirectTo ? { redirectTo } : undefined,
     )
+    if (error) {
+      return { message: classifyAuthError(error, 'reset-password'), ok: false }
+    }
+    return { ok: true }
+  } catch (error) {
+    return { message: classifyAuthError(error, 'reset-password'), ok: false }
+  }
+}
+
+export async function updatePassword(
+  client: BrrrdleSupabaseClient,
+  password: string,
+): Promise<{ readonly ok: true } | { readonly message: string; readonly ok: false }> {
+  if (password.length < 8) {
+    return { message: 'Password must be at least 8 characters.', ok: false }
+  }
+  try {
+    const { error } = await client.auth.updateUser({ password })
     if (error) {
       return { message: classifyAuthError(error, 'reset-password'), ok: false }
     }

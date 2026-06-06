@@ -182,14 +182,16 @@ function OgGameSession({
     return scope === 'daily' ? createInitialDailySession(setup, pastDailyDateKey) : createOgSession(setup)
   })
   const [continuationMessage, setContinuationMessage] = useState<string>()
-  const [revealedAnswer, setRevealedAnswer] = useState(false)
   const completionPercentage = getCompletionPercentage(session)
   const continuationCost = calculatePayToContinueCost({
     completionPercentage,
     continuationCount: session.continuationCount,
     wordLength: session.wordLength,
   })
-  const canAffordContinuation = session.status === 'lost' && !revealedAnswer && coins >= continuationCost
+  const canAffordContinuation = session.status === 'lost' && !session.revealedAnswer && coins >= continuationCost
+  const canPayToContinue = session.status === 'lost' && !session.revealedAnswer
+  const lossAnswerRevealed = session.status === 'lost' && (!canPayToContinue || Boolean(session.revealedAnswer))
+  const endStateRevealed = session.status === 'won' || lossAnswerRevealed
   const canReveal = scope === 'practice' && session.status === 'playing' && session.guesses.length > 0
 
   useEffect(() => {
@@ -226,7 +228,7 @@ function OgGameSession({
       return
     }
 
-    if (session.status === 'lost' && canAffordContinuation) {
+    if (session.status === 'lost' && canPayToContinue) {
       return
     }
 
@@ -242,7 +244,7 @@ function OgGameSession({
       wordLength: session.wordLength,
       ...(pastDailyDateKey ? { affectsStreak: false } : {}),
     })
-  }, [canAffordContinuation, difficulty, onGameComplete, pastDailyDateKey, practiceLength, practiceSeed, scope, session.answer, session.guesses.length, session.maxAttempts, session.status, session.wordLength, setup.answer, setup.dateKey])
+  }, [canPayToContinue, difficulty, onGameComplete, pastDailyDateKey, practiceLength, practiceSeed, scope, session.answer, session.guesses.length, session.maxAttempts, session.status, session.wordLength, setup.answer, setup.dateKey])
 
   const sound = useSound()
   const handleInput = useCallback((input: KeyboardInput) => {
@@ -281,9 +283,24 @@ function OgGameSession({
     }
 
     setSession((currentSession) => continueAfterLoss(currentSession))
-    setRevealedAnswer(false)
     setContinuationMessage(`Spent ${continuationCost} coins for one more attempt.`)
   }, [continuationCost, onSpendCoins, session.status])
+
+  const handleRevealAfterLoss = useCallback(() => {
+    if (!canPayToContinue) {
+      return
+    }
+
+    const answer = session.answer.toLocaleUpperCase('en-US')
+    setSession((currentSession) => ({
+      ...currentSession,
+      currentGuess: '',
+      lastValidation: undefined,
+      revealedAnswer: true,
+      status: 'lost',
+    }))
+    setContinuationMessage(`Revealed the answer: ${answer}. This puzzle counts as a loss.`)
+  }, [canPayToContinue, session.answer])
 
   const handleReveal = useCallback(() => {
     if (!canReveal) {
@@ -296,11 +313,11 @@ function OgGameSession({
     }
 
     const answer = session.answer.toLocaleUpperCase('en-US')
-    setRevealedAnswer(true)
     setSession((currentSession) => ({
       ...currentSession,
       currentGuess: '',
       lastValidation: undefined,
+      revealedAnswer: true,
       status: 'lost',
     }))
     setContinuationMessage(`Revealed the answer: ${answer}. This puzzle counts as a loss.`)
@@ -312,7 +329,9 @@ function OgGameSession({
   const statusMessage = session.status === 'won'
     ? 'Solved. Daily completion is preserved on refresh.'
     : session.status === 'lost'
-      ? `Out of attempts. The answer was ${session.answer.toLocaleUpperCase('en-US')}.`
+      ? lossAnswerRevealed
+        ? `Out of attempts. The answer was ${session.answer.toLocaleUpperCase('en-US')}.`
+        : 'Out of attempts. Continue this puzzle or reveal the answer to finish it.'
       : `${session.maxAttempts - session.guesses.length} attempts remaining.`
 
   return (
@@ -390,13 +409,16 @@ function OgGameSession({
         </div>
 
         {session.status === 'lost' ? (
-          !revealedAnswer ? (
+          canPayToContinue ? (
             <div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm leading-6 text-amber-50">
               <p className="font-bold">Pay to Continue</p>
               <p>Spend {continuationCost} coins for one more attempt. Current balance: {coins} coins.</p>
-              <Button disabled={!canAffordContinuation} onClick={handlePayToContinue} variant="secondary">
-                {canAffordContinuation ? `Pay ${continuationCost} coins to continue` : `Need ${continuationCost} coins to continue`}
-              </Button>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button disabled={!canAffordContinuation} onClick={handlePayToContinue} variant="secondary">
+                  {canAffordContinuation ? `Pay ${continuationCost} coins to continue` : `Need ${continuationCost} coins to continue`}
+                </Button>
+                <Button onClick={handleRevealAfterLoss} variant="ghost">Reveal answer instead</Button>
+              </div>
               {continuationMessage ? <p className="mt-2 font-semibold">{continuationMessage}</p> : null}
             </div>
           ) : continuationMessage ? (
@@ -419,7 +441,7 @@ function OgGameSession({
         <Keyboard disabled={session.status !== 'playing'} letterStates={letterStates} onInput={handleInput} />
 
 
-        {session.status !== 'playing' ? (
+        {endStateRevealed ? (
           <ShareButton
             label="Share og result"
             text={formatOgShare({
@@ -434,7 +456,7 @@ function OgGameSession({
         ) : null}
 
         <DefinitionPanel
-          enabled={session.status !== 'playing'}
+          enabled={endStateRevealed}
           mode="og"
           scope={scope}
           word={session.answer}

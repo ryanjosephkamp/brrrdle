@@ -13,6 +13,9 @@ interface EnvLike {
 
 export type BrrrdleSupabaseClient = SupabaseClient
 
+let cachedClient: BrrrdleSupabaseClient | undefined
+let cachedClientKey: string | undefined
+
 export function getSupabaseRuntimeConfig(env: EnvLike = import.meta.env as EnvLike): SupabaseRuntimeConfig {
   const url = env.VITE_SUPABASE_URL?.trim()
   const anonKey = env.VITE_SUPABASE_ANON_KEY?.trim()
@@ -28,10 +31,17 @@ export function createBrrrdleSupabaseClient(config: SupabaseRuntimeConfig = getS
     return undefined
   }
 
-  return createClient(config.url, config.anonKey, {
+  const clientKey = `${config.url}\n${config.anonKey}`
+  if (cachedClient && cachedClientKey === clientKey) {
+    return cachedClient
+  }
+
+  cachedClientKey = clientKey
+  cachedClient = createClient(config.url, config.anonKey, {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
     },
   })
+  return cachedClient
 }

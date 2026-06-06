@@ -4,17 +4,20 @@ import { DEFAULT_GO_PUZZLE_COUNT, normalizeGoPuzzleCount, type GoPuzzleCount } f
 import { DEFAULT_THEME, normalizeTheme, type Theme } from '../theme/theme'
 import { createEmptyStatistics } from '../stats/statistics'
 import type { StatisticsState } from '../stats/types'
+import type { AsyncMultiplayerState, MultiplayerCompetitiveState } from '../multiplayer'
 import type { ResumeSlot, ResumeSlotCollection } from './resumeSlot'
 /**
  * Bumped to 2 in Phase 18.3 when `GuestSettingsState.difficultyDefault` was
- * added, and to 3 in Phase 19.2 when `GuestSettingsState.goPuzzleCountDefault`
- * was added. Older payloads (v1/v2) are upgraded by `migrateGuestProgress`
+ * added, to 3 in Phase 19.2 when `GuestSettingsState.goPuzzleCountDefault`
+ * was added, to 5 in Phase 23 when async multiplayer progress was added, and
+ * to 6 in Phase 23 Stage 3 when competitive multiplayer result/rating display
+ * state was added. Older payloads are upgraded by `migrateGuestProgress`
  * (see `guestStorage.ts`), which preserves all existing
  * coins/XP/history/stats and backfills any missing setting with its safe
  * default via `normalizeGuestSettings`; bumped to 4 in Phase 20 Variant 03 so
  * each play lane can remember its own unfinished puzzle.
  */
-export const GUEST_PROGRESS_SCHEMA_VERSION = 4
+export const GUEST_PROGRESS_SCHEMA_VERSION = 6
 
 export interface GuestProgressionState {
   readonly coins: number
@@ -57,6 +60,12 @@ export interface GuestSettingsState {
    * Synced to the Supabase profile alongside other preferences when signed in.
    */
   readonly dailyCountdownEnabled: boolean
+  /**
+   * Phase 23 — separate toggle for the Daily Multiplayer UTC countdown and its
+   * unique reset sound. Solo daily countdown behavior remains controlled by
+   * `dailyCountdownEnabled`.
+   */
+  readonly dailyMultiplayerCountdownEnabled: boolean
 }
 
 export interface GameHistoryEntry {
@@ -107,6 +116,18 @@ export interface GuestProgressState {
    * cloud as part of the guest-progress payload (union-merged on transfer).
    */
   readonly unlockedDailies?: readonly string[]
+  /**
+   * Phase 23 Stage 1 — local-first async/turn-based multiplayer matches.
+   * Stored separately from solo resume slots so up to five multiplayer games can
+   * remain active without disturbing daily/practice solo progress.
+   */
+  readonly asyncMultiplayer?: AsyncMultiplayerState
+  /**
+   * Phase 23 Stage 3 — additive competitive multiplayer state. This stores
+   * local/cacheable result summaries, custom-game lobby metadata, and rating
+   * projections. Solo stats/economy/history remain separate.
+   */
+  readonly competitiveMultiplayer?: MultiplayerCompetitiveState
 }
 
 export function createDefaultGuestSettings(): GuestSettingsState {
@@ -117,6 +138,7 @@ export function createDefaultGuestSettings(): GuestSettingsState {
     goPuzzleCountDefault: DEFAULT_GO_PUZZLE_COUNT,
     themeDefault: DEFAULT_THEME,
     dailyCountdownEnabled: true,
+    dailyMultiplayerCountdownEnabled: true,
   }
 }
 
@@ -134,6 +156,7 @@ export function normalizeGuestSettings(raw: unknown): GuestSettingsState {
     goPuzzleCountDefault: normalizeGoPuzzleCount(record.goPuzzleCountDefault),
     themeDefault: normalizeTheme(record.themeDefault),
     dailyCountdownEnabled: typeof record.dailyCountdownEnabled === 'boolean' ? record.dailyCountdownEnabled : true,
+    dailyMultiplayerCountdownEnabled: typeof record.dailyMultiplayerCountdownEnabled === 'boolean' ? record.dailyMultiplayerCountdownEnabled : true,
   }
 }
 
@@ -153,6 +176,8 @@ export function createDefaultGuestProgress(): GuestProgressState {
     schemaVersion: GUEST_PROGRESS_SCHEMA_VERSION,
     settings: createDefaultGuestSettings(),
     stats: createEmptyStatistics(),
+    asyncMultiplayer: { games: [] },
+    competitiveMultiplayer: { customGames: [], rating: { profiles: [], transactions: [] }, results: [] },
     unlockedDailies: [],
   }
 }

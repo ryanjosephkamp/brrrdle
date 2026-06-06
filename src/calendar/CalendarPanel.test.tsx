@@ -1,15 +1,25 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { CalendarPanel } from './CalendarPanel'
 import { createDefaultGuestProgress } from '../account/storageSchema'
+import { createEmptyAsyncMultiplayerState, createEmptyLiveMultiplayerState } from '../multiplayer'
 
 function noop() {}
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 function renderPanel(overrides: Partial<Parameters<typeof CalendarPanel>[0]> = {}) {
   return renderToStaticMarkup(
     <CalendarPanel
       guestProgress={createDefaultGuestProgress()}
       keyboardDisabled
+      asyncMultiplayer={createEmptyAsyncMultiplayerState()}
+      liveMultiplayer={createEmptyLiveMultiplayerState()}
+      multiplayerDailyDateKey="2025-06-15"
+      onAsyncMultiplayerChange={noop}
+      onLiveMultiplayerChange={noop}
       onGameComplete={noop}
       onMarkPastDailyUnlocked={noop}
       onResumeCapture={noop}
@@ -30,6 +40,11 @@ describe('CalendarPanel', () => {
     // Quick-play buttons for both modes are present.
     expect(html).toContain('OG')
     expect(html).toContain('GO')
+    expect(html).toContain('Daily Async')
+    expect(html).toContain('Daily Live')
+    expect(html).toContain('S-OG')
+    expect(html).toContain('M-GO')
+    expect(html).toContain('L-OG')
   })
 
   it('shows the daily streak readouts from stats', () => {
@@ -42,5 +57,33 @@ describe('CalendarPanel', () => {
     const html = renderPanel({ launchRequest: { mode: 'og', dateKey: '2025-06-15' } })
     // Once launched, the inline daily view shows the back-to-calendar control.
     expect(html).toContain('Back to Calendar')
+  })
+
+  it('launches Daily Async Multiplayer from an external countdown request', () => {
+    const html = renderPanel({
+      authStatus: 'authenticated',
+      launchRequest: { dateKey: '2025-06-15', kind: 'multiplayer', transport: 'async' },
+      viewerUserId: 'user-1',
+    })
+
+    expect(html).toContain('Daily Async Multiplayer')
+    expect(html).toContain('2025-06-15')
+  })
+
+  it('restores the active Daily Live Multiplayer surface from browser storage', () => {
+    vi.stubGlobal('window', {
+      localStorage: {
+        getItem: (key: string) => key === 'brrrdle:calendar-surface:v1'
+          ? JSON.stringify({ dateKey: '2025-06-15', kind: 'multiplayer', transport: 'live' })
+          : null,
+        removeItem: vi.fn(),
+        setItem: vi.fn(),
+      },
+    })
+
+    const html = renderPanel({ authStatus: 'authenticated', viewerUserId: 'user-1' })
+
+    expect(html).toContain('Daily Live Multiplayer')
+    expect(html).toContain('2025-06-15')
   })
 })

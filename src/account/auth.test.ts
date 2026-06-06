@@ -141,7 +141,25 @@ describe('subscribeToAuthChanges', () => {
     const client = makeClient({ onAuthStateChange: subscribe })
     subscribeToAuthChanges(client, listener)
     ;(captured as (event: string, session: unknown) => void)('SIGNED_OUT', null)
-    expect(listener).toHaveBeenCalledWith({ status: 'anonymous' })
+    expect(listener).toHaveBeenCalledWith({ status: 'anonymous' }, 'SIGNED_OUT')
+  })
+
+  it('forwards PASSWORD_RECOVERY so the app can open the reset screen', () => {
+    let captured: unknown
+    const listener = vi.fn()
+    const subscribe = vi.fn((cb: (event: string, session: { user: { id: string; email: string; app_metadata: Record<string, unknown> } } | null) => void) => {
+      captured = cb
+      return { data: { subscription: { unsubscribe: vi.fn() } } }
+    })
+    const client = makeClient({ onAuthStateChange: subscribe })
+    subscribeToAuthChanges(client, listener)
+    ;(captured as (event: string, session: unknown) => void)('PASSWORD_RECOVERY', {
+      user: { id: 'u1', email: 'recovery@example.com', app_metadata: {} },
+    })
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'authenticated' }),
+      'PASSWORD_RECOVERY',
+    )
   })
 })
 
