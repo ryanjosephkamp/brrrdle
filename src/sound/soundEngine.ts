@@ -189,6 +189,9 @@ export function createSoundEngine(options: SoundEngineOptions): SoundEngine {
       if (!context) {
         return
       }
+      if (context.state === 'suspended') {
+        void context.resume?.().catch(() => undefined)
+      }
       const specs = TONE_SPECS[event]
       let offset = 0
       for (const spec of specs) {

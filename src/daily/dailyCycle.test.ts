@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { dateKeyToLocalDate, getActiveDailyDate, resolveDaily } from './dailyCycle'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { dateKeyToLocalDate, getActiveDailyDate, resetDailyLiveAnchor, resolveDaily } from './dailyCycle'
 import { getDailyDateKey, MS_PER_DAY } from './dailyClock'
 import type { DailyNow } from './simulatedClock'
 import type { KeyValueStorage } from '../game/storage/dailyOgStorage'
@@ -18,6 +18,10 @@ function nowAt(date: Date, monotonicMs: number | null): DailyNow {
 }
 
 describe('resolveDaily', () => {
+  beforeEach(() => {
+    resetDailyLiveAnchor()
+  })
+
   it('grants the local day and computes the countdown', () => {
     const storage = createMemoryStorage()
     const date = new Date(2026, 4, 26, 23, 0, 0)
@@ -78,6 +82,23 @@ describe('resolveDaily', () => {
     expect(resolved.rawDateKey).toBe('2026-05-26')
     expect(resolved.msUntilReset).toBe(30 * 60 * 1000)
     expect(resolved.nextResetAt).toBe(Date.parse('2026-05-27T00:00:00.000Z'))
+  })
+
+  it('keeps live anti-gaming anchors isolated per daily variant', () => {
+    const solo = resolveDaily({
+      now: nowAt(new Date('2026-05-26T12:00:00.000Z'), 1_000),
+      sessionId: 'shared-session',
+      variant: 'solo',
+    })
+    const multiplayer = resolveDaily({
+      now: nowAt(new Date('2026-05-27T12:00:00.000Z'), 2_000),
+      sessionId: 'shared-session',
+      variant: 'multiplayer',
+    })
+
+    expect(solo.reason).toBe('initial')
+    expect(multiplayer.reason).toBe('initial')
+    expect(multiplayer.clamped).toBe(false)
   })
 })
 

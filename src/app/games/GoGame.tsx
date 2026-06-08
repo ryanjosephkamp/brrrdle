@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BUNDLED_WORD_LIST_LENGTHS, DEFAULT_DIFFICULTY_TIER, type DifficultyTier } from '../../data'
 import { DEFAULT_GO_PUZZLE_COUNT, type GoPuzzleCount } from '../../game/constants'
 import type { CompletedGameInput, GoResumeSlot, ResumeCapture } from '../../account'
+import { createAccountPracticeSeed } from '../../account/practiceSeeds'
 import { DefinitionPanel } from '../../definitions'
 import {
   createDailyGoSetup,
@@ -37,6 +38,7 @@ interface GoGameProps {
   readonly coins: number
   readonly defaultDifficulty?: DifficultyTier
   readonly defaultGoPuzzleCount?: GoPuzzleCount
+  readonly defaultHardMode?: boolean
   readonly initialResume?: GoResumeSlot
   readonly keyboardDisabled?: boolean
   readonly onGameComplete?: (input: CompletedGameInput) => void
@@ -44,6 +46,9 @@ interface GoGameProps {
   readonly onSaveDifficultyDefault?: (tier: DifficultyTier) => void
   readonly onSaveGoPuzzleCountDefault?: (count: GoPuzzleCount) => void
   readonly onSpendCoins: (amount: number) => boolean
+  readonly onAdvancePracticeSeed?: () => void
+  readonly practiceSeedCounter?: number
+  readonly practiceSeedUserId?: string
   readonly scope: 'daily' | 'practice'
   /**
    * Phase 22 Addendum (§27.10) — when set, this daily renders a specific *past*
@@ -65,7 +70,7 @@ const tileStateClasses: Record<GridTileState, string> = {
   present: 'border-amber-300/70 bg-amber-300/20 text-amber-50',
 }
 
-function createInitialDailySession(setup: ReturnType<typeof createDailyGoSetup>, pastDailyDateKey?: string): GoSessionState {
+function createInitialDailySession(setup: ReturnType<typeof createDailyGoSetup>, pastDailyDateKey?: string, hardMode = false): GoSessionState {
   const stored = loadDailyGoStoredSession(undefined, pastDailyDateKey)
   if (
     stored &&
@@ -77,7 +82,7 @@ function createInitialDailySession(setup: ReturnType<typeof createDailyGoSetup>,
   }
 
   clearDailyGoStoredSession(undefined, pastDailyDateKey)
-  return createGoSession(setup)
+  return createGoSession(setup, hardMode)
 }
 
 function GuessGrid({ session }: { readonly session: PuzzleSessionState }) {
@@ -146,6 +151,7 @@ function GoGameSession({
   coins,
   defaultDifficulty,
   defaultGoPuzzleCount,
+  defaultHardMode,
   difficulty,
   goPuzzleCount,
   keyboardDisabled,
@@ -169,6 +175,7 @@ function GoGameSession({
   readonly coins: number
   readonly defaultDifficulty: DifficultyTier
   readonly defaultGoPuzzleCount: GoPuzzleCount
+  readonly defaultHardMode: boolean
   readonly difficulty: DifficultyTier
   readonly goPuzzleCount: GoPuzzleCount
   readonly keyboardDisabled: boolean
@@ -193,7 +200,7 @@ function GoGameSession({
     if (restoreFrom) {
       return restoreGoSession(restoreFrom, setup.validGuesses)
     }
-    return scope === 'daily' ? createInitialDailySession(setup, pastDailyDateKey) : createGoSession(setup)
+    return scope === 'daily' ? createInitialDailySession(setup, pastDailyDateKey, defaultHardMode) : createGoSession(setup, defaultHardMode)
   })
   const [continuationMessage, setContinuationMessage] = useState<string>()
   const [showDefinitions, setShowDefinitions] = useState(true)
@@ -419,6 +426,7 @@ function GoGameSession({
           <input
             checked={session.hardMode}
             className="h-4 w-4 accent-cyan-300"
+            disabled={session.puzzles.some((puzzle) => puzzle.guesses.length > 0)}
             onChange={(event) => setSession((currentSession) => setGoHardMode(currentSession, event.target.checked))}
             type="checkbox"
           />
@@ -528,15 +536,22 @@ function GoGameSession({
   )
 }
 
-export function GoGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, defaultGoPuzzleCount = DEFAULT_GO_PUZZLE_COUNT, initialResume, keyboardDisabled = false, onGameComplete, onResumeCapture, onSaveDifficultyDefault, onSaveGoPuzzleCountDefault, onSpendCoins, scope, pastDailyDateKey, onMarkDailyUnlocked }: GoGameProps) {
-  const resumePractice = initialResume?.scope === 'practice' ? initialResume : undefined
+export function GoGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, defaultGoPuzzleCount = DEFAULT_GO_PUZZLE_COUNT, defaultHardMode = false, initialResume, keyboardDisabled = false, onAdvancePracticeSeed, onGameComplete, onResumeCapture, onSaveDifficultyDefault, onSaveGoPuzzleCountDefault, onSpendCoins, practiceSeedCounter = 0, practiceSeedUserId, scope, pastDailyDateKey, onMarkDailyUnlocked }: GoGameProps) {
+  const [initialPracticeResume] = useState(() => initialResume?.scope === 'practice' ? initialResume : undefined)
+  // Practice resume captures are written on every input. Treat the incoming
+  // resume slot as a one-shot restore source so those live captures do not
+  // remount the active chain and replay submitted-row animations.
+  const resumePractice = initialPracticeResume
   const practiceLengths = useMemo(() => getAvailableGoPracticeLengths(), [])
   const [practiceLength, setPracticeLength] = useState(() => resumePractice?.wordLength ?? 5)
-  const [practiceSeed, setPracticeSeed] = useState(0)
+  const [localPracticeSeed, setLocalPracticeSeed] = useState(0)
   const [difficulty, setDifficulty] = useState<DifficultyTier>(resumePractice?.difficulty ?? defaultDifficulty)
   const [goPuzzleCount, setGoPuzzleCount] = useState<GoPuzzleCount>(resumePractice?.goPuzzleCount ?? defaultGoPuzzleCount)
   const [resumeConsumed, setResumeConsumed] = useState(false)
   const activeResume = resumePractice && !resumeConsumed ? resumePractice : undefined
+  const practiceSeed = practiceSeedUserId
+    ? createAccountPracticeSeed('go', practiceSeedUserId, practiceSeedCounter)
+    : localPracticeSeed
   const dailyDate = useMemo(
     () => pastDailyDateKey ? dateKeyToLocalDate(pastDailyDateKey) : getActiveDailyDate(),
     [pastDailyDateKey],
@@ -555,6 +570,7 @@ export function GoGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, def
       coins={coins}
       defaultDifficulty={defaultDifficulty}
       defaultGoPuzzleCount={defaultGoPuzzleCount}
+      defaultHardMode={defaultHardMode}
       difficulty={difficulty}
       goPuzzleCount={goPuzzleCount}
       keyboardDisabled={keyboardDisabled}
@@ -563,7 +579,14 @@ export function GoGame({ coins, defaultDifficulty = DEFAULT_DIFFICULTY_TIER, def
       onGoPuzzleCountChange={(count) => { setResumeConsumed(true); setGoPuzzleCount(count) }}
       onMarkDailyUnlocked={onMarkDailyUnlocked}
       onPracticeLengthChange={(length) => { setResumeConsumed(true); setPracticeLength(length) }}
-      onPracticeSeedChange={() => { setResumeConsumed(true); setPracticeSeed((seed) => seed + 1) }}
+      onPracticeSeedChange={() => {
+        setResumeConsumed(true)
+        if (practiceSeedUserId && onAdvancePracticeSeed) {
+          onAdvancePracticeSeed()
+          return
+        }
+        setLocalPracticeSeed((seed) => seed + 1)
+      }}
       onResumeCapture={pastDailyDateKey ? undefined : onResumeCapture}
       onSaveDifficultyDefault={onSaveDifficultyDefault}
       onSaveGoPuzzleCountDefault={onSaveGoPuzzleCountDefault}

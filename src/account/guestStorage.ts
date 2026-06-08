@@ -3,9 +3,10 @@ import type { DifficultyTier } from '../data/difficulty'
 import { updateStatistics } from '../stats/statistics'
 import type { CompletedGameStatsInput } from '../stats/types'
 import { normalizeUnlockedDailies } from '../daily/pastDailies'
-import { normalizeAsyncMultiplayerState, normalizeCompetitiveMultiplayerState } from '../multiplayer'
+import { normalizeMultiplayerState, normalizeCompetitiveMultiplayerState } from '../multiplayer'
 import { createDefaultGuestProgress, GUEST_PROGRESS_SCHEMA_VERSION, normalizeGuestSettings, type GameHistoryEntry, type GuestProgressState } from './storageSchema'
 import { getLatestResumeSlot, getResumeSlotKey, normalizeResumeSlot, normalizeResumeSlots, type ResumeSlotCollection } from './resumeSlot'
+import { normalizePracticeSeedState } from './practiceSeeds'
 
 export interface KeyValueStorage {
   readonly getItem: (key: string) => string | null
@@ -29,7 +30,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 export function isGuestProgressState(value: unknown): value is GuestProgressState {
   return isRecord(value)
-    && (value.schemaVersion === 1 || value.schemaVersion === 2 || value.schemaVersion === 3 || value.schemaVersion === 4 || value.schemaVersion === 5 || value.schemaVersion === GUEST_PROGRESS_SCHEMA_VERSION)
+    && (value.schemaVersion === 1 || value.schemaVersion === 2 || value.schemaVersion === 3 || value.schemaVersion === 4 || value.schemaVersion === 5 || value.schemaVersion === 6 || value.schemaVersion === GUEST_PROGRESS_SCHEMA_VERSION)
     && isRecord(value.progression)
     && typeof value.progression.xp === 'number'
     && typeof value.progression.level === 'number'
@@ -65,8 +66,9 @@ export function migrateGuestProgress(value: unknown): GuestProgressState | undef
 
   return {
     ...value,
-    asyncMultiplayer: normalizeAsyncMultiplayerState(value.asyncMultiplayer),
+    multiplayer: normalizeMultiplayerState(value.multiplayer ?? (value as unknown as Record<string, unknown>).asyncMultiplayer),
     competitiveMultiplayer: normalizeCompetitiveMultiplayerState(value.competitiveMultiplayer),
+    practiceSeeds: normalizePracticeSeedState(value.practiceSeeds),
     resumeSlot: normalizeResumeSlot(value.resumeSlot),
     resumeSlots: migrateResumeSlots(value),
     schemaVersion: GUEST_PROGRESS_SCHEMA_VERSION,

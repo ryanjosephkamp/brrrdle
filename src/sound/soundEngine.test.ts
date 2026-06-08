@@ -87,6 +87,22 @@ describe('createSoundEngine', () => {
     expect(mock.events).toContain('oscillator.stop')
   })
 
+  it('requests an AudioContext resume when a user-triggered sound plays while suspended', () => {
+    const mock = createMockContext()
+    let resumeCalls = 0
+    const suspendedContext: AudioContextLike = {
+      ...mock.context,
+      state: 'suspended',
+      resume: async () => {
+        resumeCalls += 1
+      },
+    }
+    const engine = createSoundEngine({ enabled: true, audioContextFactory: () => suspendedContext })
+    engine.play('keyboard-click')
+    expect(resumeCalls).toBe(1)
+    expect(mock.oscillators.length).toBe(1)
+  })
+
   it('plays a multi-tone arpeggio for game-over-win', () => {
     const mock = createMockContext()
     const engine = createSoundEngine({ enabled: true, audioContextFactory: () => mock.context })

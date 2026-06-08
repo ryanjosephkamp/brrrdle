@@ -12,13 +12,13 @@ import {
 } from './rating'
 
 describe('multiplayer rating model', () => {
-  it('keeps independent buckets for transport and mode', () => {
-    expect(getRatingBucket('async', 'og')).toBe('async:og')
-    expect(getRatingBucket('live', 'go')).toBe('live:go')
+  it('keeps independent buckets by game mode', () => {
+    expect(getRatingBucket('og')).toBe('multiplayer:og')
+    expect(getRatingBucket('go')).toBe('multiplayer:go')
   })
 
   it('uses provisional and established K factors', () => {
-    expect(getRatingKFactor(createInitialRatingProfile('user-a', 'live:og'))).toBe(MULTIPLAYER_PROVISIONAL_K)
+    expect(getRatingKFactor(createInitialRatingProfile('user-a', 'multiplayer:og'))).toBe(MULTIPLAYER_PROVISIONAL_K)
     expect(getRatingKFactor({ gamesPlayed: 12, provisional: false })).toBe(MULTIPLAYER_ESTABLISHED_K)
   })
 
@@ -30,7 +30,7 @@ describe('multiplayer rating model', () => {
   it('rejects unranked, anonymous, non-durable, and duplicate-user evidence', () => {
     const base = {
       authenticated: true,
-      bucket: 'live:og' as const,
+      bucket: 'multiplayer:og' as const,
       durableResult: true,
       matchId: 'match-1',
       playerResults: [
@@ -56,7 +56,7 @@ describe('multiplayer rating model', () => {
   it('applies one idempotent rating transaction pair per match and bucket', () => {
     const evidence = {
       authenticated: true,
-      bucket: 'live:og' as const,
+      bucket: 'multiplayer:og' as const,
       durableResult: true,
       matchId: 'match-1',
       playerResults: [

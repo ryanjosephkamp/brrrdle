@@ -1,8 +1,7 @@
 import type { AuthState } from '../account/auth'
-import type { AsyncMultiplayerGame } from './asyncMultiplayer'
+import type { MultiplayerGame, MultiplayerState } from './multiplayer'
 import type { CustomGameLobby } from './customGames'
 import { normalizeCustomGameLobby } from './customGames'
-import type { LiveMultiplayerMatch } from './liveMultiplayer'
 import {
   applyRatedMatch,
   createEmptyRatingState,
@@ -12,8 +11,7 @@ import {
 } from './rating'
 import {
   createRatedEvidenceFromPerformance,
-  projectAsyncMultiplayerPerformance,
-  projectLiveMultiplayerPerformance,
+  projectMultiplayerPerformance,
   type MultiplayerMatchPerformance,
 } from './scoring'
 
@@ -47,8 +45,21 @@ export function normalizeCompetitiveMultiplayerState(value: unknown): Multiplaye
         if (typeof result !== 'object' || result === null) {
           return []
         }
-        const row = result as MultiplayerMatchPerformance
-        return typeof row.sourceMatchId === 'string' && (row.transport === 'async' || row.transport === 'live') ? [row] : []
+        const row = result as MultiplayerMatchPerformance & { readonly transport?: unknown }
+        return typeof row.sourceMatchId === 'string' ? [{
+          bucket: row.bucket,
+          customGameCode: row.customGameCode,
+          dailyDateKey: row.dailyDateKey,
+          endedAt: row.endedAt,
+          mode: row.mode,
+          players: row.players,
+          ranked: row.ranked,
+          scope: row.scope,
+          sourceMatchId: row.sourceMatchId,
+          status: row.status,
+          summary: typeof row.summary === 'string' ? row.summary.replace(/\b(async|live)\b/gi, 'multiplayer') : row.summary,
+          winnerPlayerId: row.winnerPlayerId,
+        }] : []
       })
     : []
   return {
@@ -89,13 +100,13 @@ function durableResultForPerformance(authState: AuthState, performance: Multipla
     && performance.players.every((player) => player.userId && !player.userId.startsWith('preview-rival-'))
 }
 
-export function settleAsyncMultiplayerResult(
+export function settleMultiplayerResult(
   state: MultiplayerCompetitiveState,
-  game: AsyncMultiplayerGame,
+  game: MultiplayerGame,
   authState: AuthState,
 ): SettleMultiplayerResult {
   const normalized = normalizeCompetitiveMultiplayerState(state)
-  const performance = projectAsyncMultiplayerPerformance(game)
+  const performance = projectMultiplayerPerformance(game)
   if (!performance) {
     return { state: normalized, transactions: [] }
   }
@@ -114,29 +125,15 @@ export function settleAsyncMultiplayerResult(
   }
 }
 
-export function settleLiveMultiplayerResult(
-  state: MultiplayerCompetitiveState,
-  match: LiveMultiplayerMatch,
+export function settleMultiplayerStateResults(
+  state: unknown,
+  multiplayer: MultiplayerState,
   authState: AuthState,
-): SettleMultiplayerResult {
-  const normalized = normalizeCompetitiveMultiplayerState(state)
-  const performance = projectLiveMultiplayerPerformance(match)
-  if (!performance) {
-    return { state: normalized, transactions: [] }
-  }
-  const nextWithResult = upsertPerformance(normalized, performance)
-  const applied = applyRatedMatch(
-    nextWithResult.rating,
-    createRatedEvidenceFromPerformance(performance, {
-      authenticated: authState.status === 'authenticated',
-      durableResult: durableResultForPerformance(authState, performance),
-    }),
+): MultiplayerCompetitiveState {
+  return multiplayer.games.reduce(
+    (nextState, game) => settleMultiplayerResult(nextState, game, authState).state,
+    normalizeCompetitiveMultiplayerState(state),
   )
-  return {
-    performance,
-    state: { ...nextWithResult, rating: applied.state },
-    transactions: applied.transactions,
-  }
 }
 
 export function mergeCompetitiveMultiplayerStates(left: unknown, right: unknown): MultiplayerCompetitiveState {

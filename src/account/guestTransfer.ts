@@ -1,8 +1,9 @@
 import { getLevelForXp } from '../progression'
 import type { GameStatsBucket, StatisticsState } from '../stats/types'
-import { mergeAsyncMultiplayerStates, mergeCompetitiveMultiplayerStates } from '../multiplayer'
+import { mergeMultiplayerStates, mergeCompetitiveMultiplayerStates } from '../multiplayer'
 import { normalizeGuestSettings, type GuestProgressState } from './storageSchema'
 import { getLatestResumeSlot, mergeResumeSlots } from './resumeSlot'
+import { mergePracticeSeedStates } from './practiceSeeds'
 
 function mergeStatsBucket(local: GameStatsBucket, cloud: GameStatsBucket): GameStatsBucket {
   const lengthKeys = new Set([...Object.keys(local.byLength), ...Object.keys(cloud.byLength)].map(Number))
@@ -69,8 +70,9 @@ export function mergeGuestProgressIntoCloud(local: GuestProgressState, cloud: Gu
       level: getLevelForXp(xp),
       xp,
     },
-    asyncMultiplayer: mergeAsyncMultiplayerStates(local.asyncMultiplayer, cloud.asyncMultiplayer),
+    multiplayer: mergeMultiplayerStates(local.multiplayer, cloud.multiplayer),
     competitiveMultiplayer: mergeCompetitiveMultiplayerStates(local.competitiveMultiplayer, cloud.competitiveMultiplayer),
+    practiceSeeds: mergePracticeSeedStates(local.practiceSeeds, cloud.practiceSeeds),
     resumeSlot,
     resumeSlots,
     settings,

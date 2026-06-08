@@ -4,20 +4,22 @@ import { DEFAULT_GO_PUZZLE_COUNT, normalizeGoPuzzleCount, type GoPuzzleCount } f
 import { DEFAULT_THEME, normalizeTheme, type Theme } from '../theme/theme'
 import { createEmptyStatistics } from '../stats/statistics'
 import type { StatisticsState } from '../stats/types'
-import type { AsyncMultiplayerState, MultiplayerCompetitiveState } from '../multiplayer'
+import type { MultiplayerState, MultiplayerCompetitiveState } from '../multiplayer'
 import type { ResumeSlot, ResumeSlotCollection } from './resumeSlot'
+import { createDefaultPracticeSeedState, type PracticeSeedState } from './practiceSeeds'
 /**
  * Bumped to 2 in Phase 18.3 when `GuestSettingsState.difficultyDefault` was
  * added, to 3 in Phase 19.2 when `GuestSettingsState.goPuzzleCountDefault`
- * was added, to 5 in Phase 23 when async multiplayer progress was added, and
+ * was added, to 5 in Phase 23 when multiplayer progress was added, and
  * to 6 in Phase 23 Stage 3 when competitive multiplayer result/rating display
- * state was added. Older payloads are upgraded by `migrateGuestProgress`
+ * state was added, and to 7 in Phase 23 Stage 15 when per-account Practice
+ * seed counters were added. Older payloads are upgraded by `migrateGuestProgress`
  * (see `guestStorage.ts`), which preserves all existing
  * coins/XP/history/stats and backfills any missing setting with its safe
  * default via `normalizeGuestSettings`; bumped to 4 in Phase 20 Variant 03 so
  * each play lane can remember its own unfinished puzzle.
  */
-export const GUEST_PROGRESS_SCHEMA_VERSION = 6
+export const GUEST_PROGRESS_SCHEMA_VERSION = 7
 
 export interface GuestProgressionState {
   readonly coins: number
@@ -117,17 +119,23 @@ export interface GuestProgressState {
    */
   readonly unlockedDailies?: readonly string[]
   /**
-   * Phase 23 Stage 1 — local-first async/turn-based multiplayer matches.
+   * Phase 23 Stage 1/8 — local-first turn-based multiplayer matches.
    * Stored separately from solo resume slots so up to five multiplayer games can
    * remain active without disturbing daily/practice solo progress.
    */
-  readonly asyncMultiplayer?: AsyncMultiplayerState
+  readonly multiplayer?: MultiplayerState
   /**
    * Phase 23 Stage 3 — additive competitive multiplayer state. This stores
    * local/cacheable result summaries, custom-game lobby metadata, and rating
    * projections. Solo stats/economy/history remain separate.
    */
   readonly competitiveMultiplayer?: MultiplayerCompetitiveState
+  /**
+   * Phase 23 Stage 15 — per-mode counters used with the authenticated account
+   * id to make Practice OG/GO sequences account-specific while Daily remains
+   * globally deterministic.
+   */
+  readonly practiceSeeds: PracticeSeedState
 }
 
 export function createDefaultGuestSettings(): GuestSettingsState {
@@ -176,8 +184,9 @@ export function createDefaultGuestProgress(): GuestProgressState {
     schemaVersion: GUEST_PROGRESS_SCHEMA_VERSION,
     settings: createDefaultGuestSettings(),
     stats: createEmptyStatistics(),
-    asyncMultiplayer: { games: [] },
+    multiplayer: { games: [] },
     competitiveMultiplayer: { customGames: [], rating: { profiles: [], transactions: [] }, results: [] },
+    practiceSeeds: createDefaultPracticeSeedState(),
     unlockedDailies: [],
   }
 }

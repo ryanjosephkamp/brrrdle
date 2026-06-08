@@ -1,17 +1,28 @@
 import type { GameMode, PlayScope } from '../game/types'
-import type { AsyncMultiplayerGame, AsyncMultiplayerPlayerId } from './asyncMultiplayer'
-import type { LiveMultiplayerMatch, LiveMultiplayerPlayerId } from './liveMultiplayer'
-import { getRatingBucket, type MultiplayerTransport, type RatingBucketId, type RatingOutcome, type RatedMatchEvidence } from './rating'
+import { getMultiplayerSessionForPlayer, type MultiplayerGame, type MultiplayerMove, type MultiplayerPlayerId, type MultiplayerSerializedSession } from './multiplayer'
+import { getRatingBucket, type RatingBucketId, type RatingOutcome, type RatedMatchEvidence } from './rating'
 
 export type MultiplayerResultStatus = 'completed' | 'aborted' | 'expired'
-export type MultiplayerResultPlayerId = AsyncMultiplayerPlayerId | LiveMultiplayerPlayerId
+export type MultiplayerResultPlayerId = MultiplayerPlayerId
+
+export const MULTIPLAYER_TILE_POINTS = {
+  absent: 0,
+  correct: 5,
+  present: 2,
+} as const
+
+export const MULTIPLAYER_SOLVE_POINTS = 100
+export const MULTIPLAYER_UNUSED_ATTEMPT_POINTS = 10
+export const MULTIPLAYER_HARD_MODE_SOLVE_BONUS = 15
 
 export interface MultiplayerPlayerPerformance {
   readonly attemptsUsed: number
   readonly completedAt?: string
   readonly outcome: RatingOutcome
   readonly playerId: MultiplayerResultPlayerId
+  readonly points: number
   readonly puzzlesSolved: number
+  readonly scoreSummary: string
   readonly summary: string
   readonly userId?: string
 }
@@ -27,7 +38,6 @@ export interface MultiplayerMatchPerformance {
   readonly sourceMatchId: string
   readonly status: MultiplayerResultStatus
   readonly summary: string
-  readonly transport: MultiplayerTransport
   readonly winnerPlayerId?: MultiplayerResultPlayerId
   readonly players: readonly MultiplayerPlayerPerformance[]
 }
@@ -51,31 +61,121 @@ function playerSummary(outcome: RatingOutcome, attemptsUsed: number, puzzlesSolv
   return `${result} in ${attemptsUsed || 0} ${attemptsUsed === 1 ? 'guess' : 'guesses'}`
 }
 
-export function projectAsyncMultiplayerPerformance(game: AsyncMultiplayerGame): MultiplayerMatchPerformance | undefined {
+function moveSolved(move: MultiplayerMove): boolean {
+  return move.tiles.length > 0 && move.tiles.every((tile) => tile.state === 'correct')
+}
+
+function tilePoints(move: MultiplayerMove): number {
+  return move.tiles.reduce((total, tile) => total + MULTIPLAYER_TILE_POINTS[tile.state], 0)
+}
+
+function getPuzzleMaxAttempts(session: MultiplayerSerializedSession, puzzleIndex: number): number {
+  if (session.mode === 'og') {
+    return session.session.maxAttempts
+  }
+  return session.session.puzzles[puzzleIndex]?.maxAttempts ?? session.session.puzzles[0]?.maxAttempts ?? 6
+}
+
+function projectPlayerScore(game: MultiplayerGame, playerId: MultiplayerPlayerId): {
+  readonly attemptsUsed: number
+  readonly points: number
+  readonly puzzlesSolved: number
+  readonly scoreSummary: string
+} {
+  const moves = game.moves.filter((move) => move.playerId === playerId)
+  const session = getMultiplayerSessionForPlayer(game, playerId)
+  const puzzleIndexes = game.mode === 'go'
+    ? Array.from({ length: session.mode === 'go' ? session.session.puzzles.length : 1 }, (_, index) => index)
+    : [0]
+  let points = 0
+  let puzzlesSolved = 0
+  for (const puzzleIndex of puzzleIndexes) {
+    const puzzleMoves = moves.filter((move) => move.puzzleIndex === puzzleIndex)
+    const solvedMove = puzzleMoves.find(moveSolved)
+    points += puzzleMoves.reduce((total, move) => total + tilePoints(move), 0)
+    if (solvedMove) {
+      puzzlesSolved += 1
+      const maxAttempts = getPuzzleMaxAttempts(session, puzzleIndex)
+      const unusedAttempts = Math.max(0, maxAttempts - puzzleMoves.length)
+      points += MULTIPLAYER_SOLVE_POINTS + unusedAttempts * MULTIPLAYER_UNUSED_ATTEMPT_POINTS
+      if (game.hardMode) {
+        points += MULTIPLAYER_HARD_MODE_SOLVE_BONUS
+      }
+    }
+  }
+
+  const solveLabel = game.mode === 'go'
+    ? `${puzzlesSolved}/${puzzleIndexes.length} puzzles solved`
+    : puzzlesSolved > 0 ? 'solved' : 'not solved'
+  return {
+    attemptsUsed: moves.length,
+    points,
+    puzzlesSolved,
+    scoreSummary: `${points} pts; ${solveLabel}`,
+  }
+}
+
+function pointsWinner(players: readonly MultiplayerPlayerPerformance[]): MultiplayerPlayerId | undefined {
+  const [left, right] = players
+  if (!left || !right || left.points === right.points) {
+    return undefined
+  }
+  return left.points > right.points ? left.playerId : right.playerId
+}
+
+function winnerReason(game: MultiplayerGame, players: readonly MultiplayerPlayerPerformance[], winnerPlayerId: MultiplayerPlayerId | undefined): string {
+  if (!winnerPlayerId) {
+    return 'draw'
+  }
+  if (game.timedOutPlayerId) {
+    return 'timeout'
+  }
+  const winner = players.find((player) => player.playerId === winnerPlayerId)
+  const solvedPlayers = players.filter((player) => player.puzzlesSolved > 0)
+  if (game.mode === 'og' && solvedPlayers.length === 1 && winner?.puzzlesSolved) {
+    return 'solve'
+  }
+  return 'points'
+}
+
+export function projectMultiplayerPerformance(game: MultiplayerGame): MultiplayerMatchPerformance | undefined {
   if (game.status === 'waiting' || game.status === 'playing' || game.status === 'cancelled') {
     return undefined
   }
   const lastMove = game.moves[game.moves.length - 1]
   const status: MultiplayerResultStatus = game.status === 'expired' ? 'expired' : 'completed'
-  const winnerPlayerId = game.winnerId ?? (game.status === 'lost' && lastMove ? otherPlayer(lastMove.playerId) : undefined)
-  const bucket = game.ratingBucket ?? getRatingBucket('async', game.mode)
-  const players = game.players.map((player): MultiplayerPlayerPerformance => {
+  const bucket = game.ratingBucket ?? getRatingBucket(game.mode)
+  const scoredPlayers = game.players.map((player): MultiplayerPlayerPerformance => {
     const moves = game.moves.filter((move) => move.playerId === player.id)
-    const outcome = outcomeFor(player.id, winnerPlayerId, status)
-    const totalPuzzles = game.serializedSession.mode === 'go' ? game.serializedSession.session.puzzles.length : 1
-    const puzzlesSolved = game.mode === 'go'
-      ? new Set(moves.map((move) => move.puzzleIndex)).size
-      : outcome === 'win' ? 1 : 0
+    const score = projectPlayerScore(game, player.id)
     return {
       attemptsUsed: moves.length,
       completedAt: game.endedAt,
-      outcome,
+      outcome: 'draw',
       playerId: player.id,
-      puzzlesSolved,
-      summary: playerSummary(outcome, moves.length, puzzlesSolved, game.mode, totalPuzzles),
+      points: score.points,
+      puzzlesSolved: score.puzzlesSolved,
+      scoreSummary: score.scoreSummary,
+      summary: '',
       userId: game.playerUserIds?.[player.id],
     }
   })
+  const solvedPlayers = scoredPlayers.filter((player) => player.puzzlesSolved > 0)
+  const winnerPlayerId = game.winnerId
+    ?? (game.mode === 'og' && solvedPlayers.length === 1 ? solvedPlayers[0].playerId : undefined)
+    ?? (game.status === 'lost' && lastMove && game.timedOutPlayerId ? otherPlayer(game.timedOutPlayerId) : undefined)
+    ?? pointsWinner(scoredPlayers)
+  const players = scoredPlayers.map((player): MultiplayerPlayerPerformance => {
+    const outcome = outcomeFor(player.playerId, winnerPlayerId, status)
+    const totalPuzzles = game.serializedSession.mode === 'go' ? game.serializedSession.session.puzzles.length : 1
+    return {
+      ...player,
+      outcome,
+      summary: `${playerSummary(outcome, player.attemptsUsed, player.puzzlesSolved, game.mode, totalPuzzles)}; ${player.scoreSummary}`,
+    }
+  })
+  const reason = winnerReason(game, players, winnerPlayerId)
+  const winnerLabel = winnerPlayerId ? game.players.find((player) => player.id === winnerPlayerId)?.label ?? winnerPlayerId : undefined
   return {
     bucket,
     customGameCode: game.customGameCode,
@@ -88,59 +188,17 @@ export function projectAsyncMultiplayerPerformance(game: AsyncMultiplayerGame): 
     sourceMatchId: game.id,
     status,
     summary: status === 'expired'
-      ? 'Async match expired before completion'
-      : winnerPlayerId
-        ? `${game.players.find((player) => player.id === winnerPlayerId)?.label ?? winnerPlayerId} won the async match`
-        : 'Async match ended in a draw',
-    transport: 'async',
+      ? 'Multiplayer match expired before completion'
+      : winnerPlayerId && reason === 'points'
+        ? `${winnerLabel} won on points`
+        : winnerPlayerId && reason === 'solve'
+          ? `${winnerLabel} won the multiplayer match by solving`
+          : winnerPlayerId && reason === 'timeout'
+            ? `${winnerLabel} won the multiplayer match on time`
+            : winnerPlayerId
+              ? `${winnerLabel} won the multiplayer match`
+        : 'Multiplayer match ended in a draw',
     winnerPlayerId,
-  }
-}
-
-export function projectLiveMultiplayerPerformance(match: LiveMultiplayerMatch): MultiplayerMatchPerformance | undefined {
-  if (match.phase !== 'finished' && match.phase !== 'expired' && match.phase !== 'aborted') {
-    return undefined
-  }
-  const status: MultiplayerResultStatus = match.phase === 'finished' ? 'completed' : match.phase
-  const bucket = match.ratingBucket ?? getRatingBucket('live', match.mode)
-  const players = match.players.map((player): MultiplayerPlayerPerformance => {
-    const progress = match.playerProgress.find((entry) => entry.playerId === player.id)
-    const moves = progress?.moves ?? []
-    const outcome = outcomeFor(player.id, match.winnerId, status)
-    const totalPuzzles = progress?.serializedSession?.mode === 'go' ? progress.serializedSession.session.puzzles.length : 1
-    const puzzlesSolved = match.mode === 'go'
-      ? progress?.status === 'won' ? progress.serializedSession?.mode === 'go' ? progress.serializedSession.session.puzzles.length : 0 : 0
-      : progress?.status === 'won' ? 1 : 0
-    return {
-      attemptsUsed: moves.length,
-      completedAt: progress?.completedAt,
-      outcome,
-      playerId: player.id,
-      puzzlesSolved,
-      summary: playerSummary(outcome, moves.length, puzzlesSolved, match.mode, totalPuzzles),
-      userId: match.playerUserIds?.[player.id],
-    }
-  })
-  return {
-    bucket,
-    customGameCode: match.customGameCode,
-    dailyDateKey: match.dailyDateKey,
-    endedAt: match.endedAt,
-    mode: match.mode,
-    players,
-    ranked: match.ranked === true,
-    scope: match.scope,
-    sourceMatchId: match.id,
-    status,
-    summary: status === 'expired'
-      ? 'Live match expired at the UTC deadline'
-      : status === 'aborted'
-        ? match.abortReason ?? 'Live match was aborted'
-        : match.winnerId
-          ? `${match.players.find((player) => player.id === match.winnerId)?.label ?? match.winnerId} won the live match`
-          : 'Live match ended in a draw',
-    transport: 'live',
-    winnerPlayerId: match.winnerId,
   }
 }
 

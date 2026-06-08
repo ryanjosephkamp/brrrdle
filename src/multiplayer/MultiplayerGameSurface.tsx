@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { DEFAULT_GO_PUZZLE_COUNT } from '../game/constants'
 import {
   createPracticeGoSetup,
@@ -14,29 +14,30 @@ import {
   submitGuess,
   useKeyboardInput,
   type GoSessionState,
+  type GuessResult,
   type KeyboardInput,
   type PuzzleSessionState,
   type TileState,
 } from '../game'
 import { dateKeyToLocalDate, getUtcDailyDateKey } from '../daily'
+import { useSound } from '../sound'
 import { Keyboard } from '../ui'
 import { classNames } from '../ui/classNames'
-import type { AsyncMultiplayerGame } from './asyncMultiplayer'
+import { getMultiplayerSessionForPlayer, type MultiplayerGame, type MultiplayerPlayerId } from './multiplayer'
 import { createDailyMultiplayerGoSetup, createDailyMultiplayerOgSetup } from './dailyMultiplayer'
-import type { LiveMultiplayerMatch, LiveMultiplayerPlayerProgress } from './liveMultiplayer'
-
-type MultiplayerGameModel =
-  | { readonly kind: 'async'; readonly game: AsyncMultiplayerGame }
-  | { readonly kind: 'live'; readonly match: LiveMultiplayerMatch; readonly progress: LiveMultiplayerPlayerProgress }
 
 interface MultiplayerGameSurfaceProps {
   readonly disabled?: boolean
-  readonly model: MultiplayerGameModel
+  readonly game: MultiplayerGame
   readonly onSubmitGuess: (guess: string) => void
+  readonly playerId?: MultiplayerPlayerId
   readonly statusLabel: string
 }
 
 type GridTileState = TileState | 'empty' | 'current'
+type SolvedGoTransition = { readonly moveId: string; readonly puzzleIndex: number }
+
+const SOLVED_GO_TRANSITION_MS = 2000
 
 const tileStateClasses: Record<GridTileState, string> = {
   absent: 'border-slate-700 bg-slate-950 text-slate-400',
@@ -46,54 +47,30 @@ const tileStateClasses: Record<GridTileState, string> = {
   present: 'border-amber-300/70 bg-amber-300/20 text-amber-50',
 }
 
-function getModelKey(model: MultiplayerGameModel): string {
-  if (model.kind === 'async') {
-    const session = model.game.serializedSession
-    const currentGuess = session.mode === 'og'
-      ? session.session.currentGuess
-      : session.session.puzzles[session.session.currentPuzzleIndex]?.currentGuess ?? ''
-    return `${model.game.id}:${model.game.updatedAt}:${model.game.currentTurn}:${model.game.status}:${currentGuess}`
-  }
-  const session = model.progress.serializedSession
-  const currentGuess = session?.mode === 'og'
+function getModelKey(game: MultiplayerGame, playerId?: MultiplayerPlayerId): string {
+  const session = playerId ? getMultiplayerSessionForPlayer(game, playerId) : game.serializedSession
+  const currentGuess = session.mode === 'og'
     ? session.session.currentGuess
-    : session?.mode === 'go'
-      ? session.session.puzzles[session.session.currentPuzzleIndex]?.currentGuess ?? ''
-      : ''
-  const moveKey = model.progress.moves.map((move) => `${move.id}:${move.createdAt}`).join('|')
-  return `${model.match.id}:${model.progress.playerId}:${model.progress.status}:${model.progress.completedAt ?? ''}:${moveKey}:${currentGuess}`
+    : session.session.puzzles[session.session.currentPuzzleIndex]?.currentGuess ?? ''
+  const moveKey = game.moves.map((move) => `${move.id}:${move.playerId}:${move.puzzleIndex}:${move.guess}`).join('|')
+  return `${game.id}:${game.currentTurn}:${game.status}:${playerId ?? 'shared'}:${moveKey}:${currentGuess}`
 }
 
-function getValidGuesses(model: MultiplayerGameModel): ReadonlySet<string> {
-  const mode = model.kind === 'async' ? model.game.mode : model.match.mode
-  const scope = model.kind === 'async' ? model.game.scope : model.match.scope
-  const dailyDateKey = model.kind === 'async' ? model.game.dailyDateKey : model.match.dailyDateKey
-  const difficulty = model.kind === 'async' ? model.game.difficulty : model.match.difficulty
-  const goPuzzleCount = model.kind === 'async' ? model.game.goPuzzleCount : model.match.goPuzzleCount
-  const seed = model.kind === 'async' ? model.game.seed : model.match.seed
-  const wordLength = model.kind === 'async' ? model.game.wordLength : model.match.wordLength ?? 5
-
-  if (mode === 'og') {
-    return scope === 'daily'
-      ? createDailyMultiplayerOgSetup(dateKeyToLocalDate(dailyDateKey ?? getUtcDailyDateKey()), difficulty, model.kind).validGuesses
-      : createPracticeOgSetup(wordLength, seed, difficulty).validGuesses
+function getValidGuesses(game: MultiplayerGame): ReadonlySet<string> {
+  if (game.mode === 'og') {
+    return game.scope === 'daily'
+      ? createDailyMultiplayerOgSetup(dateKeyToLocalDate(game.dailyDateKey ?? getUtcDailyDateKey()), game.difficulty).validGuesses
+      : createPracticeOgSetup(game.wordLength, game.seed, game.difficulty).validGuesses
   }
 
-  return scope === 'daily'
-    ? createDailyMultiplayerGoSetup(dateKeyToLocalDate(dailyDateKey ?? getUtcDailyDateKey()), difficulty, goPuzzleCount ?? DEFAULT_GO_PUZZLE_COUNT, model.kind).validGuesses
-    : createPracticeGoSetup(wordLength, seed, difficulty, goPuzzleCount ?? DEFAULT_GO_PUZZLE_COUNT).validGuesses
+  return game.scope === 'daily'
+    ? createDailyMultiplayerGoSetup(dateKeyToLocalDate(game.dailyDateKey ?? getUtcDailyDateKey()), game.difficulty, game.goPuzzleCount ?? DEFAULT_GO_PUZZLE_COUNT).validGuesses
+    : createPracticeGoSetup(game.wordLength, game.seed, game.difficulty, game.goPuzzleCount ?? DEFAULT_GO_PUZZLE_COUNT).validGuesses
 }
 
-function getSerializedSession(model: MultiplayerGameModel) {
-  return model.kind === 'async' ? model.game.serializedSession : model.progress.serializedSession
-}
-
-function restoreModelSession(model: MultiplayerGameModel): PuzzleSessionState | GoSessionState | undefined {
-  const serialized = getSerializedSession(model)
-  if (!serialized) {
-    return undefined
-  }
-  const validGuesses = getValidGuesses(model)
+function restoreModelSession(game: MultiplayerGame, playerId?: MultiplayerPlayerId): PuzzleSessionState | GoSessionState {
+  const serialized = playerId ? getMultiplayerSessionForPlayer(game, playerId) : game.serializedSession
+  const validGuesses = getValidGuesses(game)
   return serialized.mode === 'og'
     ? restoreOgSession(serialized.session, validGuesses)
     : restoreGoSession(serialized.session, validGuesses)
@@ -103,8 +80,83 @@ function getActivePuzzle(session: PuzzleSessionState | GoSessionState): PuzzleSe
   return 'puzzles' in session ? session.puzzles[session.currentPuzzleIndex] : session
 }
 
+function getActivePuzzleIndex(session: PuzzleSessionState | GoSessionState): number {
+  return 'puzzles' in session ? session.currentPuzzleIndex : 0
+}
+
+function getLatestSolvedGoMove(game: MultiplayerGame) {
+  if (game.mode !== 'go') {
+    return undefined
+  }
+  return [...game.moves].reverse().find((move) => (
+    move.tiles.length > 0 && move.tiles.every((tile) => tile.state === 'correct')
+  ))
+}
+
+function getInitialSolvedGoTransition(game: MultiplayerGame, session: PuzzleSessionState | GoSessionState): SolvedGoTransition | undefined {
+  if (!('puzzles' in session)) {
+    return undefined
+  }
+  const latestSolvedMove = getLatestSolvedGoMove(game)
+  if (!latestSolvedMove) {
+    return undefined
+  }
+  if (latestSolvedMove.puzzleIndex < session.currentPuzzleIndex) {
+    return { moveId: latestSolvedMove.id, puzzleIndex: latestSolvedMove.puzzleIndex }
+  }
+  if (session.status === 'won' && latestSolvedMove.puzzleIndex === session.currentPuzzleIndex) {
+    return { moveId: latestSolvedMove.id, puzzleIndex: latestSolvedMove.puzzleIndex }
+  }
+  return undefined
+}
+
 function getCurrentGuess(session: PuzzleSessionState | GoSessionState): string {
   return getActivePuzzle(session).currentGuess
+}
+
+function getSharedMoveGuesses(game: MultiplayerGame, puzzleIndex: number): readonly GuessResult[] {
+  return game.moves
+    .filter((move) => move.puzzleIndex === puzzleIndex)
+    .map((move): GuessResult => ({ guess: move.guess, tiles: move.tiles }))
+}
+
+function isSameGuessResult(left: GuessResult, right: GuessResult): boolean {
+  return left.guess === right.guess
+    && left.tiles.length === right.tiles.length
+    && left.tiles.every((tile, index) => {
+      const other = right.tiles[index]
+      return other?.letter === tile.letter && other.state === tile.state
+    })
+}
+
+function mergeDisplayGuesses(sessionGuesses: readonly GuessResult[], sharedGuesses: readonly GuessResult[]): readonly GuessResult[] {
+  if (sharedGuesses.length === 0) {
+    return sessionGuesses
+  }
+  if (sessionGuesses.length === 0) {
+    return sharedGuesses
+  }
+
+  const suffixStart = sessionGuesses.length - sharedGuesses.length
+  if (suffixStart >= 0 && sharedGuesses.every((guess, index) => isSameGuessResult(sessionGuesses[suffixStart + index], guess))) {
+    return sessionGuesses
+  }
+
+  const preservedPrefix = suffixStart > 0 ? sessionGuesses.slice(0, suffixStart) : []
+  return [...preservedPrefix, ...sharedGuesses]
+}
+
+function getDisplayPuzzle(session: PuzzleSessionState, sharedGuesses: readonly GuessResult[]): PuzzleSessionState {
+  const guesses = mergeDisplayGuesses(session.guesses, sharedGuesses)
+  const maxAttempts = Math.max(session.maxAttempts, guesses.length + (session.status === 'playing' ? 1 : 0))
+  if (guesses === session.guesses && maxAttempts === session.maxAttempts) {
+    return session
+  }
+  return {
+    ...session,
+    guesses,
+    maxAttempts,
+  }
 }
 
 function applyInput(session: PuzzleSessionState | GoSessionState, input: KeyboardInput): PuzzleSessionState | GoSessionState {
@@ -179,41 +231,104 @@ function GuessGrid({ session }: { readonly session: PuzzleSessionState }) {
   )
 }
 
-export function MultiplayerGameSurface({ disabled = false, model, onSubmitGuess, statusLabel }: MultiplayerGameSurfaceProps) {
-  const baseSession = useMemo(() => restoreModelSession(model), [model])
-  const [sessionKey, setSessionKey] = useState(getModelKey(model))
-  const [draftSession, setDraftSession] = useState<PuzzleSessionState | GoSessionState | undefined>(baseSession)
-  const nextSessionKey = getModelKey(model)
-  if (sessionKey !== nextSessionKey) {
-    setSessionKey(nextSessionKey)
-    setDraftSession(baseSession)
-  }
+export function MultiplayerGameSurface({ disabled = false, game, onSubmitGuess, playerId, statusLabel }: MultiplayerGameSurfaceProps) {
+  const sound = useSound()
+  const baseSession = useMemo(() => restoreModelSession(game, playerId), [game, playerId])
+  const [draftModel, setDraftModel] = useState(() => ({
+    key: getModelKey(game, playerId),
+    session: baseSession as PuzzleSessionState | GoSessionState | undefined,
+  }))
+  const [clearedSolvedGoMoveId, setClearedSolvedGoMoveId] = useState<string | undefined>(undefined)
+  const draftSessionRef = useRef<PuzzleSessionState | GoSessionState | undefined>(baseSession)
+  const previousMoveCountRef = useRef(game.moves.length)
+  const previousStatusRef = useRef(game.status)
+  const nextSessionKey = getModelKey(game, playerId)
+  const draftSession = draftModel.key === nextSessionKey ? draftModel.session : baseSession
+  const pendingSolvedGoTransition = useMemo(() => getInitialSolvedGoTransition(game, baseSession), [baseSession, game])
+  const solvedGoTransition = pendingSolvedGoTransition?.moveId === clearedSolvedGoMoveId ? undefined : pendingSolvedGoTransition
 
-  const activePuzzle = draftSession ? getActivePuzzle(draftSession) : undefined
-  const isGo = draftSession ? 'puzzles' in draftSession : getSerializedSession(model)?.mode === 'go'
-  const letterStates = activePuzzle ? deriveKeyboardLetterStates(activePuzzle.guesses) : {}
-  const inputDisabled = disabled || !draftSession || getActivePuzzle(draftSession).status !== 'playing'
+  useEffect(() => {
+    draftSessionRef.current = draftSession
+  }, [draftSession])
+
+  useEffect(() => {
+    if (!solvedGoTransition) {
+      return undefined
+    }
+    const timeoutId = window.setTimeout(() => {
+      setClearedSolvedGoMoveId(solvedGoTransition.moveId)
+    }, SOLVED_GO_TRANSITION_MS)
+    return () => window.clearTimeout(timeoutId)
+  }, [solvedGoTransition])
+
+  const activePuzzle = draftSession
+    ? 'puzzles' in draftSession && solvedGoTransition
+      ? draftSession.puzzles[solvedGoTransition.puzzleIndex] ?? getActivePuzzle(draftSession)
+      : getActivePuzzle(draftSession)
+    : undefined
+  const activePuzzleIndex = draftSession
+    ? 'puzzles' in draftSession && solvedGoTransition
+      ? solvedGoTransition.puzzleIndex
+      : getActivePuzzleIndex(draftSession)
+    : 0
+  const sharedGuesses = useMemo(() => getSharedMoveGuesses(game, activePuzzleIndex), [activePuzzleIndex, game])
+  const displayPuzzle = activePuzzle ? getDisplayPuzzle(activePuzzle, sharedGuesses) : undefined
+  const isGo = draftSession ? 'puzzles' in draftSession : game.serializedSession.mode === 'go'
+  const letterStates = activePuzzle ? deriveKeyboardLetterStates(sharedGuesses.length > 0 ? sharedGuesses : activePuzzle.guesses) : {}
+  const inputDisabled = disabled || Boolean(solvedGoTransition) || !draftSession || getActivePuzzle(draftSession).status !== 'playing'
+
+  useEffect(() => {
+    const previousMoveCount = previousMoveCountRef.current
+    if (game.moves.length > previousMoveCount) {
+      const latestMove = game.moves[game.moves.length - 1]
+      sound.play('tile-flip')
+      if (latestMove?.tiles.every((tile) => tile.state === 'correct')) {
+        sound.play('correct-guess')
+      }
+    }
+
+    const previousStatus = previousStatusRef.current
+    if ((previousStatus === 'waiting' || previousStatus === 'playing') && game.status !== previousStatus && game.status !== 'waiting' && game.status !== 'playing') {
+      if (game.winnerId && playerId && game.winnerId === playerId) {
+        sound.play('game-over-win')
+      } else if (game.status === 'lost' || game.winnerId) {
+        sound.play('game-over-loss')
+      }
+    }
+
+    previousMoveCountRef.current = game.moves.length
+    previousStatusRef.current = game.status
+  }, [game.moves, game.status, game.winnerId, playerId, sound])
 
   const handleInput = useCallback((input: KeyboardInput) => {
-    if (!draftSession || disabled) {
+    const currentDraft = draftSessionRef.current
+    if (!currentDraft || disabled) {
       return
     }
+    sound.play('keyboard-click')
     if (input.type !== 'submit') {
-      setDraftSession(applyInput(draftSession, input))
+      setDraftModel((current) => {
+        const source = current.key === nextSessionKey ? current.session ?? currentDraft : currentDraft
+        const next = applyInput(source, input)
+        draftSessionRef.current = next
+        return { key: nextSessionKey, session: next }
+      })
       return
     }
 
-    const submitted = applyInput(draftSession, input)
+    const submitted = applyInput(currentDraft, input)
     const submittedPuzzle = getActivePuzzle(submitted)
     if (submittedPuzzle.lastValidation) {
-      setDraftSession(submitted)
+      sound.play('invalid-guess')
+      draftSessionRef.current = submitted
+      setDraftModel({ key: nextSessionKey, session: submitted })
       return
     }
-    const guess = getCurrentGuess(draftSession)
+    const guess = getCurrentGuess(currentDraft)
     if (guess) {
       onSubmitGuess(guess)
     }
-  }, [disabled, draftSession, onSubmitGuess])
+  }, [disabled, nextSessionKey, onSubmitGuess, sound])
 
   useKeyboardInput({ disabled: inputDisabled, onInput: handleInput })
 
@@ -225,9 +340,10 @@ export function MultiplayerGameSurface({ disabled = false, model, onSubmitGuess,
     )
   }
 
+  const statusPuzzle = displayPuzzle ?? activePuzzle
   const statusMessage = isGo && 'puzzles' in draftSession
-    ? `Puzzle ${draftSession.currentPuzzleIndex + 1} of ${draftSession.puzzles.length}; ${activePuzzle.maxAttempts - activePuzzle.guesses.length} attempts remaining.`
-    : `${activePuzzle.maxAttempts - activePuzzle.guesses.length} attempts remaining.`
+    ? `Puzzle ${activePuzzleIndex + 1} of ${draftSession.puzzles.length}; ${statusPuzzle.maxAttempts - statusPuzzle.guesses.length} attempts remaining.`
+    : `${statusPuzzle.maxAttempts - statusPuzzle.guesses.length} attempts remaining.`
 
   return (
     <div className="space-y-4 rounded-lg border border-white/10 bg-slate-950/70 p-3">
@@ -252,7 +368,7 @@ export function MultiplayerGameSurface({ disabled = false, model, onSubmitGuess,
             <div
               className={classNames(
                 'rounded-2xl border p-3 text-sm',
-                index === draftSession.currentPuzzleIndex ? 'border-cyan-200/70 bg-cyan-300/10 text-cyan-50' : 'border-slate-700 bg-slate-950/50 text-slate-300',
+                index === activePuzzleIndex ? 'border-cyan-200/70 bg-cyan-300/10 text-cyan-50' : 'border-slate-700 bg-slate-950/50 text-slate-300',
               )}
               key={`${puzzle.answer}-${index}`}
             >
@@ -264,7 +380,7 @@ export function MultiplayerGameSurface({ disabled = false, model, onSubmitGuess,
         </div>
       ) : null}
 
-      <GuessGrid session={activePuzzle} />
+      <GuessGrid session={displayPuzzle ?? activePuzzle} />
 
       <div aria-live="polite" className="rounded-2xl border border-slate-700 bg-black/30 p-3 text-sm leading-6 text-slate-200" role="status">
         <p>{inputDisabled ? statusLabel : 'Use the on-screen keyboard to enter your guess.'}</p>

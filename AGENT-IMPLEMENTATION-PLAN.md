@@ -1,8 +1,8 @@
 # AGENT-IMPLEMENTATION-PLAN.md
 
 **Project**: brrrdle
-**Plan Version**: 3.19
-**Date**: 2026-06-05
+**Plan Version**: 3.50
+**Date**: 2026-06-07
 **Status**: Draft for user review — amended with Hugging Face word-list source integration; further amended on 2026-05-27 with the `ADDITIONS-2026-05-27.md` addendum (see §18); further amended on 2026-05-27 with the `DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27.md` addendum (see §19); further amended on 2026-05-27 with the `AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27.md` addendum (see §20); further amended on 2026-05-28 with the Mobile & Tablet Responsiveness phase (see §21); further amended on 2026-05-28 with the Local Word Lists addendum (`LOCAL-WORD-LISTS-SPEC-2026-05-28.md`) as Phase 17 (see §22); further amended on 2026-05-28 with the Word List Difficulty Tiers + Word Explorer / Go / Settings improvements addendum (`PHASE-18-WORD-DIFFICULTY-AND-GO-IMPROVEMENTS-SPEC-2026-05-28.md`) as Phase 18 (see §23), whose §23.2 (Phase 18.0) performs an approved model-agnostic governance/repo cleanup and a root `README.md` upgrade in the planning stage; further amended on 2026-05-30 (v1.9) to integrate the user's definitive answers to the five §23.11 open questions (now recorded as resolved decisions) and to record the Phase 18.0 `README.md` upgrade; further amended on 2026-05-30 (v2.0) to record that Phase 18 **Prompt 2** has applied the approved constitution phase-range amendment (`CONSTITUTION.md` §1/§4/§5/§5.2/§17, v3.1 → v3.2) and the associated repo/doc adjustments, ahead of Prompt 3 (full Phase 18 feature execution); further amended on 2026-05-30 (v2.1) to append the Phase 19 addendum (`PHASE-19-ENHANCED-STATS-RESUME-CONFIGURABLE-GO-AND-POLISH-SPEC-2026-05-30.md`) as §24 (Phase 19 — Enhanced Statistics Visualizations, Configurable Go Puzzle Count, Full Resume-Most-Recent-Game Activation, Advanced Polish & Theming Foundations), whose §24.2 (Phase 19.0) performs the approved planning-stage governance/repo cleanup and a root `README.md` polish while deferring all game code changes (sub-phases 19.1–19.6) to explicit user approval ("Start Prompt 2" or equivalent); further amended on 2026-05-30 (v2.2) to record that Phase 19 **Prompt 2** has confirmed the planning-stage progress-step numbering decision (`phase_id = 46` / `progress/PROGRESS-STEP-46.md`, approved by the user) and applied the associated small clarity/governance adjustments (no game code), ahead of Prompt 3 (full Phase 19 feature execution, sub-phases 19.1–19.6); further amended on 2026-05-31 (v2.3) to upgrade `CONSTITUTION.md` to v3.3 for multi-agent workflow governance and append the Phase 20 addendum (`PHASE-20-DRAMATIC-UI-LAYOUT-EXPLORATION-SPEC-2026-05-30.md`) as §25, with governance-only tracking at `phase_id = 54`; further amended on 2026-06-01 (v2.4) to record Phase 20 completion (Variant 03 "Lunar Signal Deck" finalized) and append the Phase 21 addendum (`PHASE-21-UI-POLISH-AND-THEMING-FOUNDATION-SPEC-2026-06-01.md`) as §26 (Phase 21 — UI Polish & Theming Foundation), whose Prompt 1 is a planning + governance-only step (no UI polish, layout, or theming-foundation code) tracked at `phase_id = 59`, ahead of Prompt 2 (full Phase 21 execution); further amended on 2026-06-01 (v2.5) to record Phase 21 **Prompt 2**, a governance-only refined-instruction update incorporating the user's clarifications (keep the Lunar Signal Deck layout/tab structure mostly the same, adopt a very minimalist default background of plain black or a simple grid pattern, and capture the current Lunar Signal Deck visual style as one individual theme to be enabled in Phase 22) into the spec, §26, changelog, and progress at `phase_id = 60` — with no code, UI, layout, or theming-foundation changes — ahead of Prompt 3 (full Phase 21 execution); further amended on 2026-06-02 (v2.6) to record Phase 21 **Prompt 3** (full execution, `phase_id = 61`): added the `src/theme/surface.ts` surface-theme foundation (`minimal` default + `lunar-signal`), adopted a minimalist near-black default backdrop with a faint static grid, captured the original Lunar Signal Deck treatment as the single opt-in `lunar-signal` surface (gated by a `data-surface` attribute, to be enabled in Phase 22), and removed dead Phase-20 exploration CSS (`prism` and `command-shell` shells) plus the unused `Layout` component — with the Lunar Signal Deck layout/tab structure and every gameplay/accent-theme/stats/auth/resume/economy/sharing behavior preserved, and the Phase 22 theming system itself not implemented; further amended on 2026-06-02 (v2.7) to incorporate the **Phase 21 Addendum – Theme Proposal Templates** spec (`PHASE-21-THEME-PROPOSAL-TEMPLATES-SPEC-2026-06-02.md`) as a governance/planning-only step appended at §26.8, recording the new `themes/proposals/template_proposals/` + `full_proposals/` + `theme_proposals.csv` structure that Phase 21 must produce before closing, tracked at `phase_id = 62` — with no theme code, no proposal Markdown files, no CSV population, and no folder creation in this step (the requested "§26.1" addendum is recorded as §26.8 because the §26.1–§26.7 slots were already occupied, and the version advances to v2.7 because v2.6 was already consumed by the Phase 21 Prompt 3 full-execution amendment above); further amended on 2026-06-02 (v2.8) to incorporate the **Phase 22 – Advanced Calendar / Midnight Handling + Timezone-Aware Daily Reset (+ Targeted Bug Fixes)** spec (`PHASE-22-CALENDAR-MIDNIGHT-AND-BUGFIXES-SPEC-2026-06-02.md`) as §27, a planning + governance-only step (Prompt 1) that records the phase goals, scope, deliverables, verification requirements, and two-prompt workflow and makes Phase 22 the active next phase — with **no** daily-rollover, timezone, countdown, reset-alert, sound, dev-tool, or other source code implemented in this step (tracked at `phase_id = 64`), ahead of Prompt 2 (full Phase 22 execution); further amended on 2026-06-03 (v2.9) to record that Phase 22 **Prompt 2** (full execution) is complete (`phase_id = 65`) — timezone-aware local-midnight daily reset, balanced anti-gaming, cross-page countdown indicator, reset alert + brand-new unique sound, global Settings toggle, dev-mode Simulate Time tool, and the modular `src/daily/` service — and to incorporate the **Phase 22 Addendum – Calendar (Central Daily Hub) & Countdown Positioning** spec (`PHASE-22-ADDENDUM-CALENDAR-AND-COUNTDOWN-POSITIONING-2026-06-03.md`) as §27.10, a planning + governance-only step that records the Calendar-as-central-daily-hub feature (first tab, "Play Today's OG/GO" quick-access buttons, coin-gated past dailies with a one-guess-permanently-unlocks rule, past dailies treated as full daily experiences), the countdown repositioning to the top of the UI (context-aware on the landing page vs. game tabs), and the deliverables/scope/verification — with **no** calendar, navigation, routing, state-management, countdown-repositioning, economy, or other source code implemented in this step (tracked at `phase_id = 66`), ahead of a separately approved full-execution prompt.
 **Authority**: Must follow `CONSTITUTION.md`, `BRRRDLE-SPEC.md`, and the approved v2.6 plan in `BRRRDLE-OVERVIEW.md`.
 
@@ -44,6 +44,66 @@
 
 **Latest amendment (v3.19, 2026-06-05)**: The user explicitly authorized a narrow safety-backup PR and squash merge of the current local Phase 23 Stage 6 state to GitHub `main` before Stage 7. This backup is tracked under `phase_id = 91`; it does not close Phase 23, start Stage 7, create a release, expand the dedicated Multiplayer tab, or authorize deferred feature work. Further PRs, merges, releases, Stage 7 execution, and later-phase work remain gated pending explicit user approval.
 
+**Latest amendment (v3.20, 2026-06-05)**: Phase 23 Stage 7 whole-game autonomous bug bash and stabilization is now explicitly authorized by the user and opened under `phase_id = 92`. The execution must start from the PR #16 safety-backup state on GitHub `main` (`49e7f400c1ba8f6be3e048795d990b8db5ad6933`), create a dedicated Stage 7 branch, record a test/audit matrix before source edits, prioritize the known post-Stage-6 Live Multiplayer creator-entry and Practice Live word-length-selection bugs, run broad solo/daily/async/live/auth/stats/words/responsive audits, perform meaningful real two-client Supabase-backed multiplayer testing, and finish with the full verification gate plus Vercel preview. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion beyond bug fixes, redesign, and deferred feature work remain gated.
+
+**Latest amendment (v3.21, 2026-06-05)**: Phase 23 Stage 7 core stabilization fixes are implemented and tracked under `phase_id = 93`. The first bug-fix batch adds projection-based Live player entry acknowledgement before Practice word-length selection or Daily countdown timers arm, promotes a creator's selected matched lobby into its live match, tightens countdown start guards, persists host participant presence after entry, isolates in-memory Daily anti-gaming anchors per `DailyVariant`, locks solo Hard Mode toggles after the first guess, keys Word Explorer live-load responses by requested length, and improves mobile dialog scrolling. Focused regression tests pass; full Stage 7 lint/test/build/typecheck/browser/Supabase verification and preview deployment remain pending. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, and deferred feature work remain gated.
+
+**Latest amendment (v3.22, 2026-06-06)**: Phase 23 Stage 7 stabilization and verification handoff is tracked under `phase_id = 94`. Real two-client browser E2E against the configured Supabase project covered Practice Async, Daily Async, Practice Live, and Daily Live create/discover/join/play flows; remote Supabase probes confirmed durable async moves, matched live lobbies/matches, participant rows, entry acknowledgements, and Daily claim rows; desktop, tablet-like, and 390px browser smoke passed with no console errors or horizontal overflow; Word Explorer definition modal rendering was sampled. The full lint/test/build/typecheck/whitespace gate and preview deployment must remain part of the final handoff evidence. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, and deferred feature work remain gated.
+
+**Latest amendment (v3.23, 2026-06-06)**: Phase 23 Stage 8 planning is documented under §28.25 and tracked under `phase_id = 95` as a governance/documentation-only update using `PHASE-23-STAGE-8-MULTIPLAYER-UNIFICATION-AND-TIME-LIMITS-SPEC-2026-06-05.md` as the dedicated Stage 8 source. The plan scopes unifying Async and Live into one Multiplayer model, removing Live-specific terminology and code paths, preserving Daily Multiplayer as strictly asynchronous with UTC-midnight expiry only, adding creator-selected chess-clock-style total time limits for Practice Multiplayer, and investigating/fixing the excessive memory consumption observed during multi-client testing. No source-code edits, UI/component work, Supabase migrations, tests, implementation branches, PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, or Stage 8 execution is authorized by this amendment.
+
+**Latest amendment (v3.24, 2026-06-06)**: Phase 23 Stage 8 implementation is tracked under `phase_id = 96`-`97`. The execution unifies the active multiplayer implementation around the durable turn-based Multiplayer model, removes mounted Live App/Calendar paths and obsolete Live modules, keeps Daily Multiplayer strictly asynchronous with no time-limit controls, adds creator-selected Practice Multiplayer chess-clock total time limits, preserves legacy Supabase/local-storage compatibility where needed, and records memory/performance verification with two authenticated browser contexts. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, notifications, bots, social features, redesign, and later-phase work remain gated pending explicit user approval.
+
+**Latest amendment (v3.26, 2026-06-06)**: Phase 23 Stage 9 execution is documented under §28.28 and tracked under `phase_id = 99`-`100` using `PHASE-23-STAGE-9-TIMER-BUGS-AND-MULTIPLAYER-SCORING-SPEC-2026-06-06.md` as the dedicated Stage 9 source. The implementation fixes timed Practice Multiplayer board/clock synchronization with per-player sessions and stale-save guards, adds Practice-only Hard Mode as a creator-selected locked lobby setting, and adds deterministic OG/GO multiplayer points with clear winner/draw summaries. Full lint/test/build/typecheck/diff checks, focused regressions, real two-client Supabase browser E2E, remote row probes, and responsive smoke are recorded in the Stage 9 progress reports. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, and later-phase work remain gated.
+
+**Latest amendment (v3.27, 2026-06-06)**: Phase 23 Stage 10 planning is documented under §28.29 and tracked under `phase_id = 101` as a governance/documentation-only update using `PHASE-23-STAGE-10-MULTIPLAYER-DEBUGGING-AND-BUGFIXES-SPEC-2026-06-06.md` as the dedicated Stage 10 source. The plan scopes a targeted unified Multiplayer debugging pass focused on the critical cross-client board/keyboard synchronization bug where turn history updates but the rival board/keyboard does not, plus closely related multiplayer synchronization bugs discovered during testing. Daily Multiplayer must remain strictly asynchronous, no-clock, no-Hard-Mode-lobby-control, five-letter, and claim-safe. No source-code edits, UI/component work, tests, Supabase migrations, implementation branches, PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, or Stage 10 execution is authorized by this amendment.
+
+**Latest amendment (v3.28, 2026-06-06)**: Phase 23 Stage 10 implementation checkpoint is tracked under `phase_id = 102`. The execution reproduced the reported cross-client Practice Multiplayer board/keyboard synchronization bug with two authenticated Supabase-backed browser contexts, fixed the visible board/keyboard projection so shared moves render for both players without overwriting canonical `playerSessions`, discovered and fixed timed Practice clock double-counting, and prevented timed clock-only saves from wiping an in-progress typed guess. Focused multiplayer tests and real two-client Supabase E2E now pass for untimed two-turn refresh, timed Practice, and Practice Hard Mode. Final lint/test/build/typecheck/diff-check, responsive smoke, preview deployment, and final Stage 10 handoff remain pending. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, and later-phase work remain gated.
+
+**Latest amendment (v3.29, 2026-06-06)**: Phase 23 Stage 10 final verification and handoff are tracked under `phase_id = 103`. Full verification passed: `npm run lint`, `npm run test` (459 tests), `npm run build` (with the existing large-chunk advisory), `npx tsc -p tsconfig.api.json --noEmit`, `git diff --check`, real two-client Supabase E2E, desktop/tablet/390px responsive smoke, and a Vercel preview deployment. Stage 10 is complete for user review. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, scoring/rating overhaul, and later-phase work remain gated.
+
+**Latest amendment (v3.30, 2026-06-06)**: The user explicitly authorized a safety backup of the verified post-Stage-10 local repository state. The backup is tracked under `phase_id = 104`, using branch `backup/phase-23-stage-10-final-2026-06-06` and Draft PR #18 (`https://github.com/ryanjosephkamp/brrrdle/pull/18`) as a durable GitHub snapshot. This is a backup/governance operation only: it does not authorize merging the PR, pushing to `main`, release work, dedicated Multiplayer tab work, spectator expansion, redesign, or later-phase implementation.
+
+**Latest amendment (v3.31, 2026-06-06)**: Phase 23 Final Stabilization & Broad Debugging Pass planning is documented under §28.33 and tracked under `phase_id = 105` as a governance/documentation-only update. The planned final stage is a bug-fix and stabilization sweep across the entire game, with special emphasis on unified Multiplayer real two-client Supabase behavior, Daily Multiplayer invariants, solo/Daily/auth/stats/Words/responsive non-regression, and full verification before Phase 23 closure. No source-code edits, UI/component work, test changes, Supabase migrations, implementation branch, PR, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, scoring/rating changes, or execution of the final debugging pass is authorized by this amendment.
+
+**Latest amendment (v3.32, 2026-06-06)**: The user explicitly authorized execution of the Phase 23 Final Stabilization & Broad Debugging Pass. This kickoff is tracked under `phase_id = 106` and records the protected dirty Stage 8-10 worktree state, final debugging test matrix, baseline resource snapshot, required real two-client Supabase-backed multiplayer E2E, memory/resource safety guardrails, and scope boundaries. Source-code changes remain limited to bug fixes/stabilization found during this pass. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, scoring/rating changes, and later-phase work remain gated.
+
+**Latest amendment (v3.33, 2026-06-07)**: Phase 23 Final Stabilization checkpoint `phase_id = 108` records the timed Practice Multiplayer clock-churn fix: non-terminal chess-clock ticks now stay local/display-only, while submissions and actual timeouts remain the only durable timer writes. Focused multiplayer tests and real two-client Supabase-backed browser E2E passed for untimed Practice, timed Practice, Practice Hard Mode, and Daily Multiplayer; full final gate and preview deployment remain pending.
+
+**Latest amendment (v3.34, 2026-06-07)**: Phase 23 Final Stabilization final verification and handoff is complete under `phase_id = 109`. The final broad debugging pass fixed multiplayer stale-save/result-settlement issues, solo Hard Mode defaults, primary navigation filtering, and timed Practice clock churn; verified unified Multiplayer with real two-client Supabase-backed browser E2E; completed lint, tests, build, API typecheck, diff check, responsive smoke, remote Supabase probes, memory/resource observation, and Vercel preview deployment/share-link verification. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, scoring/rating changes, and later-phase work remain gated.
+
+**Latest amendment (v3.35, 2026-06-07)**: Phase 23 Stage 12 planning is documented under §28.38 and tracked under `phase_id = 110` as a governance/documentation-only update using `PHASE-23-STAGE-12-MULTIPLAYER-HARD-MODE-ENFORCEMENT-AND-PERFORMANCE-FIXES-SPEC-2026-06-07.md` as the dedicated source of truth. The plan scopes Practice Multiplayer Hard Mode enforcement, multiplayer turn propagation latency, lobby creation/join latency, on-screen keyboard responsiveness, and sound effects not playing. Daily Multiplayer invariants remain strict: asynchronous, no-clock, no-Hard-Mode-control, five-letter, UTC-day keyed, and claim-safe. No source-code edits, UI/component work, tests, Supabase migrations, implementation branches, PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, new features, scoring/rating changes, broad refactoring, or Stage 12 execution is authorized by this amendment.
+
+**Latest amendment (v3.36, 2026-06-07)**: Phase 23 Stage 12 execution is explicitly authorized and opened under `phase_id = 111` as a targeted bug-fix/stabilization pass from `PHASE-23-STAGE-12-MULTIPLAYER-HARD-MODE-ENFORCEMENT-AND-PERFORMANCE-FIXES-SPEC-2026-06-07.md`. The kickoff protects the dirty `codex/phase-23-stage-10` worktree, records the baseline resource snapshot, and defines the reproduce-first checklist for Practice Multiplayer Hard Mode enforcement, multiplayer turn propagation latency, lobby creation/join latency, on-screen keyboard responsiveness, and sound playback. Stage 12 remains strictly scoped to those bug areas; Daily Multiplayer invariants, `playerSessions` ownership, timed Practice clock semantics, stale-save protections, scoring, and terminal settlement must not be weakened. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, new features, scoring/rating/ELO changes, broad refactoring, and out-of-scope work remain gated.
+
+**Latest amendment (v3.37, 2026-06-07)**: Phase 23 Stage 12 implementation checkpoint `phase_id = 112` records the reproduced Practice Multiplayer Hard Mode enforcement bug and the first fix batch. Real two-client Supabase-backed browser E2E confirmed that an alternating-turn Hard Mode violation was accepted before the fix and rejected after the fix. Focused tests pass for multiplayer domain, repository, game surface, and sound engine changes. The fix keeps `playerSessions` canonical, validates Practice Hard Mode against shared submitted moves for the active puzzle, improves multiplayer draft-key responsiveness and sound calls, resumes suspended AudioContexts on user-triggered sounds, and reduces unnecessary Supabase row writes by skipping unchanged projections. Full Stage 12 verification, broader browser smoke, cleanup, preview deployment, and final handoff remain pending. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, new features, scoring/rating changes, broad refactoring, and out-of-scope work remain gated.
+
+**Latest amendment (v3.38, 2026-06-07)**: Phase 23 Stage 12 final verification and handoff are documented under `phase_id = 113`. Stage 12 fixed Practice Multiplayer Hard Mode enforcement across alternating turns, improved multiplayer keyboard responsiveness and sound playback, reduced redundant Supabase row writes, and verified lobby/turn propagation behavior with real two-client Supabase-backed E2E. Full local verification passed: lint, tests, build, API typecheck, diff check, responsive smoke, remote Supabase probes/cleanup, resource check, and Vercel preview/share verification. Stage 12 remains limited to targeted bug fixes; no PR, merge, release, dedicated Multiplayer tab work, spectator expansion, new features, scoring/rating changes, broad refactor, redesign, or out-of-scope work was performed.
+
+**Latest amendment (v3.39, 2026-06-07)**: Phase 23 Stage 13 planning is documented under §28.42 and tracked under `phase_id = 114` as a governance/documentation-only update using `PHASE-23-STAGE-13-PRACTICE-SOLO-AND-GO-MULTIPLAYER-BUGFIXES-SPEC-2026-06-07.md` as the dedicated source of truth. The plan scopes exactly three bugs: Practice solo submitted rows re-animating on keyboard input, Practice solo immediately starting a new game without showing results, and Multiplayer GO solved-puzzle result/advance propagation across both players. Execution remains gated and must use small focused changes with verification after each logical fix. Stage 12 Hard Mode enforcement, keyboard responsiveness, sound playback, and Daily Multiplayer/Daily Solo invariants must be preserved. No source-code edits, UI/component work, tests, Supabase migrations, implementation branches, PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, new features, scoring/rating changes, broad refactoring, or Stage 13 execution is authorized by this amendment.
+
+**Latest amendment (v3.40, 2026-06-07)**: Phase 23 Stage 13 execution is explicitly authorized and opened under `phase_id = 115`. The kickoff protects the dirty `codex/phase-23-stage-10` worktree, records baseline process/memory state, and defines the reproduce-first/small-change verification checklist for the three Stage 13 bugs. Stage 13 remains limited to Practice solo submitted-row animation, Practice solo post-game results, and Multiplayer GO solved-puzzle propagation. Stage 12 wins, Daily Solo behavior, and Daily Multiplayer invariants remain non-negotiable. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, new features, scoring/rating/ELO changes, broad refactoring, redesign, and out-of-scope work remain gated.
+
+**Latest amendment (v3.41, 2026-06-07)**: Phase 23 Stage 13 first implementation checkpoint is complete under `phase_id = 116`. Practice OG/GO now treat incoming Practice resume slots as one-shot restore sources so live resume captures from the active session no longer remount the game on every key press or immediately after completion. Focused browser reproduction verified the pre-fix Practice OG row re-animation and completion-reset bugs, and post-fix browser checks verified Practice OG/GO submitted rows no longer re-animate on later input and Practice OG/GO results stay visible after completion. Multiplayer GO solved-puzzle propagation remains the next Stage 13 work item.
+
+**Latest amendment (v3.42, 2026-06-07)**: Phase 23 Stage 13 final implementation and verification are complete under `phase_id = 117`. Multiplayer GO solved-puzzle propagation now synchronizes solved puzzle advancement across both canonical player sessions, holds the just-solved all-green row briefly on both clients, and delays terminal GO definitions until that solved-row hold has elapsed. Focused regressions cover first-puzzle advancement, final-puzzle completion, rival solved-row display, terminal definitions hold, Stage 12 Hard Mode controls/enforcement, sound engine behavior, and Practice solo resume-key stability. Full local verification passed: lint, tests, build, API typecheck, diff check, desktop/tablet/390px smoke, and resource/browser cleanup. Real browser Supabase attempts with temporary authenticated accounts reached sign-in but did not persist the host-created lobby in this harness, so final multiplayer persistence evidence for this checkpoint is domain/component coverage plus documented browser/cleanup attempts rather than a fully clean create/join/submit browser save path. No PR, merge, release, dedicated Multiplayer tab work, spectator expansion, new features, scoring/rating changes, broad refactoring, redesign, or out-of-scope work was performed.
+
+**Latest amendment (v3.43, 2026-06-08)**: Phase 23 Stage 14 planning is documented under §28.46 and tracked under `phase_id = 118` as a governance/documentation-only update using `PHASE-23-STAGE-14-POST-STAGE-13-POLISH-AND-MULTIPLAYER-EXPANSION-FOUNDATIONS-SPEC-2026-06-07.md` as the binding source of truth. The planned stage is scoped to post-Stage-13 bug fixes and polish, minimal non-breaking Multiplayer tab foundations, and low-risk spectator foundation hardening while preserving all Stage 12 and Stage 13 wins. Daily Multiplayer remains strictly asynchronous, five-letter, UTC-day keyed, no-clock, no-Hard-Mode-control, answer-separated, and claim-safe. No source-code edits, UI/component work, tests, Supabase migrations, implementation branch, PR creation, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, new gameplay features, scoring/rating changes, broad refactoring, redesign, or Stage 14 execution is authorized by this amendment.
+
+**Latest amendment (v3.44, 2026-06-08)**: Phase 23 Stage 14 execution is explicitly authorized and opened under `phase_id = 119`. The kickoff checkpoint records the protected dirty `codex/phase-23-stage-10` worktree, baseline process/memory state, the absence of a local app dev server, and a bounded Stage 14 checklist. Stage 14 remains scoped to approved small post-Stage-13 polish/bug fixes, minimal non-breaking Multiplayer tab foundations, and low-risk spectator foundation hardening. Daily Multiplayer invariants, all Stage 12 wins, and all Stage 13 wins remain non-negotiable. PR creation, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, notifications, floating manager, bots/social/export work, scoring/rating changes, broad refactor, redesign, and out-of-scope work remain gated.
+
+**Latest amendment (v3.45, 2026-06-08)**: Phase 23 Stage 14 first implementation checkpoint is complete under `phase_id = 120`. The implementation adds hidden, inert route metadata and a basic foundation shell for a future Multiplayer tab without adding it to primary navigation or replacing Calendar/Practice entry points; hardens the active multiplayer panel so authenticated nonparticipants do not mount the gameplay surface for a playing match; adds repository coverage that the unified Supabase adapter writes only through `async_multiplayer_games`; and clarifies Supabase docs that legacy Live spectator schema remains compatibility-only in the active Stage 14 app. Focused route, Calendar, multiplayer panel, foundation shell, and repository tests passed. Full Stage 14 lint/test/build/typecheck/diff gate, browser smoke, real two-client Supabase verification, resource check, and preview remain pending. PR creation, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, notifications, floating manager, bots/social/export work, scoring/rating changes, broad refactor, redesign, and out-of-scope work remain gated.
+
+**Latest amendment (v3.46, 2026-06-08)**: Phase 23 Stage 14 final verification and handoff are complete under `phase_id = 121`. Stage 14 added hidden/inert Multiplayer route foundations, kept Calendar and Practice as the active multiplayer entry points, hardened authenticated nonparticipant gameplay mounting, confirmed the active unified Supabase adapter writes through `async_multiplayer_games`, and documented legacy Live spectator schema as compatibility-only. Focused changed-area tests, lint, the full test suite, build, API typecheck, diff check, desktop/tablet/390px smoke, real Supabase-backed multi-context browser E2E, remote Supabase probes/cleanup, final resource checks, and Vercel preview/share verification passed. No PR, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, notifications, floating manager, bots/social/export work, scoring/rating change, broad refactor, redesign, or out-of-scope work was performed.
+
+**Latest amendment (v3.47, 2026-06-08)**: Phase 23 Stage 15 planning is documented under §28.50 and tracked under `phase_id = 122` as a governance/documentation-only update using `PHASE-23-STAGE-15-GO-TRANSITION-AND-PRACTICE-SEED-FIXES-SPEC-2026-06-08.md` as the binding source of truth. Stage 15 is a narrow two-bug pass only: preserve previously completed GO puzzles during the all-green solved-row hold, and make authenticated Practice OG/GO puzzle sequences per-account instead of globally identical while keeping Daily OG/GO globally deterministic. Execution remains gated and must reproduce both bugs before any source fixes. No source-code edits, tests, UI/component work, Supabase migrations, implementation branch, PR creation, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, deferred feature work, scoring/rating changes, broad refactoring, redesign, or Stage 15 execution is authorized by this amendment.
+
+**Latest amendment (v3.48, 2026-06-08)**: Phase 23 Stage 15 execution is explicitly authorized and opened under `phase_id = 123`. The kickoff checkpoint records the protected dirty `codex/phase-23-stage-10` worktree, baseline process/memory state, the absence of a local Vite app server, an unrelated Python listener on `127.0.0.1:8765`, and an existing Playwright-style Chrome process from before this Stage 15 run. Stage 15 remains limited to reproducing and fixing exactly two bugs: GO prior-puzzle visibility during the solved-row hold, and authenticated Practice OG/GO per-account seed uniqueness while preserving Daily determinism. PR creation, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, notifications, floating manager, bots/social/export work, scoring/rating changes, broad refactor, redesign, and out-of-scope work remain gated.
+
+**Latest amendment (v3.49, 2026-06-08)**: Phase 23 Stage 15 focused fixes are tracked under `phase_id = 124`. The GO solved-row hold regression was reproduced in focused component coverage before fixing; `MultiplayerGameSurface` now preserves canonical/prefilled GO rows while overlaying shared durable moves for display-only cross-client projection. Authenticated Practice seed predictability was traced to the zero-based local Practice seed path; account-id-derived Practice seeds plus persisted per-mode counters now make authenticated Practice OG/GO sequences account-specific while guest Practice keeps the local counter fallback and Daily OG/GO setup remains globally deterministic. Focused changed-area tests and the account suite pass; final real browser/Supabase E2E, full automated gate, responsive smoke, resource check, preview, and final handoff remain pending. PR creation, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, notifications, floating manager, bots/social/export work, scoring/rating changes, broad refactor, redesign, and out-of-scope work remain gated.
+
+**Latest amendment (v3.50, 2026-06-08)**: Phase 23 Stage 15 final verification and handoff are complete under `phase_id = 125`. Stage 15 fixed the GO solved-row hold display regression by preserving prior canonical/prefilled GO rows while overlaying shared durable moves, and fixed authenticated Practice seed predictability with account-derived Practice seeds plus persisted per-mode counters while keeping Daily OG/GO globally deterministic. Final verification passed focused changed-area tests, lint, 478 full-suite tests, build, API typecheck, diff check, desktop/tablet/390px smoke, real two-client Supabase-backed Multiplayer GO E2E, authenticated two-account Practice seed verification, remote Supabase probes/cleanup, resource checks, and Vercel preview/share verification. No PR, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, notifications, floating manager, bots/social/export work, scoring/rating change, broad refactor, redesign, or out-of-scope work was performed.
+
 ---
 
 ## Current Phase Index
@@ -74,9 +134,9 @@
 | Phase 21 | §26 | Implementation complete (Prompt 3): minimalist default surface + Lunar Signal Deck captured as one opt-in surface theme; theming-foundation and CSS-architecture cleanup done |
 | Phase 21 Addendum – Theme Proposal Templates | §26.8 | Governance/planning only (`phase_id = 62`): incorporates `PHASE-21-THEME-PROPOSAL-TEMPLATES-SPEC-2026-06-02.md`; records the `themes/proposals/template_proposals/` + `full_proposals/` + `theme_proposals.csv` structure to produce before Phase 21 closes; templates authored (`phase_id = 63`) |
 | Phase 22 | §27 | Complete through addendum follow-up (`phase_id = 68`): timezone-aware local-midnight daily reset, Calendar central hub, coin-gated past dailies, top countdown positioning, and landing tab-row follow-up are implemented and verified. |
-| **Phase 23 (active phase)** | §28 | **Stage 1 complete (`phase_id = 69`); Stage 2 planning documented (`phase_id = 70`); multi-agent scaffolding complete (`phase_id = 71`); Stage 2 implementation complete and verified (`phase_id = 72`); Stage 3 planning documented (`phase_id = 73`); Stage 3 implementation complete (`phase_id = 74`); Stage 3 stabilization complete (`phase_id = 75`); account-backed multiplayer/UX stabilization follow-up complete (`phase_id = 76`); next stabilization follow-up planning documented (`phase_id = 77`); §28.13 stabilization follow-up implemented (`phase_id = 78`); Stage 4 planning documented (`phase_id = 79`); Stage 4 implemented (`phase_id = 80`); Stage 5 planning documented (`phase_id = 81`); Stage 5 implemented and verified (`phase_id = 82`-`85`); Stage 6 planning documented (`phase_id = 86`); Stage 6 testing addendum + Stage 7 planning documented (`phase_id = 87`); Stage 6 implemented and verified (`phase_id = 88`-`90`); Stage 6 safety backup to GitHub `main` authorized/tracked (`phase_id = 91`)**: Stage 1 delivered bug fixes and async multiplayer. Stage 2 delivered live Practice/Daily multiplayer foundations, Practice Live word-length selection, Calendar Daily Live, live indicators, repository seam, and Supabase migration/RLS/realtime hooks. Stage 3 delivered ELO/rating, scoring, matchmaking, custom-game support, Stats summaries, and additive Supabase competitive tables. Stabilization corrected online async/live ownership, persistence, account-backed matchmaking, multiplayer play surfaces, forfeit, password reset, mobile Calendar, Settings tooltips, realtime refresh/entry behavior, daily participation limits, separate Daily Async/Live answer lists, rival identity, Daily Multiplayer countdown navigation, creator-only cancellation, per-user active limits, Live spectator foundations, Stage 5 UX/correctness issues, and Stage 6 live realtime/Daily cancellation stability bugs. Stage 7 is planned as a separately authorized whole-game autonomous bug bash. Further PRs, merges, releases, dedicated Multiplayer tab work, and later-phase work remain gated. |
+| **Phase 23 (active phase)** | §28 | **Stage 1 complete (`phase_id = 69`); Stage 2 planning documented (`phase_id = 70`); multi-agent scaffolding complete (`phase_id = 71`); Stage 2 implementation complete and verified (`phase_id = 72`); Stage 3 planning documented (`phase_id = 73`); Stage 3 implementation complete (`phase_id = 74`); Stage 3 stabilization complete (`phase_id = 75`); account-backed multiplayer/UX stabilization follow-up complete (`phase_id = 76`); next stabilization follow-up planning documented (`phase_id = 77`); §28.13 stabilization follow-up implemented (`phase_id = 78`); Stage 4 planning documented (`phase_id = 79`); Stage 4 implemented (`phase_id = 80`); Stage 5 planning documented (`phase_id = 81`); Stage 5 implemented and verified (`phase_id = 82`-`85`); Stage 6 planning documented (`phase_id = 86`); Stage 6 testing addendum + Stage 7 planning documented (`phase_id = 87`); Stage 6 implemented and verified (`phase_id = 88`-`90`); Stage 6 safety backup to GitHub `main` authorized/tracked (`phase_id = 91`); Stage 7 execution opened (`phase_id = 92`); Stage 7 core stabilization fixes implemented (`phase_id = 93`); Stage 7 verification and handoff tracked (`phase_id = 94`); Stage 8 planned (`phase_id = 95`) and implemented/verified (`phase_id = 96`-`97`); Stage 9 planning documented (`phase_id = 98`); Stage 9 implemented and verified (`phase_id = 99`-`100`); Stage 10 planned (`phase_id = 101`) and implemented/verified (`phase_id = 102`-`103`); post-Stage-10 safety backup branch/Draft PR created (`phase_id = 104`); Final Stabilization & Broad Debugging Pass planned (`phase_id = 105`) and completed (`phase_id = 106`-`109`); Stage 12 planned and implemented/verified (`phase_id = 110`-`113`); Stage 13 planned and implemented/verified (`phase_id = 114`-`117`); Stage 14 planned, implemented, and verified (`phase_id = 118`-`121`); Stage 15 planned, implemented, and verified (`phase_id = 122`-`125`)**: Stage 1 delivered bug fixes and async multiplayer. Stage 2 delivered live Practice/Daily multiplayer foundations that were later retired by Stage 8. Stage 3 delivered ELO/rating, scoring, matchmaking, custom-game support, Stats summaries, and additive Supabase competitive tables. Stabilization corrected online transport/ownership defects, account-backed matchmaking, multiplayer play surfaces, forfeit, password reset, mobile UI regressions, Daily Multiplayer refresh/entry behavior, daily participation limits, rival identity, countdown navigation, creator-only cancellation, per-user active limits, spectator foundations, Stage 5 UX/correctness issues, Stage 6 realtime/Daily cancellation stability bugs, and Stage 7 whole-game audit fixes. Stage 8 unified the active multiplayer experience into one durable Multiplayer model with Practice chess clocks and Daily no-clock preservation. Stage 9 fixed timed Practice board/clock synchronization, added Practice Multiplayer Hard Mode, and added fair OG/GO scoring. Stage 10 fixed the reported cross-client board/keyboard projection bug plus nearby timed Practice clock/draft reset bugs. The post-Stage-10 backup branch and Draft PR preserve that state on GitHub without merging. The final stabilization pass is complete under `phase_id = 109`. Stage 12 completed targeted Hard Mode, responsiveness, sound, and realtime-row-churn fixes. Stage 13 fixed the scoped Practice solo UX regressions and Multiplayer GO solved-puzzle propagation. Stage 14 completed hidden/inert Multiplayer foundations, low-risk nonparticipant/spectator-adjacent hardening, full verification, real Supabase-backed multi-context browser E2E, and preview verification. Stage 15 completed GO solved-row hold prior-puzzle visibility and authenticated Practice seed uniqueness with full local, browser, Supabase, resource, and preview verification. Further PRs, merges, releases, full dedicated Multiplayer tab work, and later-phase work remain gated. |
 
-> **Upcoming planned roadmap:** Phase 23 Stage 6 is complete and verified under `phase_id = 88`-`90`, with the current Stage 6 local state backed up to GitHub `main` under `phase_id = 91` before Stage 7. Phase 23 Stage 7 broad autonomous debugging is planned under §28.20 but not authorized. No Stage 7 implementation, further PR, merge, release, spectator expansion, dedicated Multiplayer tab implementation, notification system, history/theme tab, bot work, broader redesign, or later phase work may begin until explicitly approved.
+> **Current execution gate:** Phase 23 Stage 15 is complete and verified under `phase_id = 125`; await user review. Do not merge the backup PR, create a new PR, release, implement the full dedicated Multiplayer tab, expand spectators, add notification/history/theme/bot work, change scoring/rating rules, start broader redesign, or begin later phase work until explicitly approved.
 
 ## 1. Operating Rules
 
@@ -3000,17 +3060,22 @@ All four open questions were answered by the user and applied in the `phase_id =
 
 **Source of truth**: `PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`, `CONSTITUTION.md` v3.4, and this §28 addendum. If this section conflicts with the spec on Phase 23 scope or sequencing, stop and ask the user rather than inferring.
 
-> Status: **Stage 1 complete under `phase_id = 69`; Stage 2 planning documented under `phase_id = 70`; multi-agent workflow scaffolding documented under `phase_id = 71`; Stage 2 implementation complete and verified under `phase_id = 72`; Stage 3 planning documented under `phase_id = 73`; Stage 3 implementation complete under `phase_id = 74`; Stage 3 stabilization complete under `phase_id = 75`; account-backed multiplayer/UX stabilization follow-up complete under `phase_id = 76`; next stabilization follow-up planning documented under `phase_id = 77`; §28.13 follow-up implemented under `phase_id = 78`; Stage 4 planning documented under `phase_id = 79`; Stage 4 implemented under `phase_id = 80`; Stage 5 planning documented under `phase_id = 81`; Stage 5 implemented and verified under `phase_id = 82`-`85`; Stage 6 planning documented under `phase_id = 86`; Stage 6 real multiplayer testing addendum and Stage 7 planning documented under `phase_id = 87`; Stage 6 implemented and verified under `phase_id = 88`-`90`; Stage 6 safety backup to GitHub `main` authorized/tracked under `phase_id = 91`.** Phase 23 is intentionally staged. Stage 1 covers bug fixes, foundations, async/turn-based multiplayer, Calendar/countdown updates, and persistence. Stage 2 covers live/real-time Practice and Daily multiplayer foundations. Stage 3 covers advanced multiplayer/ELO, scoring, matchmaking, custom games, and competitive persistence. Stabilization corrects online transport/ownership defects, account-backed matchmaking, gameplay parity, auth recovery, mobile UI regressions, realtime Daily Multiplayer refresh/entry behavior, daily participation limits, separate Daily Async/Live answer lists, rival identity, countdown navigation, creator cancellation, per-user active limits, Live spectator foundations, Stage 5 multiplayer UX/correctness issues, and Stage 6 live realtime/Daily cancellation stability bugs. Stage 7 remains the later broad bug bash. Further PR creation, merge, release, dedicated Multiplayer tab work, and later phase work remain gated until the user explicitly approves them.
+> Status: **Stage 1 complete under `phase_id = 69`; Stage 2 planning documented under `phase_id = 70`; multi-agent workflow scaffolding documented under `phase_id = 71`; Stage 2 implementation complete and verified under `phase_id = 72`; Stage 3 planning documented under `phase_id = 73`; Stage 3 implementation complete under `phase_id = 74`; Stage 3 stabilization complete under `phase_id = 75`; account-backed multiplayer/UX stabilization follow-up complete under `phase_id = 76`; next stabilization follow-up planning documented under `phase_id = 77`; §28.13 follow-up implemented under `phase_id = 78`; Stage 4 planning documented under `phase_id = 79`; Stage 4 implemented under `phase_id = 80`; Stage 5 planning documented under `phase_id = 81`; Stage 5 implemented and verified under `phase_id = 82`-`85`; Stage 6 planning documented under `phase_id = 86`; Stage 6 real multiplayer testing addendum and Stage 7 planning documented under `phase_id = 87`; Stage 6 implemented and verified under `phase_id = 88`-`90`; Stage 6 safety backup to GitHub `main` authorized/tracked under `phase_id = 91`; Stage 7 execution and verification tracked under `phase_id = 92`-`94`; Stage 8 planning documented under `phase_id = 95`; Stage 8 implementation and verification tracked under `phase_id = 96`-`97`; Stage 9 planning documented under `phase_id = 98`; Stage 9 implementation and verification tracked under `phase_id = 99`-`100`; Stage 10 planning documented under `phase_id = 101`; Stage 10 implementation and final stabilization are complete under `phase_id = 102`-`109`; Stage 12 planning and implementation are complete under `phase_id = 110`-`113`.** Phase 23 is intentionally staged. Stage 1 covers bug fixes, foundations, async/turn-based multiplayer, Calendar/countdown updates, and persistence. Stage 2 covered live/real-time foundations that were later retired by Stage 8. Stage 3 covers advanced multiplayer/ELO, scoring, matchmaking, custom games, and competitive persistence. Stabilization corrected online transport/ownership defects, account-backed matchmaking, gameplay parity, auth recovery, mobile UI regressions, realtime Daily Multiplayer refresh/entry behavior, daily participation limits, separate answer variants, rival identity, countdown navigation, creator cancellation, per-user active limits, spectator foundations, Stage 5 multiplayer UX/correctness issues, Stage 6 realtime/Daily cancellation stability bugs, Stage 7 whole-game audit fixes, unified Multiplayer correctness, timed Practice clock stability, and final broad stabilization. Stage 8 unified the active multiplayer experience into one durable Multiplayer model, added Practice Multiplayer chess-clock limits, preserved Daily Multiplayer as strictly asynchronous, and removed the mounted Live paths that were causing complexity and memory pressure. Stage 9 fixed timed Practice Multiplayer clock/board synchronization, added optional Practice Multiplayer Hard Mode, and implemented multiplayer scoring. Stage 10 fixed cross-client board/keyboard synchronization and related multiplayer state consistency bugs. Stage 12 fixed Practice Multiplayer Hard Mode enforcement, multiplayer responsiveness, lobby/turn propagation observations, on-screen keyboard responsiveness, sound playback, and redundant realtime row churn. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, and later phase work remain gated until the user explicitly approves them.
 
 ### 28.1 Stage Structure
 
 1. **Stage 1 — Foundations + Bug Fixes + Async/Turn-based Core**: complete under `phase_id = 69`.
 2. **Stage 2 — Live / Real-time Multiplayer Features**: complete and verified under `phase_id = 72`.
 3. **Stage 3 — Advanced Multiplayer Features**: ELO, matchmaking, scoring, custom games, and related refinements; planning documented under `phase_id = 73`, implementation complete under `phase_id = 74`.
-4. **Stage 4 — Daily Multiplayer Fixes & Spectator Foundations**: planned in detail under §28.15 from `PHASE-23-STAGE-4-DAILY-MULTIPLAYER-FIXES-AND-SPECTATOR-SPEC-2026-06-04.md`; implementation requires explicit user authorization.
+4. **Stage 4 — Daily Multiplayer Fixes & Spectator Foundations**: planned under §28.15 and implemented under §28.16 from `PHASE-23-STAGE-4-DAILY-MULTIPLAYER-FIXES-AND-SPECTATOR-SPEC-2026-06-04.md`; complete under `phase_id = 79`-`80`.
 5. **Stage 5 — Multiplayer UX Fixes & Polish**: planned under §28.17 and implemented under §28.18 from `PHASE-23-STAGE-5-MULTIPLAYER-UX-FIXES-AND-POLISH-SPEC-2026-06-05.md`; complete under `phase_id = 82`-`85`.
 6. **Stage 6 — Live Multiplayer Stability & Daily Claim Fixes**: implemented and verified under §28.19 from `PHASE-23-STAGE-6-LIVE-MULTIPLAYER-STABILITY-AND-DAILY-CLAIM-FIXES-SPEC-2026-06-05.md`.
-7. **Stage 7 — Whole-Game Autonomous Bug Bash & Stabilization**: planned under §28.20 as a separate broad debugging pass after Stage 6; implementation requires explicit user authorization.
+7. **Stage 7 — Whole-Game Autonomous Bug Bash & Stabilization**: planned under §28.20 and implemented under §28.22-§28.24; complete under `phase_id = 92`-`94`.
+8. **Stage 8 — Multiplayer Unification + Time-Limited Practice Games**: planned under §28.25 and implemented under §28.26 from `PHASE-23-STAGE-8-MULTIPLAYER-UNIFICATION-AND-TIME-LIMITS-SPEC-2026-06-05.md`; complete under `phase_id = 96`-`97` and awaiting user review before any PR, merge, release, dedicated Multiplayer tab work, or later-stage work.
+9. **Stage 9 — Timer Bugs + Multiplayer Hard Mode + Multiplayer Scoring**: implemented and verified under §28.28 from `PHASE-23-STAGE-9-TIMER-BUGS-AND-MULTIPLAYER-SCORING-SPEC-2026-06-06.md`; PR/merge/release and later work remain gated.
+10. **Stage 10 — Multiplayer Debugging and Bug Fixes**: planned under §28.29 and implemented/verified under §28.30-§28.32 from `PHASE-23-STAGE-10-MULTIPLAYER-DEBUGGING-AND-BUGFIXES-SPEC-2026-06-06.md`; complete under `phase_id = 101`-`103`.
+11. **Stage 12 — Multiplayer Hard Mode Enforcement + Performance & Responsiveness Fixes**: planned under §28.38 and implemented/verified under §28.39-§28.41 from `PHASE-23-STAGE-12-MULTIPLAYER-HARD-MODE-ENFORCEMENT-AND-PERFORMANCE-FIXES-SPEC-2026-06-07.md`; complete under `phase_id = 110`-`113` and awaiting user review before any PR, merge, release, dedicated Multiplayer tab work, spectator expansion, or later-stage work.
+12. **Stage 13 — Practice Solo UX Bugs + Multiplayer GO Result Propagation Fix**: planning documented under §28.42 from `PHASE-23-STAGE-13-PRACTICE-SOLO-AND-GO-MULTIPLAYER-BUGFIXES-SPEC-2026-06-07.md`; implementation remains gated until explicit user authorization.
 
 ### 28.2 Stage 1 Binding Requirements
 
@@ -3985,7 +4050,7 @@ Verification completed:
 
 ### 28.20 Stage 7 Planning — Whole-Game Autonomous Bug Bash and Stabilization
 
-**Authorization status**: planned only under `phase_id = 87`. This is intentionally split from Stage 6. Stage 6 must stay focused on the six critical live multiplayer and Daily claim bugs; Stage 7 is the later broad autonomous debugging pass across the whole game. This subsection does not authorize implementation, source-code edits, UI/component work, tests, Supabase migrations, build/config changes, PR creation, merge, release, dedicated Multiplayer tab work, deferred feature work, or feature development.
+**Authorization status**: planned under `phase_id = 87` and explicitly authorized for execution under `phase_id = 92`. This is intentionally split from Stage 6. Stage 6 stayed focused on the six critical live multiplayer and Daily claim bugs; Stage 7 is the broad autonomous debugging pass across the whole game. Stage 7 authorizes bug fixes, stabilization, targeted tests, browser/Supabase verification, and progress tracking only; PR creation, merge, release, dedicated Multiplayer tab work, deferred feature work, redesign, and feature development remain out of scope unless separately approved.
 
 #### 28.20.1 Rationale for Splitting Stage 7
 
@@ -4027,7 +4092,7 @@ Stage 7 should finish with:
 
 #### 28.20.5 Gate
 
-Stage 7 requires a separate explicit execution prompt after Stage 6 is complete and reviewed. Do not begin Stage 7 from a Stage 6 execution prompt unless the user explicitly authorizes Stage 7 in that same prompt and clearly overrides the original Stage 6 bug-only boundary.
+Stage 7 was authorized by the user's Stage 7 execution prompt after the Stage 6 safety backup merged to `main`. The execution branch is `codex/phase-23-stage-7`. Do not create a PR, merge, release, implement the dedicated Multiplayer tab, expand spectators beyond bug fixes/non-regression, or begin deferred feature work without later explicit approval.
 
 ### 28.21 Stage 6 Safety Backup Merge (`phase_id = 91`)
 
@@ -4041,9 +4106,1839 @@ Purpose:
 
 Gate after merge:
 
-- Halt for user review.
-- Do not begin Stage 7 until the user provides a separate explicit Stage 7 execution prompt.
+- Halt for user review. This gate was satisfied by the user's later Stage 7 execution prompt, which opens Stage 7 under `phase_id = 92`.
 - Do not create additional PRs, merges, releases, dedicated Multiplayer tab work, deferred features, or later-phase work without later explicit approval.
+
+### 28.22 Stage 7 Execution Kickoff and Test Matrix (`phase_id = 92`)
+
+**Authorization status**: execution authorized by the user. This section records the required Stage 7 kickoff, branch, audit matrix, and scope guard before source-code fixes.
+
+Starting state:
+
+- Base branch: `main`.
+- Safety-backup PR: #16.
+- Base commit: `49e7f400c1ba8f6be3e048795d990b8db5ad6933`.
+- Working branch: `codex/phase-23-stage-7`.
+
+Known user-prioritized bugs:
+
+1. **Live lobby creator auto-entry**: creators are not always automatically entering the lobby/game after a second player joins.
+2. **Practice Live word-length selection timing**: selection must start only after both players are connected/entered, both clients must see the selection UI automatically, and no manual refresh should be required.
+3. **Live phase instability**: continue investigating lobby creation/joining, word-length selection sync, board/history realtime updates, UI flashing, route restoration, and related Live Multiplayer instability.
+
+Stage 7 test/audit matrix:
+
+| Lane | Surfaces | Automated checks | Browser / remote checks | Special attention |
+| --- | --- | --- | --- | --- |
+| Solo gameplay | Daily OG/GO, Practice OG/GO, Hard Mode, tile coloring, keyboard, loss/reveal, definitions, resume | `src/game/**` tests, game session tests, focused regressions for discovered issues | Desktop/tablet/mobile playthrough smoke for Daily and Practice | Duplicate-letter coloring, reveal/definition gating, resume integrity |
+| Calendar/Daily | Calendar hub, daily archives, countdowns, indicators, DailyVariant boundaries | Calendar and daily clock/cycle tests | Calendar route smoke at desktop/tablet/390px; daily archive and countdown checks | Daily 5-letter invariant, local-vs-UTC boundaries, mobile indicator density |
+| Async Multiplayer | Practice Async, Daily Async, lobbies, claims, cancellation, turns/history, rival identity, forfeit, refresh | Async domain/repository/panel tests | Two-client Supabase-backed Practice/Daily Async create/discover/join/play/refresh/forfeit | Four daily buckets, signed-in ownership, no dual-side control |
+| Live Multiplayer | Practice Live, Daily Live, lobbies, word-length selection, countdown/gameplay, board/history sync, cancellation/forfeit, refresh | Live domain/repository/panel/selection tests | Two-client Supabase-backed Practice/Daily Live create/discover/join/selection/play/refresh/cancel/forfeit | Creator auto-entry, selection countdown timing, realtime convergence |
+| Auth/sync | Sign-in/up, password reset, magic/recovery links, sign-out, guest/cloud merge, settings/profile sync | Auth, storage, guest transfer, Supabase client lifecycle tests | Browser auth smoke and remote Supabase probes where relevant | No duplicate GoTrue clients, no secret leakage in docs/logs |
+| Stats/economy/history | Stats dashboard, rating summaries, coins/XP, past daily unlocks, sharing/history separation | Stats/storage/economy-adjacent tests as available | Browser smoke of stats/history/share surfaces | Solo/multiplayer separation and coin unlock safety |
+| Words/definitions/admin | Word Explorer, filtering/pagination, definition modals/fallbacks, admin gating | Existing data/definition/admin tests as available; add regressions for found bugs | Browser smoke for Words, definitions modal, admin gating/protected refresh | Preserve dictionaries; do not remove words/features |
+| Responsive/accessibility/performance | Landing, Practice, Calendar, Words, Stats, Settings, auth dialogs, multiplayer panels | Lint/build/typecheck plus focused component tests | Desktop, tablet-like, and 390px smoke; console health; no horizontal overflow | Tooltip/dialog layering, reduced motion, touch ergonomics |
+
+Required verification before Stage 7 completion:
+
+1. Focused tests for every changed area.
+2. `npm run lint`.
+3. `npm run test`.
+4. `npm run build`.
+5. `npx tsc -p tsconfig.api.json --noEmit`.
+6. `git diff --check`.
+7. Desktop, tablet-like, and 390px browser smoke.
+8. Meaningful two-client Supabase-backed browser E2E for multiplayer flows touched or audited.
+9. Remote Supabase probes for relevant auth/sync/multiplayer state.
+10. Vercel preview deployment, with a share URL if the direct preview is protected.
+
+Scope guard:
+
+- Do not create a PR, merge, or release.
+- Do not implement the dedicated Multiplayer tab.
+- Do not expand spectator functionality beyond bug fixes/non-regression.
+- Do not add major new features, redesign the app, or begin deferred features.
+- Preserve all existing invariants, especially Daily 5-letter games, Practice 2-35 lengths, four Daily Multiplayer buckets, separated rating buckets, signed-in online multiplayer ownership, solo stats/economy/history integrity, and disabled multiplayer consumable/pay-to-continue affordances.
+
+### 28.23 Stage 7 Core Stabilization Fixes (`phase_id = 93`)
+
+**Authorization status**: implementation checkpoint complete; Stage 7 remains active and final verification is still pending. This subsection records the first Stage 7 bug-fix batch after the kickoff/test matrix.
+
+Implemented fixes:
+
+1. **Live player entry acknowledgement**
+   - Added an additive `playerEntryAt` projection field to Live matches.
+   - Practice Live word-length selection and Daily Live countdown timers now arm only after both player seats acknowledge entering the match surface.
+   - This preserves the existing Supabase schema while giving both browser clients time to render the joined match before timers progress.
+
+2. **Live creator auto-entry and phase guardrails**
+   - `LiveMultiplayerPanel` now follows a selected lobby's `matchId` once that lobby becomes matched, instead of falling back only to a generic active match.
+   - Authenticated players automatically acknowledge entry when their selected match surface appears.
+   - Countdown start is blocked until the countdown exists and has elapsed.
+   - Supabase-backed saves merge/preserve entry acknowledgement alongside choices, progress, spectators, player IDs, and match phase.
+
+3. **DailyVariant anti-gaming isolation**
+   - The in-memory anti-gaming anchor is now keyed by `DailyVariant`.
+   - Solo local-midnight and multiplayer UTC daily clocks no longer reuse the same live page-session baseline.
+
+4. **Small whole-game audit fixes**
+   - Solo Hard Mode toggles are disabled after the first submitted guess.
+   - Word Explorer live-load results are keyed by requested length so stale live responses cannot render old-length entries under a new length label.
+   - Shared dialogs now have mobile-safe max-height and internal scrolling.
+
+Focused verification:
+
+- `npm run test -- src/multiplayer/liveMultiplayer.test.ts src/multiplayer/liveRepository.test.ts src/multiplayer/LiveMultiplayerPanel.test.tsx src/multiplayer/WordLengthSelectionPanel.test.tsx src/daily/dailyCycle.test.ts src/wordExplorer/wordExplorerData.test.ts`
+- Result: 57 focused tests passing.
+
+Remaining Stage 7 verification:
+
+- Full `npm run lint`, `npm run test`, `npm run build`, API typecheck, and `git diff --check`.
+- Desktop/tablet/390px browser smoke.
+- Real two-client Supabase-backed browser E2E for Async and Live Practice/Daily flows.
+- Remote Supabase probes for relevant auth/sync/multiplayer rows and realtime behavior.
+- Vercel preview deployment.
+
+Scope guard remains unchanged: do not create a PR, merge, release, implement the dedicated Multiplayer tab, expand spectators beyond bug fixes/non-regression, redesign, or begin deferred feature work without later explicit user approval.
+
+### 28.24 Stage 7 Verification and Handoff (`phase_id = 94`)
+
+**Authorization status**: verification and handoff checkpoint for the approved Stage 7 bug-fix/stabilization pass. No PR, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, or deferred feature work is authorized by this checkpoint.
+
+Verification coverage recorded for handoff:
+
+1. **Real two-client multiplayer browser E2E**
+   - Used two isolated authenticated browser contexts against the configured Supabase project.
+   - Practice Live: creator opened a lobby, rival discovered/joined it, both clients entered word-length selection after entry acknowledgement, selection resolved, gameplay started, host submitted `about`, and rival saw board/history update without refresh.
+   - Daily Live: creator opened a Daily Live OG lobby, rival discovered/joined it, both clients auto-entered the fixed 5-letter daily board without Practice-style word-length selection, and Daily claim gating appeared for the bucket.
+   - Practice Async: creator opened a waiting match, rival discovered/joined it, host submitted `about`, and rival saw board/history plus turn ownership update without refresh.
+   - Daily Async: Daily Multiplayer countdown opened the Daily Async surface, creator opened a Daily Async OG match, rival discovered/joined it, host submitted `about`, and rival saw board/history plus turn ownership update without refresh.
+
+2. **Remote Supabase probes**
+   - Confirmed durable async rows for Practice Async and Daily Async with both player seats and persisted `about` moves.
+   - Confirmed matched live lobbies, playing live matches, both-player `playerEntryAt` acknowledgement, live participant rows, and Daily `async:og` / `live:og` claim rows for the temporary test users.
+   - Temporary Stage 7 auth users and exact related async/live/claim rows were deleted after verification.
+
+3. **Browser smoke**
+   - Desktop 1440px: Word Explorer renders with pagination; definition modal opens with live dictionary content.
+   - Tablet-like 834px: Settings route renders.
+   - Mobile 390px: Calendar route renders.
+   - All three smoke sessions reported zero console errors and no horizontal overflow.
+
+4. **Automated gate**
+   - Final lint/test/build/API-typecheck/whitespace results are recorded in `progress/PROGRESS-STEP-94.md` and the final user handoff.
+
+No bugs were intentionally deferred during this Stage 7 pass. Remaining future work is gated to later user authorization: PR creation, merge, release, dedicated Multiplayer tab, broader spectator expansion, notifications, bots, redesigns, or later phases.
+
+### 28.25 Stage 8 Planning — Multiplayer Unification + Time-Limited Practice Games (`phase_id = 95`)
+
+**Authorization status**: planning and governance only. `PHASE-23-STAGE-8-MULTIPLAYER-UNIFICATION-AND-TIME-LIMITS-SPEC-2026-06-05.md` is the dedicated Stage 8 source of truth. This subsection documents the implementation plan, risks, coordination strategy, and verification expectations only. It does **not** authorize source-code edits, UI work, Supabase migrations, test changes, implementation branches, PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, or Stage 8 execution.
+
+#### 28.25.1 Stage 8 Goals
+
+Stage 8 should simplify Phase 23 multiplayer by replacing the current Async/Live split with one coherent **Multiplayer** model:
+
+1. Remove the user-facing and internal distinction between "Async Multiplayer" and "Live Multiplayer".
+2. Preserve the reliable async/durable-row foundation as the behavioral baseline for all multiplayer.
+3. Keep **Daily Multiplayer** strictly asynchronous: current UTC day, five-letter daily lock, OG/GO separation, existing one-claim-per-day-per-mode policy, and UTC-midnight expiry only.
+4. Extend **Practice Multiplayer** with optional creator-selected total time limits per side: no limit, 30 seconds, 1 minute, 2 minutes, 5 minutes, 10 minutes, 30 minutes, or 1 hour.
+5. Implement timed Practice games as a chess-clock model: each player has one total budget for the whole game, the active player's clock runs while it is their turn, and time expiration produces a loss.
+6. Investigate and fix the excessive memory consumption observed during multi-client testing, especially Chrome/Node/Python-like runaway processes and browser instability when two authenticated sessions are open.
+
+#### 28.25.2 Current Architecture Observations
+
+Current Phase 23 code contains separate async and live models:
+
+- Async path: `src/multiplayer/asyncMultiplayer.ts`, `AsyncMultiplayerPanel.tsx`, `asyncRepository.ts`, and `async_multiplayer_games` persistence.
+- Live path: `src/multiplayer/liveMultiplayer.ts`, `LiveMultiplayerPanel.tsx`, `WordLengthSelectionPanel.tsx`, `liveRepository.ts`, live lobby/match/participant/spectator migrations, live Realtime subscriptions, and live-specific Calendar indicators.
+- Competitive/rating helpers currently encode transport buckets such as `async:og`, `async:go`, `live:og`, and `live:go`.
+- Calendar and App wiring currently distinguish Daily Async and Daily Live surfaces.
+- Stage 7 added entry-gated Live timers and a live repository subscription backstop, which improved correctness but also reinforces the need to review subscription counts, timers, and duplicate render/state loops during Stage 8.
+
+The Stage 8 execution should use the async repository's durable row and turn-based behavior as the starting point, then selectively carry forward only the live concepts that remain useful for timed Practice games (server timestamps, participant identity, reconnect safety, and clear player-seat ownership). Live simultaneous play, live-specific selection phases, live spectators, live countdowns, and transport-specific daily buckets should be removed or migrated away unless required for data migration compatibility.
+
+#### 28.25.3 Key Work Areas
+
+1. **Unified multiplayer domain**
+   - Create or evolve a single multiplayer model that covers Practice and Daily, OG and GO, timed and untimed Practice, waiting/joined/playing/finished/cancelled/forfeited/expired states, move history, rival identity, rating evidence, and archive views.
+   - Migrate or map existing async fields into this model first; treat current live fields as compatibility input rather than the primary future shape.
+   - Preserve canonical solo-style board and on-screen keyboard behavior for every multiplayer game.
+
+2. **Practice time-limit system**
+   - Add a creator-selected `timeLimitPerSideMs` or equivalent field for Practice Multiplayer lobbies/games.
+   - Use server-authoritative timestamps and deterministic elapsed-time accounting where possible.
+   - Run only the active player's clock for turn-based games; persist remaining time after every submitted move, forfeit, cancellation, timeout, and refresh.
+   - Keep "No time limit" equivalent to current reliable async Practice behavior.
+
+3. **Daily Multiplayer preservation**
+   - Keep Daily Multiplayer strictly async, five letters, UTC day key, UTC-midnight expiry, separate OG/GO answer lists, and no time-limit UI.
+   - Collapse former `async:og` / `live:og` / `async:go` / `live:go` daily buckets into the new unified Daily policy only after explicitly deciding the durable compatibility mapping. The user-facing rule in Stage 8 becomes one Daily Multiplayer OG and one Daily Multiplayer GO per UTC day unless a later prompt states otherwise.
+   - Calendar indicators should simplify to solo OG/GO plus unified multiplayer OG/GO; past Daily Multiplayer archives remain view-only.
+
+4. **Terminology and UI cleanup**
+   - Replace "Async Multiplayer" with "Multiplayer".
+   - Remove "Live Multiplayer" from player-facing surfaces.
+   - Update Practice and Calendar sections, route launch requests, status copy, settings labels, stats summaries, progress docs, and tests.
+   - Do not implement the dedicated Multiplayer tab in Stage 8; keep Calendar and Practice as entry points unless the execution prompt explicitly changes this gate.
+
+5. **Persistence and Supabase**
+   - Prefer additive migrations and compatibility views/columns over destructive table rewrites unless the user separately approves a migration strategy.
+   - Decide whether to evolve `async_multiplayer_games` into the unified table or add a new `multiplayer_games` table and migrate reads/writes in stages.
+   - Preserve RLS: authenticated distinct users, no self-match, seat-owned mutations only, safe rival identity, no direct rating mutation, and no raw email/id exposure.
+   - Remove or retire live lobbies/matches/participants/spectators only after compatibility and cleanup are planned.
+
+6. **Ratings, scoring, stats, and history**
+   - Update rating bucket terminology away from `async`/`live` toward unified Multiplayer buckets while preserving historical safety and not double-applying rating transactions.
+   - Ensure timed Practice losses produce valid result evidence when rated eligibility allows it.
+   - Keep solo stats/economy/history isolated from multiplayer.
+
+7. **Memory and performance investigation**
+   - Audit duplicate Supabase clients, realtime subscriptions, polling intervals, useEffect dependency loops, localStorage restore loops, heavy all-row snapshots, large in-memory projections, and unnecessary rerenders in `src/app/App.tsx`, Calendar, and multiplayer panels.
+   - Treat the Stage 7/Stage 8 multi-client memory issue as a blocking requirement, not polish.
+   - Measure before and after with two isolated browser contexts and process/browser memory checks. Do not rely on subjective responsiveness alone.
+
+#### 28.25.4 Recommended Sequencing
+
+Stage 8 should be implemented in deliberate slices:
+
+1. **Read-only baseline and instrumentation**
+   - Record current multiplayer data flow, route flow, subscription counts, timers, and two-client memory baseline.
+   - Add or prepare lightweight memory/performance probes if needed, but keep them dev/test-only.
+
+2. **Unified model design and compatibility plan**
+   - Define the single multiplayer domain shape, time-limit fields, Daily policy, rating bucket mapping, and Supabase migration strategy.
+   - Decide whether live records become migrated data, archived compatibility data, or unsupported pre-release artifacts.
+
+3. **Domain and tests**
+   - Implement pure timed/untimed Practice logic, Daily expiry logic, claim rules, timeout loss settlement, forfeit/cancel behavior, and rating evidence mapping with focused tests before UI integration.
+
+4. **Repository and Supabase seam**
+   - Consolidate repository subscriptions and save paths around the unified model.
+   - Reduce duplicated realtime/polling listeners and ensure unsubscribe cleanup is deterministic.
+
+5. **UI integration**
+   - Replace Async/Live panels with the unified Multiplayer surface while preserving Calendar and Practice entry points.
+   - Add Practice time-limit selection and visible clocks.
+   - Simplify Calendar indicators and terminology.
+
+6. **Removal and cleanup**
+   - Remove unused Live-specific modules, tests, CSS, route state, localStorage breadcrumbs, and docs references after replacement is verified.
+   - Keep compatibility shims only where they have a clear migration purpose and a removal note.
+
+7. **Verification and preview**
+   - Run full automated and browser gates, real two-client timed and untimed Practice Multiplayer, Daily Multiplayer, memory checks, and a preview deploy.
+
+#### 28.25.5 Parallel Work Slices
+
+If execution uses sub-agents, use narrow disjoint lanes:
+
+- **Domain lane**: unified model, timed clock reducer, Daily policy, rating/scoring compatibility. Own pure `src/multiplayer/` domain modules and tests only.
+- **Persistence lane**: Supabase schema/adapter strategy, RLS, repository subscription cleanup, migration docs. Own repository/migration files only after the coordinator approves the model shape.
+- **UI lane**: Practice time-limit selector, clocks, unified panel copy, Calendar indicators, responsive states. Avoid `src/app/App.tsx` until coordinator integration.
+- **Performance lane**: read-only memory/subscription audit first; later own dev-only probes or focused performance fixes with explicit file ownership.
+- **Coordinator lane**: `src/app/App.tsx`, route/launch integration, high-conflict docs, changelog, progress, final verification, Vercel preview, and remote cleanup.
+
+Only one writer should touch `src/app/App.tsx`, `src/multiplayer/index.ts`, repository adapters, Supabase migrations, `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `agents.md`, and `memory.md` at a time.
+
+#### 28.25.6 Major Risks and Considerations
+
+- **Scope size**: this is a significant refactor. Execution should avoid trying to simultaneously implement the deferred dedicated Multiplayer tab or redesign the app.
+- **Data compatibility**: existing async/live/local/Supabase records may exist in user storage or remote tables. Plan for safe migration, ignore-with-explanation, or compatibility reads before removing code paths.
+- **Daily invariants**: Daily Multiplayer must stay five letters, UTC-based, no time limits, and one claim per mode/day under the unified policy.
+- **Clock fairness**: timed Practice games need server-time anchoring and deterministic timeout settlement; client-only timers are display hints, not authoritative state.
+- **Rating correctness**: transport bucket changes must not mix old async/live ratings unsafely or double-apply previous result transactions.
+- **Memory pressure**: removing Live terminology alone is not enough. Execution must demonstrate fewer duplicate clients/subscriptions/timers and stable multi-client memory behavior.
+- **Spectator remnants**: Stage 8 removes Live as a concept and does not expand spectator functionality. Any existing spectator code should be removed, archived, or compatibility-gated rather than extended.
+
+#### 28.25.7 Verification Requirements
+
+Stage 8 execution must finish with:
+
+1. Focused unit tests for unified multiplayer state, timed Practice clocks, timeout loss, Daily no-time-limit policy, claims, cancellation, forfeit, scoring/rating evidence, and compatibility mappings.
+2. Repository/Supabase tests or probes for unified lobby creation, discovery, joining, turn submission, timeout settlement, and RLS ownership.
+3. Component/browser tests for Practice Multiplayer timed and untimed games, Daily Multiplayer OG/GO, Calendar indicators, terminology cleanup, and mobile clock layout.
+4. Real two-client browser E2E with distinct authenticated sessions for:
+   - Practice Multiplayer untimed.
+   - Practice Multiplayer timed with visible clocks and at least one timeout/near-timeout path.
+   - Daily Multiplayer OG and GO with no time-limit UI.
+   - Refresh/reconnect during a timed Practice game.
+5. Memory/performance checks:
+   - Establish baseline before implementation if possible.
+   - Re-test two concurrent authenticated browser sessions after implementation.
+   - Report process/browser memory observations and any remaining suspected high-memory sources.
+6. Full gate: `npm run lint`, `npm run test`, `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, `git diff --check`, desktop/tablet/390px smoke, no console errors, no horizontal overflow, remote Supabase cleanup/probes, and Vercel preview deployment.
+
+#### 28.25.8 Gate
+
+This `phase_id = 95` step is complete when the planning/tracking surfaces are updated and the user receives a summary. Stage 8 implementation remains gated until the user explicitly authorizes it in a later prompt. Do not edit `src/`, `api/`, or `supabase/`, create implementation branches, run migrations, create a PR, merge, release, or begin deferred feature work in this planning pass.
+
+### 28.26 Stage 8 Execution — Unified Multiplayer, Practice Chess Clocks, and Memory Remediation (`phase_id = 96`-`97`)
+
+**Authorization status**: implemented after explicit user authorization. `PHASE-23-STAGE-8-MULTIPLAYER-UNIFICATION-AND-TIME-LIMITS-SPEC-2026-06-05.md` remains the Stage 8 source of truth. This section records the executed state and verification handoff only; it does **not** authorize PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, notifications, bots, social features, redesign, or later-phase work.
+
+#### 28.26.1 Implemented State
+
+Stage 8 collapses the active multiplayer experience into one **Multiplayer** model:
+
+1. **Unified active model**
+   - The durable async foundation was renamed into the active `multiplayer` domain, repository, panel, and tests.
+   - The user-facing Calendar and Practice surfaces now expose **Daily Multiplayer** and **Practice Multiplayer** instead of separate Async/Live choices.
+   - Mounted Live App/Calendar paths and obsolete Live modules were removed from the active source tree.
+   - Legacy Calendar restore payloads and guest-storage `asyncMultiplayer` payloads remain readable compatibility input.
+
+2. **Daily Multiplayer preservation**
+   - Daily Multiplayer remains strictly asynchronous and turn-based.
+   - Daily games remain five-letter, UTC-day keyed, and UTC-midnight expiring.
+   - Daily OG and GO answer selection remains separate from solo Daily and from each other.
+   - No Practice time-limit UI, chess-clock fields, or timeout behavior is exposed for Daily Multiplayer.
+   - Existing Supabase `async_multiplayer_games` and `multiplayer_daily_claims` plumbing remains as compatibility storage for the unified durable model.
+
+3. **Practice chess-clock time limits**
+   - Practice lobby creators can choose no limit, 30 seconds, 1 minute, 2 minutes, 5 minutes, 10 minutes, 30 minutes, or 1 hour per side.
+   - The time model is a total per-player budget for the whole game, not a per-turn increment.
+   - Timed Practice games start clocks only once a second authenticated player joins.
+   - The active player's clock runs while it is their turn; each submitted move persists elapsed time, remaining budgets, and the next turn.
+   - Running out of time records a timeout loss for the timed-out player.
+   - Untimed Practice games continue to behave like the previous reliable durable turn-based flow.
+
+4. **Persistence compatibility**
+   - The app keeps the existing `async_multiplayer_games` table and `brrrdle:async-multiplayer:v1` local-storage key as private compatibility plumbing.
+   - The in-projection model uses unified rating buckets such as `multiplayer:og`; top-level Supabase storage writes use legacy-compatible bucket values only where the deployed table's historical check constraints require them.
+   - No destructive Supabase migration was introduced in this execution pass.
+
+5. **Memory/performance remediation**
+   - Removing mounted Live paths deletes the duplicate live repository, live panel, live match reducer, Practice Live selection panel, live timers, and live subscription path from the active app.
+   - Practice clock display uses a single interval only while a visible timed Practice game is playing.
+   - Browser smoke and CDP heap/DOM-counter sampling were used to confirm two authenticated contexts remain bounded during multi-client testing.
+
+#### 28.26.2 Verification Summary
+
+Stage 8 verification covered:
+
+- Focused regression tests for the unified multiplayer domain, repository, panel, scoring, and Calendar.
+- Full lint, test, build, API typecheck, and whitespace gates.
+- Real two-client Supabase-backed browser checks with temporary authenticated users:
+  - Untimed Practice Multiplayer create/join/turn/history/refresh.
+  - Timed Practice Multiplayer create/join with a visible 30-second chess clock in both browsers.
+  - Daily Multiplayer create/join with no time-limit UI and durable Daily claim rows.
+- Desktop, tablet-like, and 390px mobile browser smoke for Calendar/Practice terminology, no horizontal overflow, and no console errors.
+- Memory/performance smoke with two authenticated contexts held open and navigated across surfaces.
+
+#### 28.26.3 Remaining Gates
+
+Stage 8 is complete for user review, but the following remain explicitly gated:
+
+- PR creation.
+- Merge.
+- Release.
+- Dedicated Multiplayer tab implementation.
+- Spectator expansion or replacement.
+- Notifications, floating game manager, bots, social features, or redesign work.
+- Later Phase 23 stages or Phase 24+ work.
+
+### 28.27 Stage 9 Planning — Timer Bugs, Practice Hard Mode, and Multiplayer Scoring (`phase_id = 98`)
+
+**Authorization status**: planning and governance only. `PHASE-23-STAGE-9-TIMER-BUGS-AND-MULTIPLAYER-SCORING-SPEC-2026-06-06.md` is the dedicated Stage 9 source of truth. This subsection documents the proposed implementation approach, risks, coordination strategy, and verification expectations only. It does **not** authorize source-code edits, UI/component work, tests, Supabase migrations, implementation branches, PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, or Stage 9 execution.
+
+#### 28.27.1 Stage 9 Goals
+
+Stage 9 should build directly on the Stage 8 unified Multiplayer model:
+
+1. Fix the critical timed Practice Multiplayer turn timer / board synchronization bug.
+2. Add optional **Practice Multiplayer Hard Mode** as a creator-selected lobby setting that is visible before join and locked after join.
+3. Define and implement a fair, explainable multiplayer scoring/point system for OG and GO games.
+4. Preserve Daily Multiplayer invariants: Daily remains strictly asynchronous/no-clock, five letters, UTC-day keyed, UTC-midnight expiring, and separated between OG and GO.
+5. Keep the unified Multiplayer terminology and do not reintroduce player-facing Async/Live concepts.
+
+#### 28.27.2 Current Architecture Observations
+
+Stage 8 leaves the active multiplayer source centered on these files:
+
+- `src/multiplayer/multiplayer.ts`: unified domain model, Practice time-limit fields, turns, timeouts, forfeit, cancel, Daily expiry, and helpers.
+- `src/multiplayer/multiplayerRepository.ts`: local/Supabase persistence over the compatibility `async_multiplayer_games` table and repository subscription behavior.
+- `src/multiplayer/MultiplayerPanel.tsx`: Practice/Daily lobby creation, joining, status panels, and time-limit selector.
+- `src/multiplayer/MultiplayerGameSurface.tsx`: canonical solo-style board and on-screen keyboard gameplay surface for multiplayer.
+- `src/multiplayer/scoring.ts`, `rating.ts`, `competitiveMultiplayer.ts`, `customGames.ts`, and `matchmaking.ts`: competitive projections that must be aligned with the unified scoring model.
+- `src/game/session.ts`, `src/game/hardMode.ts`, `src/game/og/session.ts`, and `src/game/go/session.ts`: canonical solo validation and Hard Mode behavior that Stage 9 should reuse rather than fork.
+- `src/app/App.tsx` and `src/calendar/CalendarPanel.tsx`: high-conflict integration surfaces; Daily must remain no-clock and Calendar entry points should stay unchanged unless required for status display.
+
+The Stage 9 timer bug likely lives at the intersection of `turnStartedAt`, `timeRemainingMs`, repository snapshot reconciliation, and the board/session state saved after a timed turn. Execution should reproduce it with two authenticated browser contexts before changing code, then add focused regressions that fail for disappearing rival guesses or the wrong player's clock expiring.
+
+#### 28.27.3 Key Work Areas
+
+1. **Timed Practice clock and board synchronization**
+   - Reproduce the reported bug in a timed Practice Multiplayer match with two real authenticated browser contexts.
+   - Inspect the turn submission flow from `MultiplayerGameSurface` through `submitMultiplayerGuess`, `applyActivePlayerClock`, repository save/load, and subscription reconciliation.
+   - Ensure a submitted guess persists on both players' boards after refresh/subscription updates.
+   - Ensure only the active player's clock is decremented during their turn; the opponent's clock must remain stable until their turn begins.
+   - Keep untimed Practice Multiplayer behavior identical to the Stage 8 durable turn-based baseline.
+   - Treat displayed clocks as derived display state; persisted clock state should be authoritative enough to survive refresh/reconnect and remote row reconciliation.
+
+2. **Practice Multiplayer Hard Mode**
+   - Add a Practice-only `hardMode` or equivalent field to the unified lobby/game model.
+   - Expose the setting in Practice lobby creation only; do not add Hard Mode controls to Daily Multiplayer beyond existing Daily game behavior.
+   - Show Hard Mode status to a prospective rival before joining so the rival can make an informed decision.
+   - Lock Hard Mode once the game is joined; no player should be able to change it mid-game.
+   - Reuse canonical Hard Mode validation from `src/game/hardMode.ts` / session reducers to avoid multiplayer-specific drift.
+   - Store Hard Mode in the durable game projection so reloads, remote clients, and archives remain consistent.
+
+3. **Multiplayer scoring and winner/draw rules**
+   - Define a pure scoring module or extend `src/multiplayer/scoring.ts` so score projection is deterministic, side-effect free, and testable from completed game state.
+   - Points must be earned from each player's own guesses and solve status only; one player's performance must not directly subtract from the rival's score.
+   - OG winner policy:
+     - If exactly one player solves, that player wins.
+     - If both solve, compare points and declare higher score winner or draw on equal points.
+     - If neither solves, compare points and declare higher score winner or draw on equal points.
+   - GO winner policy:
+     - Compare total points across the full GO session.
+     - Solving the final puzzle contributes points, but winner is still highest total points; equal totals draw.
+   - Timed-out or forfeited games should produce clear terminal scoring evidence without granting the losing player an artificial solve.
+   - Hard Mode bonus should be explicit, modest, and documented in tests so it can later become rating evidence without distorting fairness.
+   - Keep ELO/rating settlement integration deferred unless Stage 9 execution specifically needs to pass scoring evidence to already-existing projection helpers without applying new rating rules.
+
+4. **UI and feedback**
+   - Display Hard Mode and time-limit status in waiting lobbies, joined games, and finished summaries.
+   - Display per-player points and the final winner/draw reason on game completion.
+   - Keep mobile layouts compact and avoid large result panels that push the board/keyboard off-screen.
+   - Do not redesign the multiplayer surface or implement the dedicated Multiplayer tab.
+
+5. **Persistence and compatibility**
+   - Store new Hard Mode and scoring fields inside the existing unified game projection first.
+   - Avoid destructive Supabase schema changes. If the current JSON projection can carry the fields, prefer no migration in Stage 9 unless a constraint or query requirement forces one.
+   - Preserve existing `async_multiplayer_games` table compatibility naming as private plumbing.
+   - Do not weaken RLS/seat ownership, distinct-user joins, Daily claim rules, or safe rival identity projection.
+
+#### 28.27.4 Recommended Sequencing
+
+Stage 9 execution should be ordered to reduce risk:
+
+1. **Reproduction and failing tests**
+   - Use two-client Supabase-backed browser E2E to reproduce the timed Practice bug.
+   - Add focused failing tests around clock application, turn handoff, board persistence, and repository reconciliation.
+
+2. **Timer/board fix**
+   - Fix the minimal domain/repository/UI seam needed so timed moves persist and clocks advance for the correct player only.
+   - Verify untimed Practice and Daily Multiplayer are unchanged.
+
+3. **Hard Mode model and validation**
+   - Add Practice-only Hard Mode to lobby creation and durable game state.
+   - Reuse canonical validation and add tests that invalid Hard Mode guesses are rejected in multiplayer.
+   - Add lobby/result UI copy only after the model is stable.
+
+4. **Scoring model**
+   - Implement pure point calculation for OG and GO with fixture-heavy tests covering solve, no-solve, tie, timeout, forfeit, and Hard Mode bonus cases.
+   - Integrate scoring into terminal game summaries without changing rating settlement rules unless strictly required by existing code.
+
+5. **Final integration and verification**
+   - Run real two-client timed/untimed Practice E2E, Daily non-regression, desktop/mobile smoke, remote Supabase probes, and the full automated gate.
+
+#### 28.27.5 Parallel Work Slices
+
+If execution uses sub-agents, keep ownership narrow:
+
+- **Timer bug lane**: `src/multiplayer/multiplayer.ts`, `src/multiplayer/multiplayerRepository.ts`, and focused domain/repository tests for timed move persistence and clock handoff.
+- **Hard Mode lane**: Practice lobby state, canonical validation wiring, and focused tests in `src/multiplayer/` after the timer lane stabilizes the domain shape.
+- **Scoring lane**: `src/multiplayer/scoring.ts` and scoring tests; read-only access to domain/session types until integration is sequenced.
+- **UI lane**: `src/multiplayer/MultiplayerPanel.tsx`, `src/multiplayer/MultiplayerGameSurface.tsx`, and component tests after domain/scoring contracts stabilize.
+- **Coordinator lane**: `src/app/App.tsx`, repository integration, high-conflict docs/progress/changelog, real two-client Supabase verification, responsive smoke, and final handoff.
+
+Keep `src/app/App.tsx`, `src/multiplayer/multiplayer.ts`, `src/multiplayer/multiplayerRepository.ts`, `src/multiplayer/MultiplayerPanel.tsx`, `src/multiplayer/MultiplayerGameSurface.tsx`, `CHANGELOG.md`, `AGENT-IMPLEMENTATION-PLAN.md`, `progress/PROGRESS.csv`, `agents.md`, and `memory.md` single-writer or explicitly sequenced.
+
+#### 28.27.6 Major Risks and Considerations
+
+- **Clock fairness**: client-side display intervals must not become authoritative game state. Persisted elapsed-time application should use stable timestamps and avoid penalizing the inactive player.
+- **Snapshot races**: the bug description suggests stale repository projections can overwrite submitted moves or clock state. Execution should preserve both players' boards and clock fields during save/reconcile.
+- **Daily regression risk**: Daily Multiplayer must remain strictly no-clock and should not inherit Practice Hard Mode lobby controls or scoring fields in a way that changes Daily claim/expiry behavior.
+- **Hard Mode parity**: multiplayer Hard Mode must match solo Hard Mode constraints, including discovered greens/yellows and duplicate-letter edge cases.
+- **Scoring clarity**: score rules must be easy to explain in UI and tests. Avoid hidden penalties based on the rival's performance.
+- **ELO boundary**: Stage 9 scoring may prepare evidence for future rating work, but it should not overhaul ELO/rating unless the execution prompt explicitly authorizes that integration.
+- **Compatibility**: new fields should serialize and normalize safely when old game projections omit them.
+
+#### 28.27.7 Verification Requirements
+
+Stage 9 execution must finish with:
+
+1. Focused unit tests for timed Practice clock application, board persistence, timeout loss, untimed no-regression, Hard Mode validation, score calculation, winner/draw projection, and legacy projection normalization.
+2. Repository/Supabase tests or probes for persisted timed turns, rival snapshot visibility, clock fields, Hard Mode fields, and terminal scoring summaries.
+3. Component/browser tests for lobby Hard Mode visibility, time-limit display, clocks, multiplayer board retention after a move, and finished points/outcome summaries.
+4. Real two-client browser E2E with distinct authenticated sessions for:
+   - Timed Practice Multiplayer, including at least one turn handoff after a submitted guess.
+   - Untimed Practice Multiplayer non-regression.
+   - Practice Hard Mode lobby creation, join visibility, invalid Hard Mode guess rejection, and terminal scoring.
+   - Daily Multiplayer OG/GO no-clock, no-Hard-Mode-lobby-control, and no-claim-regression smoke.
+5. Responsive smoke for desktop, tablet-like, and 390px mobile viewports with no console errors and no horizontal overflow.
+6. Full gate: `npm run lint`, `npm run test`, `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, `git diff --check`, remote Supabase cleanup/probes, and Vercel preview deployment if implementation is authorized.
+
+#### 28.27.8 Gate
+
+This `phase_id = 98` planning step is complete when the planning/tracking surfaces are updated and the user receives a summary. Stage 9 implementation remains gated until the user explicitly authorizes it in a later prompt. Do not edit `src/`, `api/`, or `supabase/`, create implementation branches, run migrations, create a PR, merge, release, or begin deferred feature work in this planning pass.
+
+### 28.28 Stage 9 Execution — Timer Bug Fix, Practice Hard Mode, and Multiplayer Scoring (`phase_id = 99`-`100`)
+
+**Authorization status**: implementation completed for user review. The user explicitly authorized Stage 9 execution from `PHASE-23-STAGE-9-TIMER-BUGS-AND-MULTIPLAYER-SCORING-SPEC-2026-06-06.md`. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, notifications, bots, social features, redesign work, and later-phase work remain gated.
+
+#### 28.28.1 Implemented Scope
+
+Stage 9 implemented the approved timer/Hard Mode/scoring scope on top of the Stage 8 unified Multiplayer model:
+
+1. **Timed Practice Multiplayer synchronization**
+   - Added per-player `playerSessions` to unified Multiplayer game projections while preserving the shared `serializedSession` compatibility field for older storage and answer access.
+   - Updated turn submission so a guess mutates only the submitting player's session and the play surface restores the viewer player's own board.
+   - Fixed GO move history to record the submitting player's current puzzle index rather than the shared compatibility session's puzzle index.
+   - Treated stored `playing` as a valid normalized game status so active GO/Practice games are not accidentally re-derived as terminal from a compatibility session.
+   - Scoped timed Practice expiration to the authenticated viewer's active turn in `App.tsx`, preventing an inactive rival browser from expiring the wrong clock.
+   - Hardened Supabase saves so duplicate create races use `upsert(..., ignoreDuplicates: true)` and existing-row updates reject stale projections that would drop already-persisted moves.
+
+2. **Practice Multiplayer Hard Mode**
+   - Added a Practice-only `hardMode` field to lobby/game creation and normalization.
+   - Copied the Hard Mode flag into each player's canonical OG/GO serialized session, reusing the existing solo validation behavior.
+   - Added a creator-selected Practice lobby control and a rival-visible waiting/active game status display.
+   - Kept Daily Multiplayer free of Practice time-limit and Hard Mode lobby controls.
+
+3. **Multiplayer scoring**
+   - Added deterministic per-player points for OG and GO based on the player's own guesses, solve status, unused attempts, and a modest Hard Mode solve bonus.
+   - Kept scoring pure and suitable as future rating evidence without changing ELO/rating settlement rules.
+   - Implemented winner/draw summaries for solve, timeout, forfeit, and points outcomes; GO winners are projected from total points across the full session.
+
+#### 28.28.2 Files and Surfaces
+
+High-impact implementation surfaces:
+
+- `src/multiplayer/multiplayer.ts`: per-player sessions, Hard Mode projection, timed expiry ownership, GO puzzle-index fixes, and normalization.
+- `src/multiplayer/multiplayerRepository.ts`: duplicate-safe Supabase row creation and stale-save protection.
+- `src/multiplayer/scoring.ts`: deterministic OG/GO points and winner/draw summaries.
+- `src/multiplayer/MultiplayerGameSurface.tsx`: viewer-seat board restoration.
+- `src/multiplayer/MultiplayerPanel.tsx`: Practice-only Hard Mode UI and game status display.
+- `src/app/App.tsx`: viewer-owned timed Practice expiration interval.
+- Focused tests under `src/multiplayer/*.test.ts(x)`.
+
+#### 28.28.3 Verification Summary
+
+Automated verification passed:
+
+- `npm run lint`
+- `npm run test` (69 files / 458 tests)
+- `npm run build` (succeeds with the existing large-chunk advisory)
+- `npx tsc -p tsconfig.api.json --noEmit`
+- `git diff --check`
+
+Focused Stage 9 regressions passed for:
+
+- Timed Practice board persistence and active-player-only clock decrement.
+- Stale timed timeout projections not overwriting newer submitted turns.
+- Practice Hard Mode creation/validation and Daily no-Hard-Mode UI non-regression.
+- Viewer-seat board rendering in the multiplayer play surface.
+- OG points winner, Hard Mode score bonus, and GO total-points winner projection.
+
+Real Supabase-backed browser verification passed with temporary authenticated users:
+
+- Timed Practice Multiplayer with 30-second clocks and Hard Mode on: lobby visible to rival, Hard Mode visible before join, both players joined, host submitted through the on-screen keyboard, host refresh preserved the submitted board, rival submitted, both per-player sessions and moves persisted, and no console/network errors were recorded.
+- Untimed Practice Multiplayer: lobby creation, join, on-screen keyboard submission, turn handoff, durable row persistence, and no console/network errors.
+- Daily Multiplayer: lobby creation/join/submission, Daily claim rows, no Practice time-limit or Hard Mode controls, no Daily clock/Hard Mode projection leakage, and no console/network errors.
+- Desktop, tablet-like, and 390px mobile route smoke for Calendar, Practice, Words, Stats, and Settings passed with no console/page errors and no horizontal overflow.
+
+All temporary Supabase users, multiplayer rows, and Daily claim rows created during verification were cleaned up.
+
+#### 28.28.4 Residual Notes
+
+- The deployed Supabase table remains `async_multiplayer_games` as private Stage 8 compatibility plumbing; this is not user-facing terminology.
+- Stage 9 did not add Supabase migrations because the existing JSON projection can carry `playerSessions`, Practice Hard Mode, and scoring-derived data.
+- Custom-code Practice lobbies still appear dependent on deployed schema parity for `custom_game_code`; this was not part of the Stage 9 spec and remains outside the completed timer/Hard Mode/scoring scope.
+- PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, and later-phase work remain gated.
+
+### 28.29 Stage 10 Planning — Multiplayer Debugging and Bug Fixes (`phase_id = 101`)
+
+**Authorization status**: planning and governance only. `PHASE-23-STAGE-10-MULTIPLAYER-DEBUGGING-AND-BUGFIXES-SPEC-2026-06-06.md` is the dedicated Stage 10 source of truth. The spec originally names §28.28 as the future plan slot, but §28.28 is already occupied by Stage 9 execution in the current repository, so Stage 10 is recorded here as the next available subsection, §28.29.
+
+This planning entry does **not** authorize source-code edits, UI/component work, tests, Supabase migrations, implementation branches, PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, or Stage 10 execution.
+
+#### 28.29.1 Stage 10 Goal
+
+Stage 10 is a targeted debugging and stabilization pass for the current unified Multiplayer system. Its primary goal is to fix the critical cross-client board/keyboard synchronization bug reported after Stage 9:
+
+- Player 1 submits a valid Practice Multiplayer guess.
+- Turn history updates for both players.
+- Player 1's board and keyboard update correctly.
+- Player 2's board does not display the submitted letters, and Player 2's keyboard state does not reflect the played letters.
+
+The stage may also fix other clearly broken multiplayer synchronization, state, or UX bugs discovered during the required real two-client testing, provided they stay tightly related to multiplayer stability and do not expand into new features.
+
+#### 28.29.2 Key Invariants
+
+Stage 10 execution must preserve these invariants:
+
+- Daily Multiplayer remains strictly asynchronous, five letters, UTC-day keyed, UTC-midnight expiring, and separate between OG and GO.
+- Daily Multiplayer must not gain Practice time limits, Practice Hard Mode lobby controls, or new Daily claim behavior.
+- Practice Multiplayer chess-clock time limits, optional Practice Hard Mode, scoring, unified terminology, and Stage 8/9 compatibility behavior must not regress.
+- The `playerSessions` + `getMultiplayerSessionForPlayer` model remains the preferred viewer-board source. The shared `serializedSession` remains compatibility/answer plumbing only.
+- Solo gameplay, Daily solo behavior, economy, stats, auth/sync, admin, and non-multiplayer areas are out of scope except for non-regression checks.
+
+#### 28.29.3 Recommended Debugging Approach
+
+Execution should follow a reproduce-first flow:
+
+1. **Reproduce with real two-client Supabase E2E**
+   - Use two isolated authenticated browser contexts and the configured Supabase project.
+   - Reproduce the bug in untimed Practice Multiplayer first, then timed Practice, then Practice Hard Mode.
+   - Capture whether Supabase rows contain the submitted move, whether repository subscriptions deliver it, and whether each client renders the expected board and keyboard state.
+
+2. **Isolate the failure point**
+   - Check whether `submitMultiplayerGuess` persists the move into the correct player session and move history.
+   - Check whether `multiplayerRepository.ts` projection reconciliation preserves both player sessions, shared compatibility session fields, moves, and timestamps.
+   - Check whether `MultiplayerGameSurface` intentionally renders only the viewer player's session, and whether the desired rival-board/keyboard feedback requires an opponent-progress projection rather than reading from the viewer session.
+   - Confirm keyboard state expectations for the rival view: if both players should see all played letters, the projection must be derived from shared move/session evidence without letting one player mutate the other's canonical session.
+
+3. **Fix minimally and robustly**
+   - Prefer a targeted strengthening of projection/state derivation over a broad multiplayer rewrite.
+   - Preserve the Stage 9 stale-save and duplicate-safe upsert protections.
+   - Avoid changing Daily claim, Daily answer, rating, scoring, or solo session behavior unless a regression test proves the change is required and remains inside Stage 10 scope.
+
+4. **Broaden within multiplayer only**
+   - After the critical bug is fixed, run a focused multiplayer bug sweep for nearby synchronization failures: consecutive turns, refresh/reconnect, timed clocks, Hard Mode validation, scoring summaries, forfeits, cancellation, and Daily non-regression.
+
+#### 28.29.4 Suggested Work Slices
+
+If execution uses parallel sub-agents, keep ownership narrow and sequence high-conflict surfaces:
+
+- **Reproduction/probe lane**: read-only two-client browser reproduction, Supabase row snapshots, subscription/event notes, and a concise failure matrix.
+- **Domain/session lane**: `src/multiplayer/multiplayer.ts` and focused tests for per-player sessions, shared move visibility, keyboard derivation, and turn progression.
+- **Repository lane**: `src/multiplayer/multiplayerRepository.ts` and repository tests for projection reconciliation, stale-save guards, subscription delivery, and refresh restoration.
+- **UI surface lane**: `src/multiplayer/MultiplayerGameSurface.tsx`, `src/multiplayer/MultiplayerPanel.tsx`, and component tests after the domain/repository contract is clear.
+- **Verification lane**: real two-client E2E, remote Supabase cleanup/probes, responsive smoke, and final full gate evidence.
+- **Coordinator lane**: `src/app/App.tsx` if needed, plus `CHANGELOG.md`, `progress/PROGRESS.csv`, `agents.md`, `memory.md`, and final integration.
+
+Keep `src/app/App.tsx`, `src/multiplayer/multiplayer.ts`, `src/multiplayer/multiplayerRepository.ts`, `src/multiplayer/MultiplayerGameSurface.tsx`, `src/multiplayer/MultiplayerPanel.tsx`, `CHANGELOG.md`, `AGENT-IMPLEMENTATION-PLAN.md`, `progress/PROGRESS.csv`, `agents.md`, and `memory.md` single-writer or explicitly sequenced.
+
+#### 28.29.5 Risks and Considerations
+
+- **Viewer-session vs shared-state semantics**: Stage 9 intentionally restored each viewer's board from that viewer's own session. Stage 10 must distinguish preserving player-owned guesses from also showing shared rival progress. Do not solve the bug by letting one browser overwrite the other player's canonical session.
+- **Keyboard derivation**: The shared keyboard state may need a pure projection from all visible multiplayer moves while canonical guess validation still uses the active player's own session.
+- **Snapshot races**: Repository saves and subscriptions must not drop player sessions, moves, clock fields, Hard Mode, scoring evidence, or terminal state.
+- **Daily safety**: Daily Multiplayer must remain no-clock and no-Hard-Mode. Daily non-regression is mandatory, but Daily behavior changes are out of scope.
+- **Test determinism**: Supabase-backed browser tests should create isolated temporary users/rows, probe exact rows, and clean them up.
+- **Scope creep**: Stage 10 is not a dedicated Multiplayer tab, spectator expansion, notification, bot, social, redesign, scoring overhaul, rating overhaul, or release stage.
+
+#### 28.29.6 Verification Expectations
+
+Execution must include:
+
+1. Focused tests that fail before the fix and pass after for cross-client board/keyboard visibility, turn history consistency, subscription/repository reconciliation, timed Practice clocks, untimed Practice, and Hard Mode Practice.
+2. Real two-client Supabase-backed browser E2E for:
+   - Untimed Practice Multiplayer.
+   - Timed Practice Multiplayer.
+   - Practice Multiplayer with Hard Mode enabled.
+   - Multiple consecutive turns and at least one browser refresh/reload.
+3. Daily Multiplayer non-regression checks confirming no clocks, no Practice Hard Mode lobby controls, Daily claim safety, and unchanged Daily answer/expiry semantics.
+4. Responsive smoke on desktop, tablet-like, and 390px mobile viewports with zero console errors and no horizontal overflow.
+5. Full gate: `npm run lint`, `npm run test`, `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, `git diff --check`, remote Supabase probes/cleanup, and Vercel preview deployment if implementation is later authorized.
+
+#### 28.29.7 Gate
+
+This `phase_id = 101` planning step is complete when the planning/tracking surfaces are updated and the user receives a summary. Stage 10 implementation remains gated until the user explicitly authorizes it in a later prompt. Do not edit `src/`, `api/`, or `supabase/`, create implementation branches, run migrations, create a PR, merge, release, or begin deferred feature work in this planning pass.
+
+### 28.30 Stage 10 Implementation Checkpoint — Multiplayer Synchronization Fixes (`phase_id = 102`)
+
+**Authorization status**: execution authorized by the user from `PHASE-23-STAGE-10-MULTIPLAYER-DEBUGGING-AND-BUGFIXES-SPEC-2026-06-06.md`. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, scoring/rating overhaul, and later-phase work remain gated.
+
+#### 28.30.1 Reproduction Evidence
+
+Stage 10 followed the reproduce-first requirement before source changes:
+
+- Two isolated authenticated browser contexts were created against the configured Supabase project using temporary users.
+- Practice Multiplayer lobby creation, rival discovery, join, and one submitted OG turn were exercised through the real UI.
+- Supabase rows showed one durable shared move and player-one's canonical `playerSessions['player-one']` guess, while player-two's canonical session correctly remained empty.
+- Before the fix, player-one's board/keyboard rendered the submitted `aahed` row and colored keys, but player-two's board showed blank row-one tiles and player-two's keyboard remained in the unknown state.
+
+#### 28.30.2 Implemented Fixes
+
+Stage 10 implementation remains narrow and multiplayer-focused:
+
+1. **Shared visible board/keyboard projection**
+   - `MultiplayerGameSurface` now derives a display-only puzzle projection from durable `game.moves` for the active puzzle index.
+   - Both players see submitted shared moves on the visible board and keyboard.
+   - Canonical validation and mutation still use the viewer's `playerSessions` entry via `getMultiplayerSessionForPlayer`.
+   - The shared `serializedSession` remains compatibility/answer plumbing only.
+
+2. **Timed Practice clock checkpointing**
+   - `applyClockForTurn` now checkpoints `turnStartedAt` whenever it persists a non-terminal remaining-time decrement.
+   - This prevents repeated app interval saves and UI clock reads from double-counting the same elapsed time.
+   - Timed Practice games no longer expire the active player prematurely during normal first-turn entry.
+
+3. **Timed Practice draft stability**
+   - `MultiplayerGameSurface` no longer uses `game.updatedAt` in the local draft reset key.
+   - Clock-only Supabase saves no longer wipe a partially typed on-screen-keyboard guess in timed Practice games.
+   - The reset key still responds to gameplay identity, current turn/status, player id, and move history changes.
+
+#### 28.30.3 Focused Verification Completed
+
+Focused automated tests passed:
+
+- `npm test -- --run src/multiplayer/MultiplayerGameSurface.test.tsx`
+- `npm test -- --run src/multiplayer/multiplayer.test.ts src/multiplayer/MultiplayerGameSurface.test.tsx`
+- `npm test -- --run src/multiplayer/multiplayerRepository.test.ts src/multiplayer/scoring.test.ts src/multiplayer/MultiplayerPanel.test.tsx`
+
+New/updated regressions cover:
+
+- Rival board and keyboard rendering submitted multiplayer moves.
+- Timed Practice clock checkpointing so repeated ticks do not double-count elapsed time.
+- Existing repository, scoring, and panel behavior around unified Multiplayer remains intact.
+
+Real two-client Supabase-backed browser E2E passed after the fixes for:
+
+- Untimed Practice Multiplayer with two consecutive turns and browser refresh restoration.
+- Timed Practice Multiplayer with a 30-second clock, submitted move persistence, visible rival row sync, and active-clock handoff.
+- Practice Multiplayer with Hard Mode enabled, visible Hard Mode state, and shared row sync.
+
+Temporary Supabase users and multiplayer rows created during these probes were cleaned up.
+
+#### 28.30.4 Pending Final Gate
+
+Before Stage 10 final handoff, the coordinator must still run:
+
+- `npm run lint`
+- `npm run test`
+- `npm run build`
+- `npx tsc -p tsconfig.api.json --noEmit`
+- `git diff --check`
+- Desktop/tablet/390px responsive smoke with no console errors or horizontal overflow.
+- A final Vercel preview deployment if the final Stage 10 handoff includes a preview link.
+
+Daily Multiplayer no-clock/no-Hard-Mode invariants should be smoke-checked before final handoff, but no Daily behavior change was introduced by this checkpoint.
+
+### 28.31 Stage 10 Final Verification and Handoff (`phase_id = 103`)
+
+**Authorization status**: Stage 10 execution was authorized and is complete for user review. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, notification system, bot/social features, redesign, scoring/rating overhaul, and later-phase work remain gated.
+
+#### 28.31.1 Final Verification
+
+Full automated gate passed:
+
+- `npm run lint`
+- `npm run test` — 69 files / 459 tests passed.
+- `npm run build` — passed with the existing large-chunk advisory.
+- `npx tsc -p tsconfig.api.json --noEmit`
+- `git diff --check`
+
+Real two-client Supabase-backed browser verification passed:
+
+- Untimed Practice Multiplayer: lobby creation/discovery/join, two consecutive turns, shared board/keyboard rendering for both players, durable row persistence, and browser refresh restoration.
+- Timed Practice Multiplayer: 30-second chess clock, submitted move persistence, rival row sync, active-clock handoff, and no premature timeout.
+- Practice Hard Mode Multiplayer: creator-selected Hard Mode visible/locked, submitted move persistence, and shared rival row sync.
+
+Responsive smoke passed:
+
+- Desktop, tablet-like, and 390px mobile viewports.
+- Landing, Calendar, Practice, and Settings route checks.
+- Zero console/page errors.
+- No horizontal overflow.
+- Daily Multiplayer surface did not expose Practice-only `Time per side` or `Hard Mode` controls.
+
+Preview deployment:
+
+- Direct protected preview: `https://brrrdle-qkrszkoqp-ryanjosephkamps-projects.vercel.app`
+- Share URL verified with the Vercel bypass-cookie flow: `https://brrrdle-qkrszkoqp-ryanjosephkamps-projects.vercel.app/?_vercel_share=wJfg309HjQthxKiqe0vtRR0uUIeNIVPp`
+
+#### 28.31.2 Final Stage 10 State
+
+Stage 10 fixes are complete:
+
+- The reported cross-client Practice Multiplayer board/keyboard synchronization bug is fixed.
+- Timed Practice clock ticks no longer double-count elapsed time.
+- Timed Practice clock-only saves no longer wipe an in-progress typed guess.
+- Daily Multiplayer remains no-clock, no-Hard-Mode-control, five-letter, UTC-day keyed, and claim-safe.
+- Temporary Supabase users and multiplayer rows from verification were cleaned up.
+
+No PR, merge, release, dedicated Multiplayer tab, spectator expansion, notification system, bot/social feature, redesign, scoring/rating overhaul, or later-phase work was performed.
+
+### 28.32 Post-Stage-10 Safety Backup (`phase_id = 104`)
+
+**Authorization status**: the user explicitly authorized a backup and documentation-only GitHub safety operation after Stage 10 verification. This operation is not an implementation stage and does not authorize merging the backup PR.
+
+#### 28.32.1 Backup Snapshot
+
+- Backup branch: `backup/phase-23-stage-10-final-2026-06-06`
+- Draft PR: `https://github.com/ryanjosephkamp/brrrdle/pull/18`
+- Latest verified preview share URL recorded in the PR: `https://brrrdle-qkrszkoqp-ryanjosephkamps-projects.vercel.app/?_vercel_share=wJfg309HjQthxKiqe0vtRR0uUIeNIVPp`
+
+The backup branch was created from the current verified Stage 10 local snapshot and pushed to GitHub as a durable restore point. The draft PR is intentionally marked as a safety snapshot and should not be merged unless the user explicitly approves that later.
+
+#### 28.32.2 Scope Guard
+
+No game code, tests, UI behavior, Supabase migrations, release work, production deployment, branch deletion, force-push, or merge to `main` was authorized or performed as part of this backup tracking step.
+
+### 28.33 Phase 23 Final Stabilization & Broad Debugging Pass Planning (`phase_id = 105`)
+
+**Authorization status**: planning and governance only. This section defines the recommended final broad debugging stage before Phase 23 closure. It does not authorize source-code edits, UI/component work, test changes, Supabase migrations, implementation branches, PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, scoring/rating changes, or execution.
+
+#### 28.33.1 Primary Goal
+
+Perform one comprehensive final bug-fix and stabilization sweep across the entire current game, with special emphasis on unified Multiplayer, before Phase 23 is formally closed.
+
+This stage should be treated as a quality gate, not a feature phase. The implementation pass should actively search for bugs, regressions, race conditions, stale UI state, restore/refresh failures, mobile layout defects, console errors, and unreliable multiplayer behavior. Clear bugs may be fixed; new features and redesign work remain gated.
+
+#### 28.33.2 Scope and Priorities
+
+Priority 1 — Unified Multiplayer:
+
+- Practice Multiplayer lobby creation, discovery, join, cancellation, forfeit, refresh restoration, and resume behavior.
+- Untimed Practice Multiplayer board, keyboard, turn history, scoring summary, and result consistency across both players.
+- Timed Practice Multiplayer chess-clock behavior, including active-player-only decrement, timeout loss, refresh/reconnect, and no typed-draft resets from clock-only updates.
+- Practice Hard Mode lobby state, locked setting behavior, validation parity with solo Hard Mode, and scoring bonus display.
+- Daily Multiplayer strict asynchronous behavior, UTC-day keyed participation, no clocks, no Hard Mode controls, no Practice-only settings, claim safety, archive/view-only behavior, answer-list separation, and Calendar entry points.
+- Supabase-backed persistence, subscriptions/state reconciliation, stale-save protections, duplicate-safe upserts, and cleanup of temporary test data.
+
+Priority 2 — Core solo and Daily systems:
+
+- Daily OG/GO and Practice OG/GO gameplay, including tile colors, on-screen keyboard states, valid-guess handling, Hard Mode, give-up/reveal, definitions, loss/win summaries, and resume behavior.
+- Calendar hub, daily archive unlocks, countdowns, local/UTC DailyVariant boundaries, and mobile indicator rendering.
+- Auth and sync flows: sign-in, sign-up, password reset, magic/recovery links, sign-out, guest/cloud merge, Settings/profile sync, and Supabase client lifecycle.
+
+Priority 3 — Supporting surfaces and polish:
+
+- Stats, history, ratings/scoring summaries, economy/coins/XP, share surfaces, and solo/multiplayer data separation.
+- Words/definitions/admin surfaces, including filtering, pagination, definition modal behavior, fallback links, and admin gating.
+- Desktop, tablet-like, and 390px mobile responsive behavior, no horizontal overflow, no console errors, tooltip/dialog layering, reduced-motion safety, keyboard/touch ergonomics, loading/error states, and performance/memory stability with two authenticated contexts.
+
+#### 28.33.3 Work Slices and Coordination
+
+Suggested lanes if the execution prompt authorizes parallel agents:
+
+- **Audit/test-matrix lane**: produce a concise final Stage 11-style matrix before source edits, covering solo, Calendar/Daily, Multiplayer, auth/sync, stats/economy/history, Words/admin, responsive/accessibility, and performance.
+- **Multiplayer domain/repository lane**: `src/multiplayer/multiplayer.ts`, `src/multiplayer/multiplayerRepository.ts`, related tests, Supabase row probes, stale-save and clock checks.
+- **Multiplayer UI lane**: `src/multiplayer/MultiplayerPanel.tsx`, `src/multiplayer/MultiplayerGameSurface.tsx`, stats/scoring displays, and focused component/browser tests.
+- **Solo/Daily/Calendar lane**: core game reducers/session behavior, `src/calendar/`, `src/daily/`, DailyVariant boundaries, and Calendar mobile rendering.
+- **Auth/sync/storage lane**: `src/account/`, Supabase client lifecycle, guest transfer, password recovery, and storage schema non-regression.
+- **Responsive/performance lane**: desktop/tablet/mobile browser smoke, console capture, horizontal-overflow checks, two-context memory/performance observation, and Vercel preview validation.
+- **Coordinator lane**: high-conflict integration, `src/app/App.tsx`, progress/changelog/memory updates, final verification, remote cleanup, and final handoff.
+
+Keep these high-conflict surfaces single-writer or explicitly sequenced:
+
+- `src/app/App.tsx`
+- `src/multiplayer/`
+- `src/calendar/`
+- `src/account/`
+- `src/game/`
+- `src/daily/`
+- `src/stats/`
+- `AGENT-IMPLEMENTATION-PLAN.md`
+- `CHANGELOG.md`
+- `progress/PROGRESS.csv`
+- `progress/PROGRESS-STEP-*.md`
+- `agents.md`
+- `memory.md`
+
+#### 28.33.4 Required Real Multiplayer Testing
+
+Execution must include real two-client Supabase-backed browser E2E for multiplayer flows, not only single-browser simulation or unit tests.
+
+At minimum, the final debugging pass should verify:
+
+- Practice Multiplayer untimed: create, discover, join, submit multiple turns, board/keyboard/history sync for both players, forfeit/cancel where applicable, refresh/reconnect, and final result/scoring display.
+- Practice Multiplayer timed: supported clock behavior for at least one short timed game, active-player-only countdown, timeout behavior, refresh/reconnect, and no draft reset from clock-only saves.
+- Practice Multiplayer Hard Mode: visible locked setting, validation behavior, shared board/keyboard/history sync, scoring summary, and refresh behavior.
+- Daily Multiplayer: create/discover/join, one-per-day claim behavior, no Practice time/Hard Mode controls, five-letter Daily behavior, UTC day boundary assumptions, archive/view-only behavior, and Calendar entry.
+- Remote Supabase probes: durable rows, participant ids, claim rows, move history, per-player sessions, time-limit fields, Hard Mode fields where Practice-only, RLS-compatible reads/writes, and cleanup.
+
+Temporary users and rows created for verification must be cleaned up when possible. Any cleanup limitation must be documented in the final report.
+
+#### 28.33.5 Success Criteria
+
+The final debugging pass should only be marked complete when:
+
+- All clear bugs found during the sweep are fixed or explicitly documented as deferred with a reason.
+- Unified Multiplayer behaves consistently across both players for untimed Practice, timed Practice, Practice Hard Mode, and Daily Multiplayer.
+- Daily Multiplayer remains strictly asynchronous, no-clock, no-Hard-Mode-control, five-letter, UTC-day keyed, answer-separated, and claim-safe.
+- Solo Daily/Practice, Calendar, auth/sync, stats/economy/history, Words/definitions/admin, responsive behavior, and performance receive meaningful non-regression coverage.
+- Full automated and browser verification passes.
+- A Vercel preview is deployed and a clickable share URL is provided if the preview is protected.
+
+#### 28.33.6 Final Verification Gate
+
+Before halting after execution, run and pass:
+
+- `npm run lint`
+- `npm run test`
+- `npm run build`
+- `npx tsc -p tsconfig.api.json --noEmit`
+- `git diff --check`
+- Focused tests for any changed areas.
+- Desktop browser smoke.
+- Tablet-like browser smoke.
+- 390px mobile browser smoke.
+- Real two-client Supabase-backed browser E2E for the multiplayer flows listed above.
+- Remote Supabase probes for relevant auth/sync/multiplayer rows.
+- Memory/performance observation with two authenticated browser contexts.
+
+#### 28.33.7 Explicit Scope Boundaries
+
+This stage must not add new product features or redesign the app. The following remain out of scope unless the user explicitly authorizes them later:
+
+- Dedicated Multiplayer tab implementation.
+- Spectator expansion.
+- Notifications.
+- Floating multiplayer manager.
+- Bots.
+- Social features.
+- New history/theme tabs.
+- Export/GIF features.
+- Scoring/rating rule changes.
+- Economy changes outside bug fixes.
+- Production release.
+- PR creation or merge.
+
+Small UI copy, feedback, or error-state adjustments are allowed only when they directly fix or clarify a bug discovered in the stabilization pass.
+
+#### 28.33.8 Gate
+
+This `phase_id = 105` planning step is complete once the planning/tracking surfaces are updated and the user receives a summary. The final broad debugging execution remains gated until the user explicitly authorizes it in a later prompt.
+
+### 28.34 Phase 23 Final Stabilization Execution Kickoff (`phase_id = 106`)
+
+**Authorization status**: the user explicitly authorized execution of the Phase 23 Final Stabilization & Broad Debugging Pass. This remains a bug-fix/stabilization stage only. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, notification/bot/social feature work, redesign, scoring/rating rule changes, and later-phase work remain gated.
+
+#### 28.34.1 Protected Starting State
+
+Execution begins from the active dirty `codex/phase-23-stage-10` worktree, which contains the verified Stage 8-10 local state and the `phase_id = 104` backup record. The current restore point is:
+
+- Backup branch: `backup/phase-23-stage-10-final-2026-06-06`
+- Draft PR: `https://github.com/ryanjosephkamp/brrrdle/pull/18`
+
+The execution pass must not pull over, reset, rebase, switch away from, or otherwise risk losing the active dirty worktree. Any branch/worktree adjustment must preserve the current local state first.
+
+#### 28.34.2 Final Debugging Test Matrix
+
+The kickoff matrix for this pass covers:
+
+- Solo Daily OG/GO: fixed five-letter behavior, tile colors, keyboard state, valid guesses, win/loss/reveal, definitions, resume, and sharing.
+- Solo Practice OG/GO: 2-35 word lengths, Hard Mode locking/validation, keyboard behavior, definitions, give-up/reveal, resume, and responsive play.
+- Calendar and Daily systems: central hub entry points, archive unlock/view behavior, countdowns, local vs UTC DailyVariant boundaries, Daily Multiplayer indicators, and mobile rendering.
+- Unified Practice Multiplayer: lobby creation/discovery/join/cancel/forfeit, untimed play, timed chess-clock play, Hard Mode lobbies, scoring/results, board/keyboard/history sync, refresh/reconnect, and Supabase row durability.
+- Daily Multiplayer: strictly asynchronous, five-letter, UTC-day keyed, no clocks, no Hard Mode controls, OG/GO answer separation, claims, Calendar entry/archive behavior, and refresh/reconnect.
+- Auth and sync: sign-in, sign-up, sign-out, password reset/recovery, magic-link handling, guest/cloud merge, Settings/profile sync, and Supabase client lifecycle.
+- Stats, economy, and history: solo stat isolation, multiplayer summaries, ratings display, coins/XP, past daily unlocks, sharing, and history separation.
+- Words, definitions, and admin: filtering, pagination, definition modals, fallback links, and admin route gating.
+- Responsive, accessibility, and performance: desktop, tablet-like, 390px mobile, no horizontal overflow, no console errors, tooltip/dialog layering, reduced motion, keyboard/touch ergonomics, loading/error states, and memory stability with two authenticated browser contexts.
+
+#### 28.34.3 Baseline Resource Snapshot
+
+The kickoff resource snapshot shows no Stage 7-style runaway `next-server` or Python process before final-pass browser testing starts, but the machine is under memory pressure and must be handled conservatively:
+
+- `ps aux -m | head -20`: largest visible RSS processes are Codex renderer (~779 MB), Finder (~410 MB), VS Code plugin helpers (~381 MB and ~338 MB), Chrome renderers (~341 MB and ~315 MB), Codex app server (~272 MB), and Chrome main (~263 MB).
+- `top -l 1 -o mem | head -30`: several unrelated desktop apps have large compressed memory footprints; physical memory reports ~17 GB used, ~244 MB unused, and ~6.7 GB compressor.
+- `vm_stat`: about 14,124 free pages at 16 KB page size (~226 MB free) and ~1,980,430 pages stored in compressor.
+
+Resource guardrails for this pass:
+
+- Run only one dev server at a time.
+- Avoid parallel full builds/tests.
+- Use the minimum browser contexts needed and close them promptly.
+- Periodically re-check memory during two-client browser E2E.
+- Gracefully terminate only processes started by this pass if they become clear memory offenders.
+
+#### 28.34.4 Next Work
+
+Proceed with read-only audits, focused automated tests, safe browser smoke, real two-client Supabase-backed multiplayer E2E, scoped bug fixes, and final verification. Every source-code change must be traceable to a clear bug or stabilization need discovered in this pass.
+
+### 28.35 Phase 23 Final Stabilization First Bug-Fix Batch (`phase_id = 107`)
+
+**Authorization status**: final stabilization execution is authorized. This checkpoint records the first scoped bug-fix batch; PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, scoring/rating changes, and later-phase work remain gated.
+
+#### 28.35.1 Bugs Fixed
+
+- Supabase-backed Multiplayer repository saves now reject stale projections that would drop an already-joined rival, regress a non-waiting game back to waiting, or overwrite terminal results with an older playing state. This closes a zero-move race where a stale creator-side cancel could erase a rival's newer join.
+- Multiplayer result settlement now has a shared state-level helper and runs when terminal games arrive through repository snapshots or background expiry paths, not only when a local player directly submits or forfeits.
+- The saved solo `hardModeDefault` setting now applies to fresh OG/GO Daily and Practice games. Stored Daily sessions and resume slots remain authoritative and are not overwritten by the default.
+- The visible route rail now uses the existing primary-navigation helper, keeping placeholder-only routes out of normal navigation.
+
+#### 28.35.2 Focused Verification
+
+Passed:
+
+- `npm test -- --run src/multiplayer/multiplayerRepository.test.ts src/multiplayer/competitiveMultiplayer.test.ts src/app/games/soloHardModeDefaults.test.tsx src/app/routes.test.ts src/calendar/CalendarPanel.test.tsx --maxWorkers=2`
+- `npm run lint`
+- `npx tsc -p tsconfig.api.json --noEmit`
+
+Browser E2E, full `npm run test`, build, final diff check, Supabase probes, and preview deployment remain pending for the final handoff.
+
+### 28.36 Phase 23 Final Stabilization Multiplayer Timer Churn Fix (`phase_id = 108`)
+
+**Authorization status**: final stabilization execution remains authorized as a bug-fix/stabilization-only pass. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, redesign, scoring/rating rule changes, and later-phase work remain gated.
+
+#### 28.36.1 Bug Fixed
+
+Timed Practice Multiplayer no longer persists non-terminal chess-clock ticks every second. The browser continues to display live clock countdowns from `turnStartedAt` and `timeRemainingMs`, but the background expiry loop now writes only when a player actually times out. Turn submissions still checkpoint the submitting player's elapsed time and start the opponent clock.
+
+This closes a race and performance issue discovered during real two-client testing: clock-only row updates could churn Supabase Realtime, compete with move submissions, and intermittently delay or hide the rival board projection in timed Practice games.
+
+#### 28.36.2 Focused Verification
+
+Passed:
+
+- `npm test -- --run src/multiplayer/multiplayer.test.ts src/multiplayer/multiplayerRepository.test.ts src/multiplayer/MultiplayerGameSurface.test.tsx src/multiplayer/MultiplayerPanel.test.tsx --maxWorkers=2`
+- Real two-client Supabase-backed browser E2E for untimed Practice Multiplayer: two temp users created/joined a lobby, submitted `dream` and `tesla`, both boards and turn history updated, durable row contained both moves and per-player sessions, and no console/page errors were captured.
+- Real two-client Supabase-backed browser E2E for timed Practice Multiplayer: two temp users created/joined a 30-second timed lobby, waited before submitting, `dream` persisted, both boards updated, Player A elapsed time was checkpointed, Player B retained full starting time at turn handoff, and no clock-only row churn appeared before submission.
+- Real two-client Supabase-backed browser E2E for Practice Multiplayer Hard Mode: rival saw Hard Mode locked on before joining, first move synced to both boards, durable row retained `hardMode: true`, and no console/page errors were captured.
+- Real two-client Supabase-backed browser E2E for Daily Multiplayer: Daily surface had no Practice clock or Hard Mode controls, the game stayed five letters with `timeLimitMs = null` and `hardMode = false`, claim rows existed for both users, `dream` synced to both boards, refresh restored the board, and no console/page errors were captured.
+
+Full `npm run test`, build, final diff check, responsive smoke, final memory check, and preview deployment remain pending for the final handoff.
+
+### 28.37 Phase 23 Final Stabilization Final Verification and Handoff (`phase_id = 109`)
+
+**Authorization status**: the user explicitly authorized the Phase 23 Final Stabilization & Broad Debugging Pass. This final checkpoint completes the approved bug-fix/stabilization pass for user review. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, notification/bot/social feature work, redesign, scoring/rating rule changes, and later-phase work remain gated.
+
+#### 28.37.1 Bugs Fixed
+
+- Multiplayer stale-save protection now rejects incoming Supabase projections that would drop a joined rival, regress non-waiting games back to waiting, overwrite terminal state with an older playing projection, or lose already-saved moves.
+- Multiplayer result settlement now runs for terminal repository snapshots and background expiry paths, not only direct local submit/forfeit handlers.
+- Fresh solo OG/GO Daily and Practice sessions now honor the saved `hardModeDefault` setting while preserving stored Daily sessions and resume slots as authoritative.
+- Primary navigation now filters through the existing primary-route helper so placeholder-only routes stay out of the visible route rail.
+- Timed Practice Multiplayer no longer writes non-terminal chess-clock ticks every second; live clocks are display-only between submitted turns or actual timeout/loss saves.
+
+#### 28.37.2 Verification
+
+Passed:
+
+- `npm run lint`
+- `npm run test -- --maxWorkers=2` (463 passing tests)
+- `npm run build` (succeeds; existing large-chunk advisory remains)
+- `npx tsc -p tsconfig.api.json --noEmit`
+- `git diff --check`
+- Focused regressions for multiplayer domain/repository/surface/panel, competitive settlement, solo Hard Mode defaults, routes, and Calendar behavior.
+- Real two-client Supabase-backed browser E2E for untimed Practice Multiplayer, timed Practice Multiplayer with 30-second clocks, Practice Multiplayer Hard Mode, and Daily Multiplayer.
+- Remote Supabase probes for durable moves, per-player sessions, time-limit fields, Hard Mode fields, Daily claim rows, participant ownership, and cleanup.
+- Desktop, tablet-like, and 390px mobile browser smoke for landing, Calendar, Practice, Settings tooltip layering, and Words, with no console/page errors and no horizontal overflow.
+- Memory/resource observation with two authenticated browser contexts; no Stage 7-style runaway `next-server` or high-memory Python process was produced by this pass.
+
+#### 28.37.3 Preview
+
+- Direct protected preview: `https://brrrdle-3zm8qw3vg-ryanjosephkamps-projects.vercel.app`
+- Share URL verified with the Vercel bypass-cookie flow: `https://brrrdle-3zm8qw3vg-ryanjosephkamps-projects.vercel.app/?_vercel_share=y8zu6kGORWOe2zed4KoDJjk6UUyTOkob`
+
+#### 28.37.4 Final State
+
+The final stabilization pass is complete for user review. Daily Multiplayer remains strictly asynchronous, no-clock, no-Hard-Mode-control, five-letter, UTC-day keyed, answer-separated, and claim-safe. Practice Multiplayer remains the only owner of chess-clock time limits and Practice Hard Mode. No PR, merge, release, dedicated Multiplayer tab, spectator expansion, redesign, scoring/rating rule change, or out-of-scope feature work was performed.
+
+### 28.38 Stage 12 Planning — Multiplayer Hard Mode Enforcement + Performance & Responsiveness Fixes (`phase_id = 110`)
+
+**Authorization status**: planning and governance only. `PHASE-23-STAGE-12-MULTIPLAYER-HARD-MODE-ENFORCEMENT-AND-PERFORMANCE-FIXES-SPEC-2026-06-07.md` is the dedicated Stage 12 source of truth. The user-provided spec names this Stage 12; this plan records it in the next available §28 subsection after the final stabilization checkpoint.
+
+This planning entry does **not** authorize source-code edits, UI/component work, tests, Supabase migrations, implementation branches, PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, new features, scoring/rating changes, broad refactoring, or Stage 12 execution.
+
+#### 28.38.1 Stage 12 Goal
+
+Stage 12 is a targeted bug-fix and stabilization stage for the unified Multiplayer system after `phase_id = 109`.
+
+The approved scope is limited to:
+
+1. **Practice Multiplayer Hard Mode enforcement**: Hard Mode is stored, shown, and copied into player sessions, but real gameplay reports indicate the canonical Hard Mode validation rules are not applied during guess submission.
+2. **Multiplayer turn propagation latency**: investigate and reduce the roughly five-second delay between one player submitting a turn and the rival seeing board, keyboard, and history updates.
+3. **Lobby creation/join latency**: investigate and improve creator-side entry and both-player state updates when lobbies are created or joined.
+4. **On-screen keyboard responsiveness and sound playback**: reduce key-tap latency and restore sound effects when Settings enables them.
+
+#### 28.38.2 Invariants and Boundaries
+
+Execution, if later authorized, must preserve:
+
+- Daily Multiplayer remains strictly asynchronous, five letters, UTC-day keyed, no time limits, no Hard Mode lobby controls, answer-separated, and claim-safe.
+- Practice Multiplayer remains the only owner of chess-clock time limits and Practice Hard Mode.
+- `playerSessions` plus `getMultiplayerSessionForPlayer` remain the canonical per-viewer board and validation model.
+- Shared `serializedSession` remains compatibility/answer plumbing only.
+- Existing stale-save protections, duplicate-safe create/join behavior, terminal result settlement, timed clock behavior, and scoring summaries must not be weakened.
+- No dedicated Multiplayer tab, spectator expansion, new feature work, scoring/rating/ELO changes, broad architecture rewrite, PR, merge, or release is in scope.
+
+#### 28.38.3 Recommended Investigation and Implementation Approach
+
+1. **Reproduce Hard Mode failure first** with real two-client Supabase-backed browser E2E: create a Hard Mode Practice Multiplayer lobby, submit a first guess with gray feedback, then attempt an invalid gray-letter reuse on the next turn.
+2. **Trace validation flow** through `submitMultiplayerGuess`, viewer `playerSessions`, `getMultiplayerSessionForPlayer`, and canonical Hard Mode validation helpers. Confirm `hardMode` survives repository projection, subscription updates, and browser refresh before fixing.
+3. **Measure responsiveness before changes** where practical: turn-submit-to-rival-render timing, lobby create-to-entry timing, join-to-both-clients-updated timing, and keyboard tap-to-tile-feedback timing.
+4. **Inspect repository and UI reconciliation paths** for unnecessary full projections, delayed `updatedAt` signals, expensive remounts/rerenders, clock/minor-field churn, and subscription updates that fight local input.
+5. **Inspect sound wiring** from Settings through `SoundProvider`/sound engine initialization and gameplay call sites for keyboard clicks, invalid guesses, tile flips, wins, and losses in solo and multiplayer.
+6. **Fix minimally and verify repeatedly**, preferring targeted changes that keep the unified Multiplayer architecture intact.
+
+#### 28.38.4 Suggested Work Slices
+
+If execution is later parallelized, keep edits narrow and sequenced:
+
+- **Hard Mode domain lane**: `src/multiplayer/multiplayer.ts`, canonical validation wiring, and focused multiplayer Hard Mode tests.
+- **Repository/latency lane**: `src/multiplayer/multiplayerRepository.ts`, stale-save/reconciliation timing, subscription projection behavior, and remote Supabase probes.
+- **UI responsiveness lane**: `src/multiplayer/MultiplayerGameSurface.tsx`, `src/multiplayer/MultiplayerPanel.tsx`, shared keyboard components, and component/browser checks.
+- **Sound lane**: sound provider/engine, Settings toggle wiring, and gameplay sound call sites.
+- **Coordinator lane**: `src/app/App.tsx`, high-conflict integration, progress/changelog/memory/agents updates, real two-client E2E, resource checks, and final verification.
+
+Keep `src/app/App.tsx`, `src/multiplayer/`, keyboard components, sound-related files, `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-*.md`, `agents.md`, and `memory.md` single-writer or explicitly sequenced.
+
+#### 28.38.5 Verification Expectations
+
+Execution, if later authorized, must include:
+
+- Real two-client Supabase-backed browser E2E for Practice Multiplayer Hard Mode before/after the fix, including invalid guess rejection and refresh/reconnect state preservation.
+- Real two-client timing observations for untimed and timed Practice turn propagation and lobby create/join responsiveness, with before/after notes when practical.
+- Focused automated regressions for multiplayer Hard Mode validation and any practical keyboard/sound fixes.
+- Full gate: `npm run lint`, `npm run test`, `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, and `git diff --check`.
+- Desktop, tablet-like, and 390px mobile smoke with no new console errors or horizontal overflow.
+- Resource check confirming no runaway processes.
+- Remote Supabase probes plus cleanup of temporary users/rows/claims created by verification.
+
+#### 28.38.6 Risks and Considerations
+
+- **Hard Mode correctness risk**: fixing enforcement must use the viewer's canonical session and must not make one player's session overwrite another player's validation state.
+- **Latency measurement risk**: browser/device/network timing may vary; record approximate observed timings and avoid claiming exact universal latency guarantees.
+- **Realtime tradeoff risk**: reducing perceived latency must not weaken durable save ordering, stale-save guards, or cross-client consistency.
+- **Keyboard responsiveness risk**: optimistic local feedback should not allow invalid committed guesses or corrupt server-backed state.
+- **Sound playback risk**: browser audio policies often require user activation; fixes should respect those constraints and avoid autoplay-like behavior.
+- **Resource risk**: Stage 12 should keep browser E2E conservative and avoid reintroducing the heavy memory pressure seen in earlier broad debugging work.
+
+#### 28.38.7 Gate
+
+This `phase_id = 110` planning step is complete when the governance/tracking surfaces are updated and the user receives a summary. Stage 12 implementation remains gated until the user explicitly authorizes execution in a later prompt. Do not edit `src/`, `api/`, or `supabase/`, run tests/builds/browser verification, create implementation branches, create a PR, merge, release, or begin deferred feature work in this planning pass.
+
+---
+
+### 28.39 Stage 12 Execution Kickoff — Protected State, Baseline Resources, and Reproduction Checklist (`phase_id = 111`)
+
+**Authorization status**: Stage 12 execution is explicitly authorized by the user. `PHASE-23-STAGE-12-MULTIPLAYER-HARD-MODE-ENFORCEMENT-AND-PERFORMANCE-FIXES-SPEC-2026-06-07.md` remains the binding source of truth.
+
+This kickoff checkpoint records the protected starting state before Stage 12 source edits:
+
+- Active branch: `codex/phase-23-stage-10`.
+- The worktree is intentionally dirty with verified Stage 8-10, final-stabilization, and Stage 12 planning changes. Do not reset, rebase, pull over, switch away from, or discard this state.
+- Existing restore point: backup branch `backup/phase-23-stage-10-final-2026-06-06` and Draft PR #18. Do not merge it without explicit later authorization.
+- No local app dev server was listening during the baseline server check.
+
+#### 28.39.1 Stage 12 Execution Checklist
+
+Execution proceeds with a reproduce-first workflow:
+
+1. Reproduce Practice Multiplayer Hard Mode non-enforcement with two isolated authenticated browser contexts against the configured Supabase project.
+2. Capture practical before-change timing observations for lobby creation, rival join, turn submission to rival render, and keyboard tap to visible feedback.
+3. Reproduce sound playback silence with Settings enabled, accounting for browser user-gesture audio policies.
+4. Fix Hard Mode enforcement first, then turn/lobby propagation latency, then keyboard responsiveness, then sound playback.
+5. Pair browser evidence with focused automated tests, remote Supabase probes, and cleanup.
+6. Run the full gate before handoff: `npm run lint`, `npm run test`, `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, `git diff --check`, responsive smoke, real two-client E2E, remote probes, resource snapshot, and Vercel preview/share URL.
+
+#### 28.39.2 Resource Baseline and Safety
+
+Baseline resource checks showed moderate load and compressed memory pressure but no current Stage 7-style multi-GB runaway app process:
+
+- `ps aux -m | head -25`: largest visible RSS entries included Codex renderer (~816 MB), VS Code helpers (~584 MB and ~428 MB), Codex app server (~403 MB), Codex main (~341 MB), Chrome renderer (~316 MB), Obsidian renderer (~306 MB), Finder (~295 MB), and Chrome main (~284 MB).
+- `top -l 1 -o mem | head -30`: load average about 3; physical memory about 17 GB used with about 619 MB unused and about 5.7 GB in compressor. Some unrelated desktop apps had large compressed footprints.
+- `vm_stat`: about 35,239 free 16 KB pages (~564 MB free), about 1.76M pages stored in compressor, and about 362k pages occupied by compressor.
+- Python processes around ~507 MB and ~459 MB were visible but not multi-GB runaways. Existing Node-related MCP/repl processes were small. No listening Vite/Next dev server was detected.
+
+Stage 12 browser testing should therefore remain conservative: one dev server, minimal browser contexts, sequential heavy gates, closed contexts after use, periodic process checks, and no unbounded scripts or large logs.
+
+#### 28.39.3 Scope Guard
+
+This execution checkpoint does not authorize any work outside the Stage 12 bug areas. Daily Multiplayer remains strictly asynchronous, five-letter, UTC-day keyed, no-clock, no-Hard-Mode-control, answer-separated, and claim-safe. Practice Multiplayer remains the only owner of chess-clock time limits and Practice Hard Mode. `playerSessions` remain canonical and player-owned for validation/mutation; shared projections may display submitted moves but must not overwrite another player's canonical session.
+
+No PR, merge, release, dedicated Multiplayer tab work, spectator expansion, new gameplay feature, scoring/rating/ELO change, broad refactor, or later-phase work is authorized.
+
+---
+
+### 28.40 Stage 12 Implementation Checkpoint — Hard Mode Enforcement, Responsiveness, Sound, and Row-Write Reduction (`phase_id = 112`)
+
+**Status**: first Stage 12 fix batch implemented; final verification remains pending.
+
+#### 28.40.1 Reproduction and Fixes
+
+Real two-client Supabase-backed browser E2E reproduced the core bug before source changes:
+
+- A Practice Multiplayer OG Hard Mode lobby was created with two isolated authenticated contexts.
+- Player one submitted a valid first guess that created shared Hard Mode constraints.
+- Player two then submitted a valid dictionary word that violated the shared Hard Mode constraint.
+- Before the fix, the invalid player-two guess was accepted, persisted as a second move, and written into player two's canonical session.
+
+The fix keeps `playerSessions` canonical and player-owned, but validates Practice Multiplayer Hard Mode guesses against the shared submitted move projection for the active puzzle before mutating the current player's session. This makes the shared board's Hard Mode constraints enforceable without copying player one guesses into player two's canonical session. Daily Multiplayer remains outside this validation path.
+
+After the fix, real two-client E2E confirmed the invalid follow-up guess was rejected, the durable move count stayed at one, `currentTurn` remained with player two, and player two's canonical session remained empty.
+
+#### 28.40.2 Additional Stage 12 Fixes
+
+This checkpoint also implements targeted responsiveness and sound fixes within the Stage 12 scope:
+
+- Multiplayer keyboard input now uses functional draft updates to reduce stale-closure latency during quick key taps.
+- Multiplayer sound hooks now play keyboard-click, invalid-guess, tile-flip, correct-guess, and terminal win/loss sounds from actual multiplayer input and persisted move/status changes.
+- The sound engine now requests `AudioContext.resume()` when a user-triggered sound finds the browser context suspended.
+- Rival attempt counts now derive from the shared displayed board instead of the viewer-only canonical session.
+- Supabase multiplayer repository saves now skip unchanged participant rows, reducing redundant writes and realtime events when only one visible game changed.
+
+#### 28.40.3 Verification So Far
+
+Focused automated verification passed:
+
+- `npm run test -- src/multiplayer/multiplayer.test.ts src/multiplayer/multiplayerRepository.test.ts src/multiplayer/MultiplayerGameSurface.test.tsx src/sound/soundEngine.test.ts`
+- Result: 4 files passed, 43 tests passed.
+
+Real two-client browser evidence so far:
+
+- Pre-fix Hard Mode violation accepted and persisted in a Practice Multiplayer Hard Mode game.
+- Post-fix Hard Mode violation rejected with visible Hard Mode feedback and no second move persisted.
+- Observed lobby join timings during reproduction were sub-second to roughly one second in the tested run; broader timing verification remains pending.
+
+#### 28.40.4 Remaining Stage 12 Work
+
+Before Stage 12 can be handed off, continue with:
+
+- Full real two-client E2E for untimed Practice, timed Practice, Practice Hard Mode refresh/reconnect, and Daily Multiplayer non-regression.
+- Remote Supabase probes and cleanup for temporary users/rows/claims.
+- Sound verification in a real browser with Settings enabled and browser audio policies respected.
+- Desktop/tablet/390px responsive smoke and resource snapshot.
+- Full gate: `npm run lint`, `npm run test`, `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, and `git diff --check`.
+- Vercel preview deployment/share URL.
+
+No PR, merge, release, dedicated Multiplayer tab work, spectator expansion, new gameplay feature, scoring/rating/ELO change, broad refactor, or out-of-scope feature work is authorized.
+
+### 28.41 Stage 12 Final Verification and Handoff (`phase_id = 113`)
+
+**Status**: completed and ready for user review. PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, new gameplay features, scoring/rating/ELO changes, broad refactoring, redesign, and later-phase work remain gated.
+
+#### 28.41.1 Bugs Fixed
+
+Stage 12 completed the targeted bug-fix scope from `PHASE-23-STAGE-12-MULTIPLAYER-HARD-MODE-ENFORCEMENT-AND-PERFORMANCE-FIXES-SPEC-2026-06-07.md`:
+
+- Practice Multiplayer Hard Mode is now enforced during actual gameplay. The fix validates submitted guesses against shared submitted moves for the active puzzle before mutating the current player's canonical `playerSessions` entry.
+- Multiplayer keyboard input uses functional draft updates so rapid key taps update the local row more promptly.
+- Multiplayer sound calls now cover keyboard clicks, invalid guesses, tile flips, correct guesses, and terminal win/loss transitions; the sound engine requests `AudioContext.resume()` for user-triggered playback when the browser context is suspended.
+- Rival attempt counts now derive from the shared displayed board so the opposing player sees the same submitted-move pressure.
+- Supabase multiplayer saves skip unchanged participant projections, reducing redundant writes and realtime churn without weakening stale-save protections.
+
+#### 28.41.2 Real Multiplayer and Supabase Verification
+
+Real two-client Supabase-backed browser E2E used isolated authenticated contexts and temporary users. Temporary rows, claims, and users were cleaned up after verification where applicable.
+
+Verified flows:
+
+- Practice Multiplayer Hard Mode: reproduced the pre-fix invalid alternating-turn guess acceptance, then confirmed the invalid guess is rejected after the fix; durable move count stays stable, `currentTurn` stays with the violating player, and the violating player's canonical session is not corrupted.
+- Untimed Practice Multiplayer: create/discover/join, key responsiveness, invalid rejection, valid turn submission, board/history/result visibility, sound calls, and durable row updates.
+- Timed Practice Multiplayer: 30-second Practice lobby, active-player-only turn handoff preservation, submitted turn durability, typed draft preservation during clock-only updates, and durable time-limit fields.
+- Daily Multiplayer non-regression: no Practice time controls, no Hard Mode controls, fixed five-letter Daily behavior, UTC date key, claim rows in `multiplayer_daily_claims`, and no clock/Hard Mode leakage.
+
+Representative measured observations from the verified runs:
+
+- Practice lobby creation was roughly 0.5 seconds in tested runs.
+- Rival join durable writes completed in roughly 0.25 to 0.3 seconds in tested runs.
+- A valid post-fix second-turn submission propagated and completed in roughly 0.7 seconds in the tested untimed run.
+- Key tap to local visual feedback was roughly 40 milliseconds in the tested browser run.
+
+These are practical test-run observations, not universal network guarantees.
+
+#### 28.41.3 Final Verification Gate
+
+Final verification passed:
+
+- `npm run lint`
+- `npm run test -- --maxWorkers=2` (466 tests passing)
+- `npm run build` (succeeds with the existing large-chunk advisory)
+- `npx tsc -p tsconfig.api.json --noEmit`
+- `git diff --check`
+- Focused Stage 12 tests for multiplayer domain/repository/surface and sound engine changes
+- Desktop, tablet-like, and 390px mobile smoke with no console/page errors and no horizontal overflow
+- Remote Supabase probes for durable multiplayer rows, participant IDs, moves, per-player sessions, Hard Mode fields, time-limit fields, Daily claim rows, and cleanup
+- Vercel preview deployment plus protected preview share URL verification
+
+Resource checks after browser testing did not show a Stage 7-style runaway app process, local Vite/Playwright/browser contexts from the verification run were closed, and no local dev server remained listening. The machine still showed general macOS memory pressure from long-lived GUI apps and compressed memory, so future browser E2E should continue the one-dev-server/minimal-context discipline.
+
+#### 28.41.4 Scope Guard
+
+Stage 12 did not create a PR, merge, release, implement the dedicated Multiplayer tab, expand spectator functionality, add notifications/bots/social features, change scoring/rating/ELO rules, redesign the app, or perform broad architecture work. Daily Multiplayer invariants remain strict: asynchronous, five-letter, UTC-day keyed, no-clock, no-Hard-Mode-control, answer-separated, and claim-safe.
+
+### 28.42 Stage 13 Planning — Practice Solo UX Bugs + Multiplayer GO Result Propagation Fix (`phase_id = 114`)
+
+**Authorization status**: planning and governance only. `PHASE-23-STAGE-13-PRACTICE-SOLO-AND-GO-MULTIPLAYER-BUGFIXES-SPEC-2026-06-07.md` is the dedicated Stage 13 source of truth.
+
+This planning entry does **not** authorize source-code edits, UI/component work, tests, Supabase migrations, implementation branches, PR creation, merge, release, dedicated Multiplayer tab work, spectator expansion, new features, scoring/rating changes, broad refactoring, or Stage 13 execution.
+
+#### 28.42.1 Stage 13 Goal
+
+Stage 13 is a targeted, three-bug stabilization stage after `phase_id = 113`. It exists to fix two Practice solo UX regressions and one Multiplayer GO result-propagation issue while preserving all Stage 12 improvements.
+
+The approved bug scope is limited to:
+
+1. **Practice solo submitted-row animation regression**: in Practice OG and Practice GO, on-screen keyboard input causes already-submitted guess rows to replay flip/reveal animations. Daily Solo does not exhibit this bug and must remain untouched.
+2. **Practice solo missing results screen**: after a Practice solo win or loss, the app immediately starts a new puzzle instead of showing the normal post-game results panel with answer, definitions, share, stats, and review affordances.
+3. **Multiplayer GO solved-puzzle propagation**: when one player solves a GO puzzle, both players should briefly see the all-green solved row, then advance together to the next puzzle or final definitions. The solver must not skip the solved row, and the rival must not become stuck waiting to submit the already-solved answer.
+
+#### 28.42.2 Invariants and Boundaries
+
+Execution, if later authorized, must preserve:
+
+- Daily Multiplayer remains strictly asynchronous, fixed at five letters, UTC-day keyed, no-clock, no-Hard-Mode-control, answer-separated, and claim-safe.
+- Practice Multiplayer remains the only multiplayer mode with time-limit and Hard Mode lobby settings.
+- `playerSessions` plus `getMultiplayerSessionForPlayer` remain canonical for viewer state.
+- Stage 12 Hard Mode enforcement, keyboard responsiveness, sound playback, rival attempt-count projection, stale-save protections, timed Practice clock behavior, scoring/result settlement, and unchanged-projection save skipping must remain working.
+- Daily Solo keyboard animation and post-game behavior must not be altered.
+- No dedicated Multiplayer tab, spectator expansion, new gameplay feature, scoring/rating/ELO change, broad refactoring, redesign, PR, merge, release, or later-phase work is in scope.
+
+#### 28.42.3 Required Execution Discipline
+
+Stage 13 execution must follow the spec's small-change discipline:
+
+1. Make one focused fix, or one tightly related group of small fixes, at a time.
+2. Run the relevant focused verification subset before moving to the next bug.
+3. Reproduce Bug 1 before fixing it, using a browser or component-level route that can observe the repeated animation behavior.
+4. Reproduce Bug 3 before fixing it with real two-client Supabase-backed browser E2E.
+5. Verify after every significant change that Stage 12 Hard Mode enforcement, keyboard responsiveness, and sound effects have not regressed.
+6. Avoid broad rewrites; prefer minimal changes aligned with Daily Solo's working pattern and the existing unified Multiplayer model.
+
+#### 28.42.4 Suggested Work Slices
+
+If execution is later parallelized, keep high-conflict files single-writer or explicitly sequenced:
+
+- **Practice solo post-game lane**: inspect `src/app/games/OgGame.tsx`, `src/app/games/GoGame.tsx`, solo session creation/resume helpers, and any Practice play-again/new-game handling. Goal: stop auto-starting a new Practice puzzle before results are shown.
+- **Practice solo animation lane**: inspect shared board/tile animation props, solo keyboard handling, and Daily-vs-Practice render keys. Goal: make submitted Practice rows animate once on submission, not on every later key press.
+- **Multiplayer GO propagation lane**: inspect `src/multiplayer/multiplayer.ts`, `src/multiplayer/MultiplayerGameSurface.tsx`, GO puzzle index/session projection, result transition timing, and tests. Goal: both players briefly see the solved row and advance together.
+- **Verification lane**: focused unit/component tests, Practice solo browser smoke, real two-client Supabase E2E for Multiplayer GO, Daily/Stage-12 regression checks, responsive smoke, resource observation, and final Vercel preview.
+- **Coordinator lane**: owns `src/app/App.tsx` if needed, all high-conflict governance/progress surfaces, final integration verification, and user handoff.
+
+Likely high-conflict surfaces include `src/app/games/`, `src/game/`, `src/game/go/`, shared keyboard/board UI, `src/multiplayer/`, `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-*.md`, `agents.md`, and `memory.md`.
+
+#### 28.42.5 Verification Expectations
+
+Stage 13 execution, if later authorized, must include:
+
+- Practice Solo focused verification for OG and GO: submitted rows do not re-flip on later on-screen keyboard input, results are shown after win/loss, and Play Again/New Game works only after the results view.
+- Multiplayer GO real two-client Supabase-backed browser E2E for first-four-puzzle and final-puzzle solved-row propagation where practical.
+- Practice Multiplayer untimed and timed non-regression, including Stage 12 Hard Mode enforcement, keyboard responsiveness, and sound playback.
+- Daily Solo non-regression for keyboard animation and post-game results behavior.
+- Daily Multiplayer invariant check: no clocks, no Hard Mode controls, five-letter UTC-day claim-safe behavior.
+- Full automated gate before handoff: `npm run lint`, `npm run test`, `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, and `git diff --check`.
+- Desktop, tablet-like, and 390px mobile smoke with no new console errors or layout regressions.
+- Resource sanity check confirming no runaway processes or significant new memory pressure.
+- Vercel preview demonstrating the fixes.
+
+#### 28.42.6 Risks and Considerations
+
+- **Animation key risk**: a naive key/render fix could suppress the initial reveal animation or affect Daily Solo, which currently works. Compare Practice to Daily before changing shared components.
+- **Practice post-game risk**: blocking auto-start must not break explicit Play Again/New Game flows or stored Daily/resume behavior.
+- **GO transition risk**: Multiplayer GO needs a coordinated solved-row delay without corrupting each player's canonical `playerSessions`, timing clocks, scoring, or final definitions transition.
+- **Realtime risk**: cross-client GO advancement must not depend on one client manually submitting the already-solved answer, but it also must not introduce stale-save races or double-advance.
+- **Stage 12 regression risk**: keyboard, sound, Hard Mode, row-write reduction, and timed Practice fixes are recent and must be actively rechecked.
+
+#### 28.42.7 Gate
+
+This `phase_id = 114` planning step is complete when governance/tracking surfaces are updated and the user receives a summary. Stage 13 implementation remains gated until the user explicitly authorizes execution in a later prompt. Do not edit `src/`, `api/`, or `supabase/`, run migrations/tests/builds/browser verification, create implementation branches, create a PR, merge, release, or begin out-of-scope feature work in this planning pass.
+
+### 28.43 Stage 13 Execution Kickoff — Protected State, Baseline Resources, and Verification Checklist (`phase_id = 115`)
+
+**Authorization status**: Stage 13 execution is explicitly authorized by the user. `PHASE-23-STAGE-13-PRACTICE-SOLO-AND-GO-MULTIPLAYER-BUGFIXES-SPEC-2026-06-07.md` remains the binding source of truth.
+
+This kickoff checkpoint records the protected starting state before Stage 13 source edits:
+
+- Active branch: `codex/phase-23-stage-10`.
+- The worktree is intentionally dirty with verified Stage 8-10, final-stabilization, Stage 12, and Stage 13 planning changes. Do not reset, rebase, pull over, switch away from, or discard this state.
+- No local app dev server was detected on the process/listener check.
+- Existing post-Stage-10 restore point remains Draft PR #18 / `backup/phase-23-stage-10-final-2026-06-06`; do not merge it without explicit later authorization.
+
+#### 28.43.1 Stage 13 Execution Checklist
+
+Execution proceeds with one focused change at a time:
+
+1. Investigate Practice solo post-game flow and write a failing focused test before fixing Bug 2.
+2. Reproduce Bug 1 before fixing: Practice OG/GO submitted rows should not replay flip/reveal animations when later keyboard input changes the current row.
+3. Fix Bug 1 with focused tests and Practice solo browser smoke while preserving Daily Solo behavior.
+4. Reproduce Bug 3 with real two-client Supabase-backed browser E2E: Multiplayer GO solved row must briefly appear for both players, then both clients advance together.
+5. Fix Bug 3 with focused tests and real two-client E2E, then recheck Practice Multiplayer Stage 12 Hard Mode, keyboard responsiveness, sound, timed/untimed flows, and Daily Multiplayer invariants.
+6. Run the final gate before handoff: `npm run lint`, `npm run test`, `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, `git diff --check`, desktop/tablet/390px smoke, resource snapshot, and Vercel preview/share URL.
+
+#### 28.43.2 Baseline Resource Snapshot
+
+Baseline resource checks before source edits showed general desktop memory pressure but no Stage 7-style app runaway:
+
+- `ps aux -m | head -25`: largest visible RSS entries included Codex renderer (~697 MB), Codex main (~498 MB), VS Code plugin helpers (~416 MB and ~390 MB), Finder (~275 MB), Chrome main (~260 MB), and Chrome renderers (~227 MB to ~195 MB).
+- `top -l 1 -o mem | head -30`: load average about 3.25; physical memory about 16 GB used, about 1.2 GB unused, and about 6.4 GB in compressor. Long-lived unrelated GUI/Python processes remain visible.
+- `vm_stat`: about 72,496 free 16 KB pages (~1.1 GB free), about 1.83M pages stored in compressor, and about 414k pages occupied by compressor.
+- Listener check showed unrelated Python/Jupyter listeners but no local Vite/Next app dev server started by this pass.
+
+Stage 13 browser testing should therefore continue the resource-safety discipline: one dev server, minimal browser contexts, sequential heavy gates, closed contexts after use, and no unbounded scripts or large logs.
+
+#### 28.43.3 Scope Guard
+
+This execution checkpoint does not authorize any work outside the three Stage 13 bugs. Daily Multiplayer remains strictly asynchronous, five-letter, UTC-day keyed, no-clock, no-Hard-Mode-control, answer-separated, and claim-safe. Daily Solo working behavior must not be changed. Stage 12 Hard Mode enforcement, keyboard responsiveness, sound playback, stale-save protections, timed Practice behavior, and unchanged-projection save skipping must remain working.
+
+No PR, merge, release, dedicated Multiplayer tab work, spectator expansion, new gameplay feature, scoring/rating/ELO change, broad refactor, redesign, or later-phase work is authorized.
+
+### 28.44 Stage 13 First Fix Checkpoint — Practice Solo Results and Submitted-Row Animation (`phase_id = 116`)
+
+**Authorization status**: Stage 13 execution remains authorized and scoped to the three-bug spec. This checkpoint completes the Practice solo fix batch; Multiplayer GO solved-puzzle propagation remains pending.
+
+#### 28.44.1 Root Cause and Fix
+
+Practice OG/GO were using the current `initialResume` prop directly in the Practice session key. Because the app writes a Practice resume capture on every input, the parent passed each live capture back as a new `initialResume`; this changed the keyed `OgGameSession` / `GoGameSession` child repeatedly.
+
+That remount caused both reported Practice solo regressions:
+
+- Already-submitted rows re-ran reveal animations when later key input updated the resume slot and remounted the board.
+- On completion, `recordCompletedGame` cleared the resume slot, which removed the resume key suffix and remounted a fresh Practice puzzle before the post-game result UI could remain visible.
+
+The fix is intentionally small: `OgGame` and `GoGame` now capture the incoming Practice resume slot once at component mount and treat it as a one-shot restore source. Live resume captures from the active session continue to persist for resume support, but they no longer drive the active game key or remount the board/result surface.
+
+#### 28.44.2 Focused Verification
+
+Focused verification completed before moving to Multiplayer GO:
+
+- Pre-fix Practice OG browser reproduction: after submitting `CRANE`, a later key press triggered 5 `animationstart` events on Row 1, confirming the already-submitted row replayed reveal animations.
+- Pre-fix Practice OG completion reproduction: solving the current Practice answer dropped the view back to a fresh `playing` puzzle with no share/result UI.
+- Post-fix Practice OG browser check: the same later key press triggered 0 Row 1 `animationstart` events.
+- Post-fix Practice OG completion check: solving the answer kept the result/share state visible.
+- Post-fix Practice GO browser check: submitted rows did not re-animate on later key input.
+- Post-fix Practice GO completion check: solving the full five-puzzle chain kept the won result state visible with GO share and solved definitions.
+- Focused automated check: `npm run test -- src/app/games/soloHardModeDefaults.test.tsx` passed (2 tests).
+
+#### 28.44.3 Remaining Stage 13 Work
+
+Continue with the required Bug 3 lane:
+
+- Reproduce Multiplayer GO solved-puzzle propagation with real two-client Supabase-backed browser E2E before source changes.
+- Verify the solver and rival both see the all-green solved row, then advance together after the intended brief delay.
+- Preserve Stage 12 Hard Mode enforcement, keyboard responsiveness, sound playback, timed Practice behavior, Daily Solo behavior, and Daily Multiplayer invariants.
+
+No PR, merge, release, dedicated Multiplayer tab work, spectator expansion, new feature, scoring/rating change, broad refactor, redesign, or out-of-scope work was performed in this checkpoint.
+
+### 28.45 Stage 13 Final Fix and Verification — Multiplayer GO Result Propagation (`phase_id = 117`)
+
+**Authorization status**: Stage 13 execution remains scoped to `PHASE-23-STAGE-13-PRACTICE-SOLO-AND-GO-MULTIPLAYER-BUGFIXES-SPEC-2026-06-07.md`. This checkpoint completes the remaining Multiplayer GO bug and the final Stage 13 handoff.
+
+#### 28.45.1 Root Cause and Fix
+
+The GO multiplayer issue had two layers:
+
+- The domain layer only advanced the submitting player's canonical GO `playerSessions` entry after a solved puzzle, leaving the rival's canonical session on the previous puzzle.
+- Once both sessions were synchronized, the UI needed a short presentation hold so both players could see the all-green solved row before advancing to the next puzzle or final definitions.
+
+The fix keeps `playerSessions` canonical while applying a solved GO answer to both players' canonical sessions only when they are still on that same puzzle and the answer matches. Non-solving guesses remain player-owned. The game surface now derives a brief solved-GO transition from the latest all-correct move, displays that solved puzzle/row for roughly two seconds, disables input during the hold, then resumes the canonical current puzzle. Terminal GO games are held in the play surface briefly before the final definitions panel appears.
+
+#### 28.45.2 Verification
+
+Focused verification:
+
+- `npm run test -- src/multiplayer/multiplayer.test.ts -t "go sessions"` passed for first-puzzle advancement and final-puzzle completion across both player sessions.
+- `npm run test -- src/multiplayer/MultiplayerGameSurface.test.tsx -t "solved go"` passed for rival solved-row display.
+- `npm run test -- src/multiplayer/MultiplayerPanel.test.tsx -t "completed go surface"` passed for the terminal GO hold before definitions.
+- `npm run test -- src/app/games/soloHardModeDefaults.test.tsx src/multiplayer/multiplayer.test.ts src/multiplayer/MultiplayerGameSurface.test.tsx src/multiplayer/MultiplayerPanel.test.tsx src/sound/soundEngine.test.ts` passed (47 tests).
+
+Full verification:
+
+- `npm run lint` passed with no output.
+- `npm run test` passed (71 files, 470 tests).
+- `npm run build` passed with the existing large-chunk advisory.
+- `npx tsc -p tsconfig.api.json --noEmit` passed.
+- `git diff --check` passed.
+- Desktop, tablet-like, and 390px-class browser smoke passed with no console errors and no horizontal overflow.
+- Playwright browser sessions were closed after smoke.
+
+Real-browser Supabase note: Stage 13 browser attempts used temporary authenticated accounts through the actual sign-in modal, but host-created Practice GO lobbies did not persist to the remote row within the polling window in this harness. Temporary accounts were cleaned up. Because that persistence path could not be made reliable without expanding the scope, this checkpoint records the limitation and relies on focused domain/component regression tests plus documented browser/cleanup attempts rather than claiming a fully clean create/join/submit browser save path for Bug 3.
+
+#### 28.45.3 Scope Guard
+
+Stage 13 stayed inside the three approved bugs. Daily Multiplayer remains strictly asynchronous, five-letter, UTC-day keyed, no-clock, no-Hard-Mode-control, answer-separated, and claim-safe. Stage 12 Hard Mode enforcement, keyboard responsiveness, sound playback, timed Practice behavior, stale-save protections, and scoring rules were not intentionally changed.
+
+No PR, merge, release, dedicated Multiplayer tab work, spectator expansion, new feature, scoring/rating change, broad refactor, redesign, or out-of-scope work was performed.
+
+### 28.46 Stage 14 Planning — Post-Stage-13 Polish, Bug Fixes, and Multiplayer Tab Foundations (`phase_id = 118`)
+
+**Authorization status**: planning and governance only. `PHASE-23-STAGE-14-POST-STAGE-13-POLISH-AND-MULTIPLAYER-EXPANSION-FOUNDATIONS-SPEC-2026-06-07.md` is the binding Stage 14 source of truth.
+
+This planning entry does **not** authorize source-code edits, UI/component work, tests, Supabase migrations, configuration changes, implementation branches, PR creation, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, new gameplay features, scoring/rating changes, broad refactoring, redesign, or Stage 14 execution.
+
+#### 28.46.1 Stage 14 Goal
+
+Stage 14 is a targeted polish, stabilization, and foundations stage after Stage 13. Its purpose is to address approved small post-Stage-13 bugs or UX friction, preserve all Stage 12 and Stage 13 wins, and prepare safe groundwork for a future dedicated Multiplayer tab without replacing the existing Calendar and Practice multiplayer entry points.
+
+The planned scope is limited to:
+
+1. **Bug fixes and polish**: small post-Stage-13 regressions or UX friction documented before execution begins, including minor keyboard, focus, or animation polish in solo and multiplayer surfaces where needed.
+2. **Multiplayer tab foundations**: design/document the intended future Multiplayer navigation structure and, if execution is later authorized, add only minimal non-breaking scaffolding such as types, a route placeholder, or a basic shell.
+3. **Spectator foundation hardening**: review and lightly harden existing spectator read-only behavior and related RLS/tests where low-risk, without adding new spectator features or permissions.
+4. **Verification and documentation**: preserve Stage 12/13 regression coverage and update plan, changelog, agents, memory, and progress surfaces.
+
+#### 28.46.2 Invariants and Boundaries
+
+Stage 14 execution, if later authorized, must preserve:
+
+- Daily Multiplayer remains strictly asynchronous, fixed at five letters, UTC-day keyed, no-clock, no-Hard-Mode-control, answer-separated, and claim-safe.
+- Practice Multiplayer remains the only multiplayer surface with chess-clock time limits and Hard Mode lobby settings.
+- `playerSessions` plus `getMultiplayerSessionForPlayer` remain canonical for viewer state and validation.
+- Shared move projection may display submitted moves, but must not overwrite another player's canonical session.
+- Stage 12 Hard Mode enforcement, keyboard responsiveness, sound playback, row-write reduction, stale-save protections, timed Practice clock behavior, and scoring/result settlement remain working.
+- Stage 13 Practice solo one-shot resume behavior, submitted-row animation stability, post-game results visibility, and Multiplayer GO solved-row hold/advance behavior remain working.
+- Daily Solo behavior remains unchanged except for preserving existing correctness.
+
+Explicitly out of scope:
+
+- Full dedicated Multiplayer tab UI/navigation replacement.
+- Spectator feature expansion or permission expansion.
+- Notifications, floating game manager, bots, social features, History/Theme/export/GIF work, new gameplay features, scoring/rating/ELO changes, broad refactoring, redesign, PR creation, merge, or release.
+
+#### 28.46.3 Required Execution Discipline
+
+Stage 14 execution must continue the recent small-change workflow:
+
+1. Start with any specific post-Stage-13 bug reports provided by the user.
+2. Make one focused change, or one tightly related small group of changes, at a time.
+3. Run focused verification for that change before moving on.
+4. Use real two-client Supabase-backed browser E2E for any multiplayer-affected behavior claims.
+5. Keep resource usage cautious: one dev server, minimal browser contexts, sequential heavy gates, closed contexts after use, and no unbounded scripts or large logs.
+6. Avoid replacing Calendar/Practice entry points; future Multiplayer tab scaffolding must be additive and inert unless explicitly activated by a later authorized stage.
+
+#### 28.46.4 Suggested Work Slices
+
+If execution is later parallelized, keep high-conflict files single-writer or explicitly sequenced:
+
+- **Post-Stage-13 polish lane**: inspect user-reported friction, Practice solo, Daily Solo, shared keyboard/board behavior, focus states, animation stability, and sound/feedback non-regression.
+- **Multiplayer foundations lane**: plan and implement only additive scaffolding for a future Multiplayer tab, likely around route metadata, route placeholder decisions, and a basic panel shell that does not replace current flows.
+- **Spectator hardening lane**: review existing spectator/RLS/read-only assumptions and add focused tests or documentation only where they reduce risk without expanding capability.
+- **Regression verification lane**: Stage 12 Hard Mode/sound/keyboard checks, Stage 13 Practice solo/GO propagation checks, Daily Multiplayer invariant checks, responsive smoke, resource observation, and Vercel preview if execution is later authorized.
+- **Coordinator lane**: owns `src/app/App.tsx` if touched, `src/multiplayer/` integration sequencing, and all governance/progress surfaces.
+
+Likely high-conflict surfaces include `src/app/App.tsx`, `src/app/games/`, `src/game/`, shared board/keyboard UI, `src/multiplayer/`, `src/calendar/`, Supabase/RLS docs or migrations if explicitly authorized later, `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-*.md`, `agents.md`, and `memory.md`.
+
+#### 28.46.5 Verification Expectations
+
+Stage 14 execution, if later authorized, must include:
+
+- Focused verification immediately after each scoped bug fix or polish change.
+- Regression checks for Stage 12 Hard Mode enforcement, keyboard responsiveness, sound effects, row-write reduction, timed Practice behavior, and stale-save protections.
+- Regression checks for Stage 13 Practice solo submitted-row animation, Practice solo results visibility, and Multiplayer GO solved-row hold/advance behavior.
+- Daily Multiplayer invariant checks: no clocks, no Hard Mode controls, fixed five-letter games, UTC-day keyed claim safety, and existing Calendar/archive behavior.
+- Real two-client Supabase-backed browser E2E for any multiplayer-affected changes, paired with remote Supabase probes and cleanup where relevant.
+- Full automated gate before handoff: `npm run lint`, `npm run test`, `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, and `git diff --check`.
+- Desktop, tablet-like, and 390px mobile smoke with no new console errors, no horizontal overflow, and resource sanity checks.
+- Vercel preview demonstrating the final Stage 14 state.
+
+#### 28.46.6 Risks and Considerations
+
+- **Navigation risk**: even placeholder Multiplayer tab work can collide with existing Calendar/Practice entry points if it becomes active too early. Keep scaffolding additive and non-replacing.
+- **Regression risk**: keyboard, animation, sound, Practice resume, and GO transition behavior were recently fixed; compare against Stage 12/13 evidence before changing shared surfaces.
+- **Spectator risk**: hardening should reduce mutation risk without introducing new spectator UX or permissions.
+- **Scope risk**: Stage 14 is not the full dedicated Multiplayer tab implementation. Execution should not drift into new feature work unless the user explicitly expands scope.
+- **Resource risk**: real two-client E2E remains necessary for multiplayer claims, but should be run with the established one-dev-server/minimal-context discipline.
+
+#### 28.46.7 Gate
+
+This `phase_id = 118` planning step is complete when governance/tracking surfaces are updated and the user receives a summary. Stage 14 implementation remains gated until the user explicitly authorizes execution in a later prompt. Do not edit `src/`, `api/`, or `supabase/`, run migrations/tests/builds/browser verification, create implementation branches, create a PR, merge, release, or begin out-of-scope feature work in this planning pass.
+
+### 28.47 Stage 14 Execution Kickoff — Protected State, Baseline Resources, and Work Checklist (`phase_id = 119`)
+
+**Authorization status**: Stage 14 execution is explicitly authorized by the user. `PHASE-23-STAGE-14-POST-STAGE-13-POLISH-AND-MULTIPLAYER-EXPANSION-FOUNDATIONS-SPEC-2026-06-07.md` remains the binding source of truth.
+
+This kickoff checkpoint records the protected starting state before Stage 14 source edits:
+
+- Active branch: `codex/phase-23-stage-10`.
+- The worktree is intentionally dirty with verified Stage 8-10, final-stabilization, Stage 12, Stage 13, and Stage 14 planning changes. Do not reset, rebase, pull over, switch away from, or discard this state.
+- No local app dev server was detected on the listener check.
+- A single unrelated Python listener was visible on `127.0.0.1:8765`.
+- Existing post-Stage-10 restore point remains Draft PR #18 / `backup/phase-23-stage-10-final-2026-06-06`; do not merge it without explicit later authorization.
+
+#### 28.47.1 Stage 14 Execution Checklist
+
+No additional post-Stage-13 user-reported bug list was supplied in the execution prompt. Stage 14 therefore proceeds as a bounded polish/foundations pass inside the approved scope:
+
+1. Run a scoped read-only audit of post-Stage-13 Practice solo, multiplayer surface consistency, existing route metadata, and spectator/RLS surfaces.
+2. Fix only clear, reproducible, small polish issues found within the Stage 14 scope.
+3. Add minimal, non-breaking Multiplayer tab foundations without replacing Calendar or Practice multiplayer entry points.
+4. Lightly harden spectator foundations where low-risk and verifiable without expanding spectator features or permissions.
+5. After each logical source change, run focused verification for the changed area before moving on.
+6. Finish with the full Stage 14 gate: lint, full tests, build, API typecheck, diff check, focused tests, responsive smoke, real two-client Supabase E2E for multiplayer-affected changes, remote Supabase probes/cleanup where relevant, resource snapshot, and Vercel preview/share URL.
+
+#### 28.47.2 Baseline Resource Snapshot
+
+Baseline resource checks before source edits showed notable compressed-memory pressure but no Stage 7-style app runaway:
+
+- `ps aux -m | head -25`: largest visible RSS entries included VS Code plugin helper (~628 MB), Codex renderers (~449 MB and ~249 MB), Chrome main/renderer processes (~316 MB and ~297 MB), Codex main (~220 MB), Finder (~152 MB in RSS output), and other long-lived GUI processes.
+- `top -l 1 -o mem | head -30`: load average about 2.68; physical memory about 17 GB used, about 255 MB unused, and about 7.2 GB in compressor. Obsidian and Finder had high compressed-memory footprints in the `top` view.
+- `vm_stat`: about 10,217 free 16 KB pages (~160 MB free), about 1.75M pages stored in compressor, and about 462k pages occupied by compressor.
+- Listener check showed no local Vite/Next app dev server. One unrelated Python listener was present on `127.0.0.1:8765`.
+- `npx` is available at `/opt/homebrew/bin/npx` for Playwright/Vercel/npm workflows.
+
+Stage 14 browser and verification work should use one dev server, minimal browser contexts, sequential heavy gates, closed contexts after use, and periodic process/memory checks.
+
+#### 28.47.3 Scope Guard
+
+Stage 14 execution remains limited to approved polish/foundations work. Daily Multiplayer remains strictly asynchronous, five-letter, UTC-day keyed, no-clock, no-Hard-Mode-control, answer-separated, and claim-safe. Stage 12 and Stage 13 wins must remain protected.
+
+No PR, merge, release, full dedicated Multiplayer tab implementation, spectator feature expansion, notification system, floating manager, bots/social features, export/GIF work, scoring/rating/ELO change, broad refactor, redesign, or out-of-scope work is authorized.
+
+### 28.48 Stage 14 First Implementation Checkpoint — Minimal Multiplayer Foundations and Spectator-Adjacent Hardening (`phase_id = 120`)
+
+**Authorization status**: Stage 14 execution remains authorized and scoped by `PHASE-23-STAGE-14-POST-STAGE-13-POLISH-AND-MULTIPLAYER-EXPANSION-FOUNDATIONS-SPEC-2026-06-07.md`.
+
+This checkpoint completed the first small implementation batch:
+
+- Added hidden `multiplayer` route metadata and a basic `MultiplayerFoundationPanel` shell for future dedicated Multiplayer tab work.
+- Kept the hidden `multiplayer` route out of `getPrimaryNavigationRoutes` and out of Home mode cards, so Calendar and Practice remain the only active entry points for Daily and Practice Multiplayer.
+- Added a route/eyebrow guard so a future or persisted hidden Multiplayer route renders coherent shell metadata without becoming visible in primary navigation.
+- Hardened the active `MultiplayerPanel` so an authenticated nonparticipant observer cannot mount the live gameplay surface for another users' playing match.
+- Added repository coverage confirming the unified Supabase multiplayer adapter writes only through `async_multiplayer_games` and does not touch legacy `live_*` / `live_match_spectators` tables.
+- Clarified `docs/supabase.md` that legacy Live spectator schema is compatibility-only in the active Stage 14 app and that future spectator permission/UI work requires separate specification.
+
+Focused verification passed:
+
+- `npm run test -- src/app/routes.test.ts src/multiplayer/MultiplayerFoundationPanel.test.tsx`
+- `npm run test -- src/calendar/CalendarPanel.test.tsx src/multiplayer/MultiplayerPanel.test.tsx`
+- `npm run test -- src/multiplayer/MultiplayerPanel.test.tsx src/multiplayer/multiplayerRepository.test.ts`
+- `npm run test -- src/app/routes.test.ts src/multiplayer/MultiplayerFoundationPanel.test.tsx src/multiplayer/MultiplayerPanel.test.tsx src/multiplayer/multiplayerRepository.test.ts src/calendar/CalendarPanel.test.tsx` (5 files, 27 tests)
+
+The Stage 14 full gate remains pending: lint, full test suite, build, API typecheck, diff check, responsive smoke, real two-client Supabase verification where relevant, remote Supabase probes/cleanup where relevant, final resource snapshot, and Vercel preview/share URL.
+
+No PR, merge, release, full dedicated Multiplayer tab implementation, spectator feature expansion, notification system, floating manager, bots/social features, export/GIF work, scoring/rating/ELO change, broad refactor, redesign, or out-of-scope work was performed.
+
+### 28.49 Stage 14 Final Verification and Handoff (`phase_id = 121`)
+
+**Authorization status**: Stage 14 execution is complete and ready for user review. Any PR creation, merge, release, full dedicated Multiplayer tab implementation, spectator feature expansion, notification system, floating manager, bots/social/export work, scoring/rating/ELO change, broad refactor, redesign, or later-phase work remains gated until later explicit approval.
+
+Stage 14 stayed inside the approved polish/foundations scope:
+
+- Added hidden/inert `multiplayer` route metadata and `MultiplayerFoundationPanel` shell only; no primary navigation tab was added.
+- Preserved Calendar as the Daily Multiplayer entry point and Practice as the Practice Multiplayer entry point.
+- Hardened `MultiplayerPanel` so authenticated nonparticipants cannot mount another active match's gameplay surface.
+- Confirmed the active unified Supabase multiplayer adapter writes through `async_multiplayer_games`; legacy `live_*` and `live_match_spectators` artifacts remain compatibility schema only in the active Stage 14 app.
+- Kept Stage 12 and Stage 13 behavior intact; no Daily Multiplayer invariant was intentionally changed.
+
+Final verification passed:
+
+- Focused changed-area tests: route/foundation shell, Calendar/Multiplayer panels, repository table usage, and combined changed-area pass (5 files, 27 tests).
+- Full automated gate: `npm run lint`, `npm run test` (72 files, 472 tests), `npm run build` (existing large-chunk advisory only), `npx tsc -p tsconfig.api.json --noEmit`, and `git diff --check`.
+- Responsive smoke: desktop, tablet-like, and 390px mobile viewports passed with no new console errors and no horizontal overflow.
+- Real Supabase-backed browser E2E: isolated host/rival/observer authenticated contexts verified Practice Multiplayer create/join, nonparticipant gameplay guard, durable turn propagation, both-player board visibility, and Daily no-Practice-controls non-regression.
+- Remote Supabase probe: confirmed the temporary Practice row used `async_multiplayer_games`, had host/rival participants, did not include the observer as a participant, had one submitted move, and contained two `playerSessions`; temporary Stage 14 users and the touched row were cleaned up.
+- Resource check: final process snapshots showed no Stage 14 runaway app process; the local dev server was stopped after verification.
+- Preview: Vercel preview deployed successfully. The direct preview is deployment-protected, so a protected share URL was generated and verified with HTTP 200 for final user review; the tokenized share URL is intentionally not committed to repository docs.
+
+### 28.50 Stage 15 Planning — GO Transition Polish and Practice Seed Per-Account Randomization (`phase_id = 122`)
+
+**Authorization status**: planning and governance only. `PHASE-23-STAGE-15-GO-TRANSITION-AND-PRACTICE-SEED-FIXES-SPEC-2026-06-08.md` is the binding Stage 15 source of truth.
+
+This planning step does **not** authorize source-code edits, test changes, UI/component work, Supabase migrations, configuration changes, implementation branches, PR creation, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, deferred feature work, scoring/rating changes, broad refactoring, redesign, or Stage 15 execution.
+
+#### 28.50.1 Stage 15 Goal
+
+Stage 15 is a narrow targeted bug-fix stage with exactly two scoped issues:
+
+1. **GO transition regression**: during the brief all-green solved-row hold, previously completed puzzles in the GO chain must remain visible and stable instead of disappearing or resetting.
+2. **Practice seed predictability**: authenticated Practice OG and Practice GO puzzle sequences must become per-account so distinct accounts do not receive the same Practice sequence; Daily OG/GO must remain globally deterministic for the same UTC day.
+
+#### 28.50.2 Scope And Invariants
+
+Stage 15 execution, if later authorized, must preserve:
+
+- Stage 12 wins: Practice Multiplayer Hard Mode enforcement, keyboard responsiveness, sound playback, row-write reduction, stale-save protections, timed Practice behavior, and scoring/result settlement.
+- Stage 13 wins: Practice solo one-shot resume behavior, submitted-row animation stability, post-game results visibility, Multiplayer GO solved-row hold, and coordinated advancement for both players.
+- Stage 14 wins: hidden/inert Multiplayer foundations, Calendar and Practice as active multiplayer entry points, nonparticipant gameplay guard, and the unified `async_multiplayer_games` path.
+- Daily Multiplayer as strictly asynchronous, five letters, UTC-day keyed, no-clock, no-Hard-Mode-control, answer-separated, and claim-safe.
+- `playerSessions` as canonical for per-viewer multiplayer validation/mutation and shared `serializedSession` as compatibility/answer plumbing only.
+- Daily OG/GO puzzle selection as globally deterministic and unaffected by authenticated Practice seed changes.
+
+Stage 15 must not introduce a Practice overhaul, Daily behavior changes, GO timing/animation-feel changes beyond the direct visual-regression fix, spectator expansion, notifications, floating manager, bots/social/export work, History/Theme tabs, scoring/rating/ELO changes, full dedicated Multiplayer tab work, PR creation, merge, release, or production deployment.
+
+#### 28.50.3 Recommended Execution Sequence
+
+If execution is later authorized, use the small-change-then-verify workflow:
+
+1. Protect the current dirty worktree and capture a lightweight resource baseline before browser work.
+2. Reproduce the GO transition bug first, including Multiplayer GO if possible and solo GO if the same root cause is visible.
+3. Add focused regression coverage for prior-puzzle visibility during the solved-row hold.
+4. Make the smallest GO transition fix, verify focused tests, then run a targeted browser check.
+5. Reproduce the Practice seed issue with two distinct authenticated accounts receiving identical Practice OG/GO sequences.
+6. Add focused regression coverage for per-account authenticated Practice seeding while proving Daily selection remains unchanged.
+7. Make the smallest Practice seed fix, verify focused tests, then verify with authenticated browser/Supabase-backed flows where relevant.
+8. Finish with the full Stage 15 gate: lint, full tests, build, API typecheck, diff check, desktop/tablet/390px smoke, real two-client Supabase-backed E2E for Multiplayer GO if touched, remote Supabase probes/cleanup where relevant, resource check, and preview.
+
+#### 28.50.4 High-Conflict Surfaces And Suggested Lanes
+
+Likely high-conflict surfaces:
+
+- `src/multiplayer/MultiplayerGameSurface.tsx`
+- `src/multiplayer/multiplayer.ts`
+- `src/app/games/GoGame.tsx`
+- `src/game/go/`
+- Practice session creation and resume paths
+- guest/account progress or storage schema surfaces if authenticated Practice seed state needs persistence
+- `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-*.md`, `agents.md`, and `memory.md`
+
+Suggested execution lanes if parallelized later:
+
+- **GO transition lane**: reproduce/render prior-puzzle disappearance, map GO solved-row hold state, add focused regression coverage, and implement the minimal visibility fix.
+- **Practice seed lane**: audit Practice answer/session seed inputs for authenticated vs guest users, design the smallest persistent per-account seed/state change, add Daily determinism regression coverage, and implement the scoped seed fix.
+- **Multiplayer verification lane**: real two-client Supabase-backed Multiplayer GO transition verification, remote probes, and cleanup.
+- **Coordinator lane**: high-conflict integration, progress/changelog/memory updates, full gate, resource checks, preview, and final handoff.
+
+#### 28.50.5 Verification Requirements
+
+Stage 15 execution must document reproduction of both bugs before fixes. Final verification must include focused changed-area tests, the full automated gate, responsive smoke, resource sanity, and real two-client Supabase-backed browser E2E for any Multiplayer GO change. Any authenticated Practice seed claim must be checked with distinct accounts, and Daily OG/GO determinism must be explicitly protected.
+
+#### 28.50.6 Gate
+
+This `phase_id = 122` planning step is complete when governance/tracking surfaces are updated and the user receives a summary. Stage 15 implementation remains gated until the user explicitly authorizes execution in a later prompt.
+
+### 28.51 Stage 15 Execution Kickoff — Protected State, Resource Baseline, and Reproduction Plan (`phase_id = 123`)
+
+**Authorization status**: Stage 15 execution is explicitly authorized by the user. `PHASE-23-STAGE-15-GO-TRANSITION-AND-PRACTICE-SEED-FIXES-SPEC-2026-06-08.md` remains the binding source of truth.
+
+This kickoff checkpoint records the protected starting state before Stage 15 source edits:
+
+- Current branch: `codex/phase-23-stage-10`.
+- The worktree is intentionally dirty with verified Stage 8-15 planning work. Do not reset, rebase, pull over, switch away from, discard, or overwrite this state.
+- No PR creation, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, deferred feature work, or later-phase work is authorized.
+
+#### 28.51.1 Baseline Resource Snapshot
+
+Baseline process/resource checks were captured before Stage 15 dev-server or browser testing:
+
+- No local Vite app server was listening on the common app ports checked.
+- One unrelated Python listener was present on `127.0.0.1:8765`.
+- An existing Playwright-style Chrome process was visible before Stage 15 testing began; because it was not started by this Stage 15 run, it was recorded rather than terminated.
+- Memory pressure was elevated, with `top` reporting about 17 GB physical memory used, about 7.3 GB compressed, and about 132 MB unused. Browser/E2E work should therefore use one dev server, minimal contexts, and explicit cleanup.
+
+#### 28.51.2 Reproduction Plan
+
+Stage 15 will reproduce both bugs before source fixes:
+
+1. **GO transition regression**:
+   - Start with code-level and focused browser reproduction around GO solved-row hold rendering.
+   - Confirm whether the prior completed puzzle rows disappear/reset in Multiplayer GO and whether the same rendering path affects solo Practice GO or Daily GO.
+   - Preserve Stage 13 solved-row hold and coordinated advancement behavior while diagnosing.
+2. **Practice seed predictability**:
+   - Use two distinct authenticated contexts/accounts where practical to confirm Practice OG/GO initial sequences are identical before the fix.
+   - Pair browser evidence with code-level seed/session inspection to identify the seed source.
+   - Explicitly check that Daily OG/GO selection remains globally deterministic.
+
+#### 28.51.3 Stage 15 Checklist
+
+1. Reproduce GO transition bug; document evidence.
+2. Add focused failing regression coverage for prior completed GO puzzle visibility during solved-row hold.
+3. Implement the smallest GO transition fix.
+4. Run focused verification for the GO fix and Stage 13 solved-row hold behavior.
+5. Reproduce authenticated Practice seed predictability bug; document evidence.
+6. Add focused failing regression coverage for per-account Practice OG/GO seed uniqueness and Daily determinism.
+7. Implement the smallest Practice seed fix.
+8. Run focused verification for the seed fix.
+9. Complete real Supabase-backed browser E2E where relevant, full automated gate, responsive smoke, resource check, Vercel preview, and final handoff.
+
+No source-code fixes have been made in this kickoff checkpoint.
+
+### 28.52 Stage 15 Focused Fixes — GO Transition Display and Authenticated Practice Seeds (`phase_id = 124`)
+
+**Authorization status**: Stage 15 execution remains limited to `PHASE-23-STAGE-15-GO-TRANSITION-AND-PRACTICE-SEED-FIXES-SPEC-2026-06-08.md`.
+
+This checkpoint implements the two scoped fixes and records focused verification. Final browser/Supabase E2E, full automated gate, responsive smoke, resource check, preview, and final handoff remain pending.
+
+#### 28.52.1 Reproduction Evidence
+
+1. **GO transition regression**:
+   - Focused component reproduction was added before the display fix.
+   - The reproduction solved puzzle 1, solved puzzle 2 during the GO solved-row hold, and rendered `MultiplayerGameSurface`.
+   - Before the fix, `npm run test -- src/multiplayer/MultiplayerGameSurface.test.tsx` failed because row 1 rendered the puzzle-2 solved answer instead of the carried-forward puzzle-1 answer.
+   - Root cause: shared durable move projection replaced canonical GO puzzle guesses. For puzzle 2 and later, canonical guesses include prior-answer prefilled rows; shared moves include submitted turns only.
+2. **Practice seed predictability**:
+   - Code-path reproduction confirmed both Practice OG and Practice GO initialized `practiceSeed` to `0`, and the deterministic Practice setup helpers mapped that seed to identical answer/chain starts for different accounts.
+   - Authenticated user id was available in the Practice route but was not threaded into solo Practice setup.
+
+#### 28.52.2 Implemented Fixes
+
+1. **GO solved-row hold display**:
+   - `MultiplayerGameSurface` now merges shared durable moves with canonical puzzle guesses instead of replacing the full list.
+   - The merge preserves canonical/prefilled GO rows when shared moves are a suffix, then overlays/uses shared moves for cross-client display.
+   - This is display-only. It does not copy rival moves into another player's canonical `playerSessions`, change scoring, change GO advancement, or change turn settlement.
+2. **Authenticated Practice seeds**:
+   - Added account-derived Practice seed helpers with stable user-id hashing plus per-mode counters.
+   - Added `practiceSeeds` to guest/cloud progress, with migration normalization and max-counter merge behavior.
+   - Practice OG/GO receive authenticated user id and the relevant counter through the Practice route; guests keep the existing local counter fallback.
+   - Daily OG/GO setup remains date-keyed and outside the account-seed path.
+
+#### 28.52.3 Focused Verification
+
+Passed:
+
+- `npm run test -- src/multiplayer/MultiplayerGameSurface.test.tsx`
+- `npm run test -- src/multiplayer/MultiplayerGameSurface.test.tsx src/account/practiceSeeds.test.ts src/account/guestStorage.test.ts src/account/guestTransfer.test.ts src/app/games/soloHardModeDefaults.test.tsx src/game/og/session.test.ts src/game/go/session.test.ts`
+  - 7 focused files
+  - 40 tests passing
+- `npm run test -- src/account`
+  - 13 files
+  - 128 tests passing
+
+New focused coverage verifies:
+
+- Multiplayer GO puzzle-2 solved-row hold keeps the prior completed puzzle row visible.
+- Authenticated Practice OG/GO seeds diverge for two distinct account ids.
+- Guest Practice seed fallback remains the local counter path.
+- Practice seed counters normalize, advance, and merge safely.
+- Daily OG/GO selection remains globally deterministic for the same date.
+- Legacy progress migration backfills Practice seed state.
+
+#### 28.52.4 Pending Final Gate
+
+Stage 15 is not complete until the following pass:
+
+- Real two-client Supabase-backed Multiplayer GO E2E for solved-row hold, prior-row visibility, coordinated advancement, and final puzzle definitions transition.
+- Authenticated two-account Practice OG/GO seed verification.
+- Daily OG/GO determinism confirmation across accounts for the same UTC day.
+- Stage 12, Stage 13, Stage 14, and Daily Multiplayer invariant checks.
+- `npm run lint`, `npm run test`, `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, and `git diff --check`.
+- Desktop/tablet/390px browser smoke with no new console errors or horizontal overflow.
+- Resource/memory/process snapshot and cleanup of any process started by this Stage 15 pass.
+- Vercel preview deployment and protected/share URL if the direct preview is protected.
+
+### 28.53 Stage 15 Final Verification and Handoff (`phase_id = 125`)
+
+**Authorization status**: Stage 15 execution is complete for user review. No PR, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, deferred feature work, or later-phase work is authorized by this handoff.
+
+This final checkpoint closes the strict two-bug Stage 15 scope from `PHASE-23-STAGE-15-GO-TRANSITION-AND-PRACTICE-SEED-FIXES-SPEC-2026-06-08.md`.
+
+#### 28.53.1 Final Behavior
+
+1. **GO transition polish**:
+   - Previously completed GO puzzles remain visible during the all-green solved-row hold.
+   - The fix preserves canonical/prefilled GO rows and overlays shared durable moves for display only.
+   - The Stage 13 solved-row hold, coordinated Multiplayer GO advancement, and terminal definitions delay remain intact.
+2. **Authenticated Practice seed randomization**:
+   - Authenticated Practice OG and Practice GO use account-derived seeds plus persisted per-mode counters.
+   - Distinct authenticated accounts receive different Practice OG answers and different Practice GO chains.
+   - Guest Practice keeps the local counter fallback.
+   - Daily OG/GO selection remains globally deterministic for the same UTC day and does not use account seed state.
+
+#### 28.53.2 Real Browser And Supabase Verification
+
+Passed:
+
+- Real two-client Supabase-backed browser E2E with isolated authenticated host/rival contexts.
+- Temporary authenticated accounts were created, signed in, used for verification, and cleaned up.
+- Authenticated Practice seed verification confirmed:
+  - Practice OG differed across accounts.
+  - Practice GO differed across accounts.
+  - Daily OG and Daily GO remained identical across accounts for `2026-06-08`.
+  - UI-triggered Practice seed counters persisted for both OG and GO.
+- Multiplayer GO verification confirmed:
+  - Practice GO lobby creation persisted as a waiting row.
+  - Rival join persisted and started the game.
+  - Five GO answers were submitted through the multiplayer surface on-screen keyboard.
+  - After puzzle 2, both clients showed row 1 as the prior completed answer and row 2 as the current all-green solved answer during the solved-row hold.
+  - Final puzzle completion showed prior rows and transitioned both clients to answer/definition results.
+- Remote Supabase probe confirmed the final temporary row had `moves=5`, `status=won`, and `playerSessions=2`.
+- Temporary users and touched multiplayer rows were cleaned up.
+
+#### 28.53.3 Automated And Responsive Verification
+
+Passed:
+
+- Focused changed-area tests: 7 files, 40 tests.
+- `npm run lint`
+- `npm run test`: 73 files, 478 tests.
+- `npm run build`: succeeded with the existing large-chunk advisory.
+- `npx tsc -p tsconfig.api.json --noEmit`
+- `git diff --check`
+- `progress/PROGRESS.csv` parse check.
+- Desktop/tablet/390px browser smoke on Home, Practice, and Calendar with no console errors and no horizontal overflow.
+
+#### 28.53.4 Resource And Preview Notes
+
+- Stage 15 used one local Vite dev server for browser verification.
+- Playwright contexts from Stage 15 verification were closed after use.
+- Final resource checks showed the Stage 15 Vite process before cleanup and no Stage 15 runaway browser contexts. Pre-existing user/Codex/Chrome processes were recorded and not terminated.
+- The local Vite server started for Stage 15 was stopped after verification.
+- Vercel preview deployed successfully. The direct preview is deployment-protected, so a protected share URL is provided only in the final chat and intentionally not committed to repo docs.
+
+No PR, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, notifications, floating manager, bots/social/export work, scoring/rating change, broad refactor, redesign, or out-of-scope work was performed.
 
 ---
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createDefaultGuestProgress } from './storageSchema'
 import { mergeGuestProgressIntoCloud } from './guestTransfer'
-import { createAsyncMultiplayerGame } from '../multiplayer'
+import { createMultiplayerGame } from '../multiplayer'
 
 describe('guest transfer', () => {
   it('merges local and cloud progress without losing history or completed IDs', () => {
@@ -111,9 +111,16 @@ describe('guest transfer', () => {
     expect(merged.resumeSlot).toEqual(practiceGo)
   })
 
-  it('merges async multiplayer games by id and newest update', () => {
+  it('merges Practice seed counters by preserving the furthest per-mode progress', () => {
+    const local = { ...createDefaultGuestProgress(), practiceSeeds: { go: 4, og: 1 } }
+    const cloud = { ...createDefaultGuestProgress(), practiceSeeds: { go: 2, og: 9 } }
+
+    expect(mergeGuestProgressIntoCloud(local, cloud).practiceSeeds).toEqual({ go: 4, og: 9 })
+  })
+
+  it('merges multiplayer games by id and newest update', () => {
     const localGame = {
-      ...createAsyncMultiplayerGame({ createdAt: '2026-05-26T01:00:00.000Z', mode: 'og', scope: 'practice', seed: 1, wordLength: 5 }),
+      ...createMultiplayerGame({ createdAt: '2026-05-26T01:00:00.000Z', mode: 'og', scope: 'practice', seed: 1, wordLength: 5 }),
       id: 'shared-game',
       updatedAt: '2026-05-26T03:00:00.000Z',
     }
@@ -122,11 +129,11 @@ describe('guest transfer', () => {
       updatedAt: '2026-05-26T02:00:00.000Z',
     }
     const merged = mergeGuestProgressIntoCloud(
-      { ...createDefaultGuestProgress(), asyncMultiplayer: { games: [localGame] } },
-      { ...createDefaultGuestProgress(), asyncMultiplayer: { games: [cloudGame] } },
+      { ...createDefaultGuestProgress(), multiplayer: { games: [localGame] } },
+      { ...createDefaultGuestProgress(), multiplayer: { games: [cloudGame] } },
     )
 
-    expect(merged.asyncMultiplayer?.games).toHaveLength(1)
-    expect(merged.asyncMultiplayer?.games[0].updatedAt).toBe('2026-05-26T03:00:00.000Z')
+    expect(merged.multiplayer?.games).toHaveLength(1)
+    expect(merged.multiplayer?.games[0].updatedAt).toBe('2026-05-26T03:00:00.000Z')
   })
 })

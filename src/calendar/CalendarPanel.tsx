@@ -20,12 +20,9 @@ import type { GoPuzzleCount } from '../game/constants'
 import type { GameMode } from '../game/types'
 import { Button, Dialog, Panel } from '../ui'
 import {
-  AsyncMultiplayerPanel,
-  LiveMultiplayerPanel,
-  hasDailyLiveMultiplayerMatch,
+  MultiplayerPanel,
   hasDailyMultiplayerGame,
-  type AsyncMultiplayerState,
-  type LiveMultiplayerState,
+  type MultiplayerState,
   type MultiplayerCompetitiveState,
   type MultiplayerProfileSummary,
 } from '../multiplayer'
@@ -51,13 +48,12 @@ export type CalendarLaunchRequest =
   | {
       readonly kind?: 'daily'
       readonly mode: GameMode
-      /** Target day; omit/equal-to-today for the live daily. */
+      /** Target day; omit/equal-to-today for the current daily. */
       readonly dateKey: string
     }
   | {
       readonly dateKey: string
       readonly kind: 'multiplayer'
-      readonly transport: 'async' | 'live'
     }
 
 export interface CalendarPanelProps {
@@ -68,14 +64,11 @@ export interface CalendarPanelProps {
   readonly onGameComplete: (input: CompletedGameInput) => void
   readonly onResumeCapture: (capture: ResumeCapture) => void
   readonly onSpendCoins: (amount: number) => boolean
-  readonly onAsyncMultiplayerChange: (state: AsyncMultiplayerState) => void
+  readonly onMultiplayerChange: (state: MultiplayerState) => void
   readonly onCompetitiveMultiplayerChange?: (state: MultiplayerCompetitiveState) => void
-  readonly onJoinLiveSpectatorMatch?: (matchId: string) => void
-  readonly onLiveMultiplayerChange: (state: LiveMultiplayerState) => void
   readonly onMarkPastDailyUnlocked: (mode: GameMode, dateKey: string) => void
   readonly onUpdateSettings: (patch: Partial<GuestProgress['settings']>) => void
-  readonly asyncMultiplayer: AsyncMultiplayerState
-  readonly liveMultiplayer: LiveMultiplayerState
+  readonly multiplayer: MultiplayerState
   readonly multiplayerDailyDateKey: string
   readonly authStatus?: 'anonymous' | 'authenticated' | 'unconfigured'
   readonly viewerProfile?: MultiplayerProfileSummary
@@ -96,7 +89,7 @@ const CALENDAR_SURFACE_STORAGE_KEY = 'brrrdle:calendar-surface:v1'
 
 type CalendarActiveSurface =
   | { readonly dateKey: string; readonly kind: 'daily'; readonly mode: GameMode }
-  | { readonly dateKey: string; readonly kind: 'multiplayer'; readonly transport: 'async' | 'live' }
+  | { readonly dateKey: string; readonly kind: 'multiplayer' }
 
 function isGameMode(value: unknown): value is GameMode {
   return value === 'og' || value === 'go'
@@ -118,8 +111,8 @@ function loadCalendarActiveSurface(): CalendarActiveSurface | null {
     if (record.kind === 'daily' && isGameMode(record.mode)) {
       return { dateKey: record.dateKey, kind: 'daily', mode: record.mode }
     }
-    if (record.kind === 'multiplayer' && (record.transport === 'async' || record.transport === 'live')) {
-      return { dateKey: record.dateKey, kind: 'multiplayer', transport: record.transport }
+    if (record.kind === 'multiplayer') {
+      return { dateKey: record.dateKey, kind: 'multiplayer' }
     }
     return null
   } catch {
@@ -169,14 +162,11 @@ export function CalendarPanel({
   onGameComplete,
   onResumeCapture,
   onSpendCoins,
-  onAsyncMultiplayerChange,
+  onMultiplayerChange,
   onCompetitiveMultiplayerChange,
-  onJoinLiveSpectatorMatch,
-  onLiveMultiplayerChange,
   onMarkPastDailyUnlocked,
   onUpdateSettings,
-  asyncMultiplayer,
-  liveMultiplayer,
+  multiplayer,
   multiplayerDailyDateKey,
   authStatus,
   viewerProfile,
@@ -189,8 +179,7 @@ export function CalendarPanel({
   const [activeDaily, setActiveDaily] = useState<ActiveDaily | null>(() => initialSurface?.kind === 'daily'
     ? { dateKey: initialSurface.dateKey, isPast: initialSurface.dateKey !== todayDateKey, mode: initialSurface.mode }
     : null)
-  const [activeMultiplayerDateKey, setActiveMultiplayerDateKey] = useState<string | null>(() => initialSurface?.kind === 'multiplayer' && initialSurface.transport === 'async' ? initialSurface.dateKey : null)
-  const [activeLiveMultiplayerDateKey, setActiveLiveMultiplayerDateKey] = useState<string | null>(() => initialSurface?.kind === 'multiplayer' && initialSurface.transport === 'live' ? initialSurface.dateKey : null)
+  const [activeMultiplayerDateKey, setActiveMultiplayerDateKey] = useState<string | null>(() => initialSurface?.kind === 'multiplayer' ? initialSurface.dateKey : null)
   const [consumedLaunch, setConsumedLaunch] = useState<CalendarLaunchRequest | null>(null)
   const [pendingUnlock, setPendingUnlock] = useState<{ readonly mode: GameMode; readonly dateKey: string } | null>(null)
 
@@ -207,23 +196,14 @@ export function CalendarPanel({
 
   const launchDaily = useCallback((mode: GameMode, dateKey: string) => {
     setActiveMultiplayerDateKey(null)
-    setActiveLiveMultiplayerDateKey(null)
     setActiveDaily({ mode, dateKey, isPast: dateKey !== todayDateKey })
     saveCalendarActiveSurface({ dateKey, kind: 'daily', mode })
   }, [todayDateKey])
 
   const launchDailyMultiplayer = useCallback((dateKey: string) => {
     setActiveDaily(null)
-    setActiveLiveMultiplayerDateKey(null)
     setActiveMultiplayerDateKey(dateKey)
-    saveCalendarActiveSurface({ dateKey, kind: 'multiplayer', transport: 'async' })
-  }, [])
-
-  const launchDailyLiveMultiplayer = useCallback((dateKey: string) => {
-    setActiveDaily(null)
-    setActiveMultiplayerDateKey(null)
-    setActiveLiveMultiplayerDateKey(dateKey)
-    saveCalendarActiveSurface({ dateKey, kind: 'multiplayer', transport: 'live' })
+    saveCalendarActiveSurface({ dateKey, kind: 'multiplayer' })
   }, [])
 
   // Honor external launch requests (countdown tap, daily resume, legacy route
@@ -234,12 +214,10 @@ export function CalendarPanel({
     setConsumedLaunch(launchRequest)
     if (launchRequest.kind === 'multiplayer') {
       setActiveDaily(null)
-      setActiveMultiplayerDateKey(launchRequest.transport === 'async' ? launchRequest.dateKey : null)
-      setActiveLiveMultiplayerDateKey(launchRequest.transport === 'live' ? launchRequest.dateKey : null)
-      saveCalendarActiveSurface({ dateKey: launchRequest.dateKey, kind: 'multiplayer', transport: launchRequest.transport })
+      setActiveMultiplayerDateKey(launchRequest.dateKey)
+      saveCalendarActiveSurface({ dateKey: launchRequest.dateKey, kind: 'multiplayer' })
     } else {
       setActiveMultiplayerDateKey(null)
-      setActiveLiveMultiplayerDateKey(null)
       setActiveDaily({
         mode: launchRequest.mode,
         dateKey: launchRequest.dateKey,
@@ -275,23 +253,10 @@ export function CalendarPanel({
     if (!day.dateKey || day.isFuture || day.isBeforeStart) {
       return
     }
-    if (day.dateKey === multiplayerDailyDateKey || hasDailyMultiplayerGame(asyncMultiplayer, day.dateKey, 'og') || hasDailyMultiplayerGame(asyncMultiplayer, day.dateKey, 'go')) {
+    if (day.dateKey === multiplayerDailyDateKey || hasDailyMultiplayerGame(multiplayer, day.dateKey, 'og') || hasDailyMultiplayerGame(multiplayer, day.dateKey, 'go')) {
       launchDailyMultiplayer(day.dateKey)
     }
-  }, [asyncMultiplayer, launchDailyMultiplayer, multiplayerDailyDateKey])
-
-  const requestLiveMultiplayerDay = useCallback((day: CalendarDay) => {
-    if (!day.dateKey || day.isFuture || day.isBeforeStart) {
-      return
-    }
-    if (
-      day.dateKey === multiplayerDailyDateKey
-      || hasDailyLiveMultiplayerMatch(liveMultiplayer, day.dateKey, 'og')
-      || hasDailyLiveMultiplayerMatch(liveMultiplayer, day.dateKey, 'go')
-    ) {
-      launchDailyLiveMultiplayer(day.dateKey)
-    }
-  }, [launchDailyLiveMultiplayer, liveMultiplayer, multiplayerDailyDateKey])
+  }, [multiplayer, launchDailyMultiplayer, multiplayerDailyDateKey])
 
   const confirmUnlock = useCallback(() => {
     if (!pendingUnlock) {
@@ -336,6 +301,7 @@ export function CalendarPanel({
           <OgGame
             coins={coins}
             defaultDifficulty={guestProgress.settings.difficultyDefault}
+            defaultHardMode={guestProgress.settings.hardModeDefault}
             keyboardDisabled={keyboardDisabled}
             onGameComplete={onGameComplete}
             onMarkDailyUnlocked={markUnlocked}
@@ -350,6 +316,7 @@ export function CalendarPanel({
             coins={coins}
             defaultDifficulty={guestProgress.settings.difficultyDefault}
             defaultGoPuzzleCount={guestProgress.settings.goPuzzleCountDefault}
+            defaultHardMode={guestProgress.settings.hardModeDefault}
             keyboardDisabled={keyboardDisabled}
             onGameComplete={onGameComplete}
             onMarkDailyUnlocked={markUnlocked}
@@ -379,50 +346,17 @@ export function CalendarPanel({
             {isPast ? ' · view only' : ' · UTC active'}
           </p>
         </div>
-        <AsyncMultiplayerPanel
+        <MultiplayerPanel
           authStatus={authStatus}
           competitiveState={guestProgress.competitiveMultiplayer}
           dailyDateKey={activeMultiplayerDateKey}
           defaultDifficulty={guestProgress.settings.difficultyDefault}
           defaultGoPuzzleCount={guestProgress.settings.goPuzzleCountDefault}
-          onChange={onAsyncMultiplayerChange}
+          onChange={onMultiplayerChange}
           onCompetitiveChange={onCompetitiveMultiplayerChange}
           readOnly={isPast}
           scope="daily"
-          state={asyncMultiplayer}
-          viewerProfile={viewerProfile}
-          viewerUserId={viewerUserId}
-        />
-      </section>
-    )
-  }
-
-  if (activeLiveMultiplayerDateKey) {
-    const isPast = activeLiveMultiplayerDateKey !== multiplayerDailyDateKey
-    return (
-      <section className="space-y-4" aria-label="Daily live multiplayer">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button onClick={() => {
-            setActiveLiveMultiplayerDateKey(null)
-            clearCalendarActiveSurface()
-          }} variant="secondary">Back to Calendar</Button>
-          <p className="text-sm font-semibold text-[var(--color-ice-200)]">
-            Daily Live Multiplayer · {activeLiveMultiplayerDateKey}
-            {isPast ? ' · view only' : ' · UTC active'}
-          </p>
-        </div>
-        <LiveMultiplayerPanel
-          authStatus={authStatus}
-          competitiveState={guestProgress.competitiveMultiplayer}
-          dailyDateKey={activeLiveMultiplayerDateKey}
-          defaultDifficulty={guestProgress.settings.difficultyDefault}
-          defaultGoPuzzleCount={guestProgress.settings.goPuzzleCountDefault}
-          onChange={onLiveMultiplayerChange}
-          onCompetitiveChange={onCompetitiveMultiplayerChange}
-          onJoinSpectatorMatch={onJoinLiveSpectatorMatch}
-          readOnly={isPast}
-          scope="daily"
-          state={liveMultiplayer}
+          state={multiplayer}
           viewerProfile={viewerProfile}
           viewerUserId={viewerUserId}
         />
@@ -440,11 +374,10 @@ export function CalendarPanel({
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-3">
         <Button onClick={() => launchDaily('og', todayDateKey)} variant="primary">Play Today&rsquo;s OG</Button>
         <Button onClick={() => launchDaily('go', todayDateKey)} variant="primary">Play Today&rsquo;s GO</Button>
-        <Button onClick={() => launchDailyMultiplayer(multiplayerDailyDateKey)} variant="primary">Daily Async</Button>
-        <Button onClick={() => launchDailyLiveMultiplayer(multiplayerDailyDateKey)} variant="primary">Daily Live</Button>
+        <Button onClick={() => launchDailyMultiplayer(multiplayerDailyDateKey)} variant="primary">Daily Multiplayer</Button>
       </div>
 
       <Panel className="grid gap-3 text-sm text-slate-300 sm:grid-cols-2" tone="muted">
@@ -493,13 +426,11 @@ export function CalendarPanel({
               key={day.dateKey ?? `blank-${index}`}
               completion={completion}
               day={day}
-              asyncMultiplayer={asyncMultiplayer}
+              multiplayer={multiplayer}
               guestProgress={guestProgress}
               multiplayerDailyDateKey={multiplayerDailyDateKey}
               onRequestDay={requestDay}
-              onRequestLiveMultiplayerDay={requestLiveMultiplayerDay}
               onRequestMultiplayerDay={requestMultiplayerDay}
-              liveMultiplayer={liveMultiplayer}
             />
           ))}
         </div>
@@ -526,24 +457,20 @@ export function CalendarPanel({
 }
 
 function CalendarCell({
-  asyncMultiplayer,
+  multiplayer,
   completion,
   day,
   guestProgress,
-  liveMultiplayer,
   multiplayerDailyDateKey,
   onRequestDay,
-  onRequestLiveMultiplayerDay,
   onRequestMultiplayerDay,
 }: {
-  readonly asyncMultiplayer: AsyncMultiplayerState
+  readonly multiplayer: MultiplayerState
   readonly completion: { readonly og: ReadonlySet<string>; readonly go: ReadonlySet<string> }
   readonly day: CalendarDay
   readonly guestProgress: GuestProgress
-  readonly liveMultiplayer: LiveMultiplayerState
   readonly multiplayerDailyDateKey: string
   readonly onRequestDay: (mode: GameMode, day: CalendarDay) => void
-  readonly onRequestLiveMultiplayerDay: (day: CalendarDay) => void
   readonly onRequestMultiplayerDay: (day: CalendarDay) => void
 }) {
   if (!day.dateKey) {
@@ -555,13 +482,10 @@ function CalendarCell({
   const goDone = completion.go.has(day.dateKey)
   const ogUnlocked = day.isToday || isUnlockedForPlay(guestProgress, 'og', day.dateKey, completion)
   const goUnlocked = day.isToday || isUnlockedForPlay(guestProgress, 'go', day.dateKey, completion)
-  const mpOgRecorded = hasDailyMultiplayerGame(asyncMultiplayer, day.dateKey, 'og')
-  const mpGoRecorded = hasDailyMultiplayerGame(asyncMultiplayer, day.dateKey, 'go')
+  const mpOgRecorded = hasDailyMultiplayerGame(multiplayer, day.dateKey, 'og')
+  const mpGoRecorded = hasDailyMultiplayerGame(multiplayer, day.dateKey, 'go')
   const multiplayerOpen = day.dateKey === multiplayerDailyDateKey
   const multiplayerViewable = multiplayerOpen || mpOgRecorded || mpGoRecorded
-  const liveOgRecorded = hasDailyLiveMultiplayerMatch(liveMultiplayer, day.dateKey, 'og')
-  const liveGoRecorded = hasDailyLiveMultiplayerMatch(liveMultiplayer, day.dateKey, 'go')
-  const liveViewable = multiplayerOpen || liveOgRecorded || liveGoRecorded
 
   return (
     <div
@@ -588,20 +512,6 @@ function CalendarCell({
             label="M-GO"
             locked={!multiplayerOpen && !mpGoRecorded}
             onClick={() => onRequestMultiplayerDay(day)}
-          />
-          <DayModeButton
-            disabled={!liveViewable}
-            done={liveOgRecorded}
-            label="L-OG"
-            locked={!multiplayerOpen && !liveOgRecorded}
-            onClick={() => onRequestLiveMultiplayerDay(day)}
-          />
-          <DayModeButton
-            disabled={!liveViewable}
-            done={liveGoRecorded}
-            label="L-GO"
-            locked={!multiplayerOpen && !liveGoRecorded}
-            onClick={() => onRequestLiveMultiplayerDay(day)}
           />
         </div>
       ) : null}

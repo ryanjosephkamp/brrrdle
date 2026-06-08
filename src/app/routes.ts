@@ -1,6 +1,6 @@
 import type { GameMode, PlayScope } from '../game/types'
 
-export type AppRouteId = 'home' | 'calendar' | 'og-daily' | 'go-daily' | 'practice' | 'word-explorer' | 'feedback' | 'definitions' | 'stats' | 'settings' | 'about' | 'admin'
+export type AppRouteId = 'home' | 'calendar' | 'og-daily' | 'go-daily' | 'practice' | 'multiplayer' | 'word-explorer' | 'feedback' | 'definitions' | 'stats' | 'settings' | 'about' | 'admin'
 
 export interface AppRoute {
   readonly id: AppRouteId
@@ -12,9 +12,8 @@ export interface AppRoute {
   readonly scope?: PlayScope
   readonly wordLength?: number
   /**
-   * Phase 22 Addendum (§27.10) — routes kept only for backward-compatible deep
-   * links (the dedicated `og-daily`/`go-daily` routes now redirect into the
-   * Calendar). Hidden routes are excluded from the primary navigation rail.
+   * Routes kept only for backward-compatible deep links or future inert route
+   * foundations. Hidden routes are excluded from the primary navigation rail.
    */
   readonly hidden?: boolean
 }
@@ -64,6 +63,14 @@ export const APP_ROUTES = [
     description: 'Practice brrrdle with configurable word lengths from 2 through 35.',
     navigationGroup: 'play',
     scope: 'practice',
+  },
+  {
+    id: 'multiplayer',
+    label: 'Multiplayer',
+    shortLabel: 'Multiplayer',
+    description: 'Future home for Multiplayer routes. Current Practice and Daily Multiplayer entry points stay in Practice and Calendar.',
+    navigationGroup: 'play',
+    hidden: true,
   },
   {
     id: 'word-explorer',
