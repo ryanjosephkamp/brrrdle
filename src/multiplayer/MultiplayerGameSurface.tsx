@@ -101,6 +101,10 @@ function getInitialSolvedGoTransition(game: MultiplayerGame, session: PuzzleSess
   if (!latestSolvedMove) {
     return undefined
   }
+  const latestMove = game.moves[game.moves.length - 1]
+  if (game.scope === 'practice' && latestMove && latestMove.id !== latestSolvedMove.id) {
+    return undefined
+  }
   if (latestSolvedMove.puzzleIndex < session.currentPuzzleIndex) {
     return { moveId: latestSolvedMove.id, puzzleIndex: latestSolvedMove.puzzleIndex }
   }
@@ -129,12 +133,27 @@ function isSameGuessResult(left: GuessResult, right: GuessResult): boolean {
     })
 }
 
-function mergeDisplayGuesses(sessionGuesses: readonly GuessResult[], sharedGuesses: readonly GuessResult[]): readonly GuessResult[] {
+function mergeDisplayGuesses(
+  sessionGuesses: readonly GuessResult[],
+  sharedGuesses: readonly GuessResult[],
+  preservedPrefixLength = 0,
+): readonly GuessResult[] {
   if (sharedGuesses.length === 0) {
     return sessionGuesses
   }
   if (sessionGuesses.length === 0) {
     return sharedGuesses
+  }
+
+  const prefixLength = Math.max(0, Math.min(preservedPrefixLength, sessionGuesses.length))
+  if (prefixLength > 0) {
+    const prefix = sessionGuesses.slice(0, prefixLength)
+    const localSubmittedGuesses = sessionGuesses.slice(prefixLength)
+    const mergedSubmittedGuesses = [
+      ...sharedGuesses,
+      ...localSubmittedGuesses.filter((guess) => !sharedGuesses.some((sharedGuess) => isSameGuessResult(sharedGuess, guess))),
+    ]
+    return [...prefix, ...mergedSubmittedGuesses]
   }
 
   const suffixStart = sessionGuesses.length - sharedGuesses.length
@@ -146,8 +165,8 @@ function mergeDisplayGuesses(sessionGuesses: readonly GuessResult[], sharedGuess
   return [...preservedPrefix, ...sharedGuesses]
 }
 
-function getDisplayPuzzle(session: PuzzleSessionState, sharedGuesses: readonly GuessResult[]): PuzzleSessionState {
-  const guesses = mergeDisplayGuesses(session.guesses, sharedGuesses)
+function getDisplayPuzzle(session: PuzzleSessionState, sharedGuesses: readonly GuessResult[], preservedPrefixLength = 0): PuzzleSessionState {
+  const guesses = mergeDisplayGuesses(session.guesses, sharedGuesses, preservedPrefixLength)
   const maxAttempts = Math.max(session.maxAttempts, guesses.length + (session.status === 'playing' ? 1 : 0))
   if (guesses === session.guesses && maxAttempts === session.maxAttempts) {
     return session
@@ -272,9 +291,16 @@ export function MultiplayerGameSurface({ disabled = false, game, onSubmitGuess, 
       : getActivePuzzleIndex(draftSession)
     : 0
   const sharedGuesses = useMemo(() => getSharedMoveGuesses(game, activePuzzleIndex), [activePuzzleIndex, game])
-  const displayPuzzle = activePuzzle ? getDisplayPuzzle(activePuzzle, sharedGuesses) : undefined
   const isGo = draftSession ? 'puzzles' in draftSession : game.serializedSession.mode === 'go'
-  const letterStates = activePuzzle ? deriveKeyboardLetterStates(sharedGuesses.length > 0 ? sharedGuesses : activePuzzle.guesses) : {}
+  const isPracticeGo = isGo && game.scope === 'practice'
+  const preservedGoPrefixLength = isPracticeGo ? activePuzzleIndex : 0
+  const displayPuzzle = activePuzzle ? getDisplayPuzzle(activePuzzle, sharedGuesses, preservedGoPrefixLength) : undefined
+  const keyboardGuesses = isPracticeGo && displayPuzzle
+    ? displayPuzzle.guesses
+    : sharedGuesses.length > 0
+      ? sharedGuesses
+      : activePuzzle?.guesses ?? []
+  const letterStates = deriveKeyboardLetterStates(keyboardGuesses)
   const inputDisabled = disabled || Boolean(solvedGoTransition) || !draftSession || getActivePuzzle(draftSession).status !== 'playing'
 
   useEffect(() => {

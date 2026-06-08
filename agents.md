@@ -42,6 +42,7 @@ The project now has enough parallelizable work that a clear coordination layer i
 - Stage 13 planning for Practice solo UX bugs and Multiplayer GO result propagation is documented under `phase_id = 114`; execution and verification are complete under `phase_id = 115` through `phase_id = 117`.
 - Stage 14 planning for post-Stage-13 polish, bug fixes, minimal Multiplayer tab foundations, and spectator foundation hardening is documented under `phase_id = 118`; execution and verification are complete under `phase_id = 119` through `phase_id = 121`.
 - Stage 15 planning for GO transition polish and authenticated Practice seed fixes is documented under `phase_id = 122`; execution and final verification are complete under `phase_id = 123` through `phase_id = 125`.
+- Stage 16 planning for Practice Multiplayer GO-only bug fixes is documented under `phase_id = 126`; execution is opened under `phase_id = 127`; focused Practice Multiplayer GO projection fixes are tracked under `phase_id = 128`; real two-client Supabase-backed E2E and remote cleanup are tracked under `phase_id = 129`; final verification and handoff are complete under `phase_id = 130`.
 - Further PR creation, merges, release, full dedicated Multiplayer tab work, spectator expansion, deferred feature work, and later-phase work remain unauthorized until later explicit approval.
 
 ## 3. Authority Stack
@@ -72,7 +73,7 @@ Before accepting or assigning Phase 23 work, the coordinator should read:
 - `AGENT-IMPLEMENTATION-PLAN.md` §28.
 - `PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`.
 - `progress/PROGRESS.csv`.
-- The latest relevant progress reports, currently `progress/PROGRESS-STEP-106.md` through `progress/PROGRESS-STEP-125.md` for the final stabilization, Stage 12, Stage 13, Stage 14, and Stage 15 trail.
+- The latest relevant progress reports, currently `progress/PROGRESS-STEP-106.md` through `progress/PROGRESS-STEP-130.md` for the final stabilization, Stage 12, Stage 13, Stage 14, Stage 15, and Stage 16 trail.
 - This file and `memory.md`.
 
 Sub-agents should read the subset named in their work packet and must always read this file before parallel work.
@@ -281,6 +282,53 @@ Suggested execution lanes if later authorized:
 - **Coordinator lane**: `src/app/App.tsx` if needed, high-conflict integration, progress/changelog/memory updates, final gate, Vercel preview, and final report.
 
 Keep `src/app/games/`, `src/game/`, `src/game/go/`, shared keyboard/board UI, `src/multiplayer/`, `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-*.md`, `agents.md`, and `memory.md` single-writer or explicitly sequenced. Do not edit Daily Solo behavior except to preserve it, and do not change Daily Multiplayer invariants.
+
+### Phase 23 Stage 16 Coordination Notes
+
+Stage 16 planning is documented under `phase_id = 126`, execution is opened under `phase_id = 127`, focused Practice Multiplayer GO projection fixes are tracked under `phase_id = 128`, real two-client E2E/remote cleanup are tracked under `phase_id = 129`, and final verification/handoff are complete under `phase_id = 130` from `PHASE-23-STAGE-16-PRACTICE-MULTIPLAYER-GO-BUGFIXES-SPEC-2026-06-08.md`.
+
+The user prompt suggested `phase_id = 123`, but Stage 15 already uses `phase_id = 123` through `phase_id = 125`. Future agents must preserve the progress ledger and continue from `phase_id = 126` rather than overwriting existing Stage 15 records.
+
+Stage 16 is an extremely narrow two-bug pass for **Practice Multiplayer GO only**:
+
+- Missing previous solutions in the GO chain stack: all previously completed Practice Multiplayer GO puzzles must remain accumulated and visible for every subsequent puzzle.
+- Keyboard state not reflecting prior solutions: gray/orange board evidence from previous GO solutions must color the on-screen keyboard correctly for the current Practice Multiplayer GO puzzle.
+
+Strict scope boundaries:
+
+- Do not touch Daily Multiplayer GO, Multiplayer OG, solo Practice GO, solo Daily GO, Daily Solo, Practice solo, or the Stage 15 Practice seed system.
+- Do not make broader GO chain, keyboard, multiplayer architecture, scoring/rating, spectator, notification, floating-manager, bot/social/export, History/Theme, full dedicated Multiplayer tab, PR, merge, release, production deployment, broad refactor, redesign, or later-phase changes.
+- Reproduce both Practice Multiplayer GO bugs before any future source fixes.
+- Use minimal, targeted changes and focused verification after each logical fix if execution is later authorized.
+- Real two-client Supabase-backed browser E2E is mandatory for any Stage 16 multiplayer behavior claim.
+- Preserve the `phase_id = 127` protected-starting-state baseline: one Vite server only when needed, minimal browser contexts, sequential heavy gates, and explicit cleanup because memory pressure was already high before Stage 16 browser work.
+- `phase_id = 128` fixed the focused display/keyboard projection path in `MultiplayerGameSurface`: preserve the Practice GO prior-row prefix, overlay shared durable moves as display evidence, derive keyboard colors from merged display guesses, and avoid stale Practice GO solved-row holds after newer moves. Do not convert this display projection into rival canonical `playerSessions` mutation.
+- `phase_id = 129` tightened the keyboard derivation so the merged display-evidence keyboard path is Practice GO-only; non-Practice-GO multiplayer modes retain their previous keyboard source path.
+- `phase_id = 129` real two-client Supabase-backed browser E2E verified a Practice Multiplayer GO lobby through the UI, accumulated rows across puzzle 3 on host/rival (`erhus` -> `ernes` -> `escar`), prior-only keyboard evidence on both clients (`H` absent), final five-puzzle completion (`status=won`, six moves, both `playerSessions`), and cleanup of the touched row plus temporary auth users.
+- `phase_id = 130` final verification passed focused changed-area tests (4 files, 44 tests), lint, full test suite (480 tests), build, API typecheck, diff check, desktop/tablet/390px smoke, real two-client Supabase-backed Practice Multiplayer GO E2E, remote probes/cleanup, resource checks, and Vercel preview verification. A deployment-specific Vercel shareable-link record was created with a 30-day TTL, but no verified browser share URL was returned by the CLI/API and no bypass token was committed.
+- Future work must preserve that Stage 16 was Practice Multiplayer GO-only. Daily Multiplayer GO, Multiplayer OG, solo modes, Daily determinism, and the Stage 15 Practice seed system were not modified during this stage.
+
+Preserve Stage 12 Hard Mode/keyboard/sound/row-write/timed/scoring wins, Stage 13 Practice/GO wins, Stage 14 hidden foundations/nonparticipant guard/unified repository path, Stage 15 GO transition/Practice seed wins, Daily Multiplayer invariants, `playerSessions` as canonical viewer state, and shared `serializedSession` as compatibility/answer plumbing only.
+
+Likely high-conflict surfaces if execution is later authorized:
+
+- `src/multiplayer/MultiplayerGameSurface.tsx`
+- `src/multiplayer/multiplayer.ts`
+- multiplayer GO display/projection helpers
+- focused multiplayer GO tests
+- `AGENT-IMPLEMENTATION-PLAN.md`
+- `CHANGELOG.md`
+- `progress/PROGRESS.csv`
+- `progress/PROGRESS-STEP-*.md`
+- `agents.md`
+- `memory.md`
+
+Suggested lanes if execution is later parallelized:
+
+- **Practice Multiplayer GO display lane**: reproduce missing accumulated previous solutions and map the display projection.
+- **Practice Multiplayer GO keyboard lane**: reproduce prior-solution keyboard color gaps and design the smallest projection fix.
+- **Verification lane**: real two-client Supabase-backed Practice Multiplayer GO E2E, remote probes/cleanup, Stage 12-15 invariant checks, responsive/resource smoke.
+- **Coordinator lane**: high-conflict integration, governance/progress updates, full gate, preview, and handoff.
 
 ### Phase 23 Stage 15 Coordination Notes
 

@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { createPracticeOgSetup } from '../game'
+import { createPracticeGoSetup, createPracticeOgSetup } from '../game'
+import { getGuessResult } from '../game/tileStates'
 import { createMultiplayerGame, getMultiplayerAnswerWords, joinMultiplayerGame, submitMultiplayerGuess } from './multiplayer'
 import { MultiplayerGameSurface } from './MultiplayerGameSurface'
 
@@ -154,5 +155,113 @@ describe('MultiplayerGameSurface', () => {
     for (const [index, letter] of [...secondAnswer].entries()) {
       expect(rivalHtml).toContain(`Row 2, tile ${index + 1}, ${letter}`)
     }
+  })
+
+  it('keeps every prior go solution visible when projecting a shared move on a later puzzle', () => {
+    const game = createMultiplayerGame({
+      goPuzzleCount: 5,
+      mode: 'go',
+      playerUserIds: { 'player-one': 'host-user' },
+      scope: 'practice',
+      seed: 1,
+      wordLength: 5,
+    })
+    const setup = createPracticeGoSetup(5, 1)
+    const answers = getMultiplayerAnswerWords(game)
+    const joined = joinMultiplayerGame({ games: [game] }, {
+      gameId: game.id,
+      userId: 'rival-user',
+    })
+    const firstSolved = submitMultiplayerGuess(joined.state, {
+      gameId: game.id,
+      guess: answers[0],
+      playerId: 'player-one',
+    })
+    const secondSolved = submitMultiplayerGuess(firstSolved.state, {
+      gameId: game.id,
+      guess: answers[1],
+      playerId: 'player-two',
+    })
+    const currentPuzzleAnswer = answers[2]
+    const currentPuzzleGuess = [...setup.validGuesses].find((candidate) => candidate !== currentPuzzleAnswer)!
+    const sharedCurrentMove = submitMultiplayerGuess(secondSolved.state, {
+      gameId: game.id,
+      guess: currentPuzzleGuess,
+      playerId: 'player-one',
+    })
+
+    const rivalHtml = renderToStaticMarkup(
+      <MultiplayerGameSurface
+        game={sharedCurrentMove.game!}
+        onSubmitGuess={() => undefined}
+        playerId="player-two"
+        statusLabel="Your turn"
+      />,
+    )
+
+    expect(rivalHtml).toContain('Puzzle 3 of 5')
+    for (const [rowIndex, guess] of [answers[0], answers[1], currentPuzzleGuess].entries()) {
+      for (const [tileIndex, letter] of [...guess].entries()) {
+        expect(rivalHtml).toContain(`Row ${rowIndex + 1}, tile ${tileIndex + 1}, ${letter}`)
+      }
+    }
+  })
+
+  it('colors the Practice Multiplayer GO keyboard from prior solution evidence when projecting a later shared move', () => {
+    const game = createMultiplayerGame({
+      goPuzzleCount: 5,
+      mode: 'go',
+      playerUserIds: { 'player-one': 'host-user' },
+      scope: 'practice',
+      seed: 1,
+      wordLength: 5,
+    })
+    const setup = createPracticeGoSetup(5, 1)
+    const answers = getMultiplayerAnswerWords(game)
+    const joined = joinMultiplayerGame({ games: [game] }, {
+      gameId: game.id,
+      userId: 'rival-user',
+    })
+    const firstSolved = submitMultiplayerGuess(joined.state, {
+      gameId: game.id,
+      guess: answers[0],
+      playerId: 'player-one',
+    })
+    const secondSolved = submitMultiplayerGuess(firstSolved.state, {
+      gameId: game.id,
+      guess: answers[1],
+      playerId: 'player-two',
+    })
+    const currentPuzzleAnswer = answers[2]
+    const currentPuzzleGuess = [...setup.validGuesses].find((candidate) => candidate !== currentPuzzleAnswer)!
+    const priorEvidence = [
+      ...getGuessResult(answers[0], currentPuzzleAnswer).tiles,
+      ...getGuessResult(answers[1], currentPuzzleAnswer).tiles,
+    ]
+    const priorOnlyEvidence = priorEvidence.find((tile) => (
+      (tile.state === 'absent' || tile.state === 'present')
+      && !currentPuzzleGuess.includes(tile.letter)
+    ))
+    if (!priorOnlyEvidence) {
+      throw new Error('Expected seed 1 Practice GO setup to provide prior-only gray/orange keyboard evidence.')
+    }
+    const sharedCurrentMove = submitMultiplayerGuess(secondSolved.state, {
+      gameId: game.id,
+      guess: currentPuzzleGuess,
+      playerId: 'player-one',
+    })
+
+    const rivalHtml = renderToStaticMarkup(
+      <MultiplayerGameSurface
+        game={sharedCurrentMove.game!}
+        onSubmitGuess={() => undefined}
+        playerId="player-two"
+        statusLabel="Your turn"
+      />,
+    )
+
+    const keyMatch = rivalHtml.match(new RegExp(`<button[^>]*aria-label="Enter ${priorOnlyEvidence.letter.toLocaleUpperCase('en-US')}"[^>]*class="([^"]*)"`))
+    expect(keyMatch?.[1]).toBeDefined()
+    expect(keyMatch?.[1]).not.toContain('border-slate-600 bg-slate-800')
   })
 })

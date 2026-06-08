@@ -4,6 +4,44 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Phase 23 Stage 16 — Practice Multiplayer GO Bug Fixes
+
+#### 23 Stage 16 final verification and handoff (`phase_id = 130`)
+- **Stage complete**: completed the extremely narrow Practice Multiplayer GO-only Stage 16 pass for user review.
+- **Fix summary**: Practice Multiplayer GO now keeps all accumulated previous GO solution rows visible on later puzzles, derives current keyboard colors from prior visible GO evidence through the existing precedence rules, and avoids stale solved-row hold projection after newer moves.
+- **Full verification**: focused changed-area tests pass (4 files, 44 tests); `npm run lint`, `npm run test` (480 passing), `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, and `git diff --check` pass cleanly.
+- **Browser/Supabase verification**: desktop/tablet/390px smoke passed with no console errors or document-level horizontal overflow; real two-client Supabase-backed Practice Multiplayer GO E2E passed twice; remote probes verified durable row state before cleanup and confirmed touched rows/users were deleted afterward.
+- **Preview/resource**: Vercel preview deployed READY and authenticated protected preview access was verified. A deployment-specific shareable-link record was created with a 30-day TTL, but no verified browser share URL was returned by the CLI/API and no bypass token was committed; final resource checks found no Stage 16-owned runaway dev-server/browser process.
+- **Scope guard**: Daily Multiplayer GO, Multiplayer OG, solo modes, Daily determinism, and the Stage 15 Practice seed system were not modified. No PR, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, notifications, floating manager, bots/social/export work, scoring/rating changes, broad refactoring, redesign, or out-of-scope work was performed.
+
+#### 23 Stage 16 real E2E and remote probe checkpoint (`phase_id = 129`)
+- **Scope tightening**: kept the merged display-evidence keyboard color derivation gated to Practice GO only so non-Practice-GO multiplayer modes retain their previous keyboard source path.
+- **Focused verification**: `npx vitest run src/multiplayer/MultiplayerGameSurface.test.tsx src/multiplayer/multiplayer.test.ts src/game/go/session.test.ts src/account/practiceSeeds.test.ts` passes (4 files, 44 tests).
+- **Real browser/Supabase verification**: real two-client Supabase-backed Practice Multiplayer GO E2E passed with temporary authenticated host/rival contexts. The run created/joined a GO lobby, solved two puzzles, verified puzzle-3 accumulated rows on both clients, verified prior-only keyboard evidence on both clients, finished the five-puzzle chain, and remotely probed a durable `status=won` row with six moves and both `playerSessions`.
+- **Remote cleanup**: the touched `async_multiplayer_games` rows and temporary auth users were deleted; a follow-up probe confirmed the Stage 16 E2E game ids had no remaining rows.
+- **Pending final gate**: full lint/test/build/API typecheck/diff gate, responsive smoke, final resource check, Vercel preview/share verification, and final handoff remain pending.
+
+#### 23 Stage 16 focused fixes (`phase_id = 128`)
+- **Reproduction evidence**: focused `MultiplayerGameSurface` regressions first failed on both scoped bugs: later Practice Multiplayer GO shared-move projection could drop an accumulated prior solution row, and prior-only gray/orange evidence could leave the keyboard key unknown.
+- **Projection fix**: preserved the Practice GO prior-row prefix before overlaying shared durable moves, keeping accumulated previous solutions visible when a shared move arrives on a later puzzle.
+- **Keyboard fix**: derived Practice Multiplayer GO keyboard colors from the merged display evidence so prior gray/orange rows contribute to the current keyboard state through the existing precedence rules.
+- **Transition guard**: avoided re-entering a stale Practice GO solved-row hold after a newer move has arrived.
+- **Focused verification**: `npx vitest run src/multiplayer/MultiplayerGameSurface.test.tsx` now passes (1 file, 6 tests). Real two-client E2E, full automated gate, responsive smoke, resource check, and preview remain pending.
+
+#### 23 Stage 16 execution kickoff (`phase_id = 127`)
+- **Execution opened**: recorded explicit authorization for Stage 16 execution from `PHASE-23-STAGE-16-PRACTICE-MULTIPLAYER-GO-BUGFIXES-SPEC-2026-06-08.md`.
+- **Protected state**: confirmed the active local branch is `codex/phase-23-stage-15-final` with the Stage 16 planning/governance dirt preserved as the source of truth.
+- **Baseline resources**: captured process/memory snapshots before source fixes or browser testing; no Vite app server was listening on 5173/5174, while memory pressure was already high from pre-existing user/system processes.
+- **Execution checklist**: documented reproduce-first sequencing for the two Practice Multiplayer GO-only bugs, with one-small-change-then-focused-verify discipline and real two-client Supabase-backed E2E required for multiplayer claims.
+- **Scope guard**: no source fixes have been made in this checkpoint. Daily Multiplayer GO, Multiplayer OG, solo modes, the Stage 15 Practice seed system, Daily determinism, scoring/rating, spectator features, PR creation, merge, release, broad refactoring, redesign, and later-phase work remain out of scope.
+
+#### 23 Stage 16 planning (`phase_id = 126`)
+- **Implementation plan**: bumped `AGENT-IMPLEMENTATION-PLAN.md` to v3.51 and added §28.54 from `PHASE-23-STAGE-16-PRACTICE-MULTIPLAYER-GO-BUGFIXES-SPEC-2026-06-08.md`.
+- **Planned scope**: documented an extremely narrow two-bug pass for Practice Multiplayer GO only: missing accumulated previous GO solutions in later puzzle stacks, and missing gray/orange prior-solution keyboard state for the current puzzle.
+- **Scope guard**: Daily Multiplayer GO, Multiplayer OG, solo modes, the Stage 15 Practice seed system, broad GO/keyboard/multiplayer architecture changes, PR creation, merge, release, full dedicated Multiplayer tab work, spectator expansion, deferred features, scoring/rating changes, broad refactoring, redesign, and later-phase work remain out of scope.
+- **Progress numbering**: used `phase_id = 126` because the repository already tracks Stage 15 execution and verification under `phase_id = 123` through `phase_id = 125`; no existing progress record was overwritten.
+- **Gate**: documentation/planning only. No source code, UI components, tests, Supabase migrations, configuration changes, implementation branch, PR, merge, release, or Stage 16 execution was performed.
+
 ### Phase 23 Stage 15 — GO Transition Polish and Practice Seed Fixes
 
 #### 23 Stage 15 final verification and handoff (`phase_id = 125`)

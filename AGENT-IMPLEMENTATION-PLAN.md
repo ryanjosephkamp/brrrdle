@@ -1,7 +1,7 @@
 # AGENT-IMPLEMENTATION-PLAN.md
 
 **Project**: brrrdle
-**Plan Version**: 3.50
+**Plan Version**: 3.55
 **Date**: 2026-06-07
 **Status**: Draft for user review — amended with Hugging Face word-list source integration; further amended on 2026-05-27 with the `ADDITIONS-2026-05-27.md` addendum (see §18); further amended on 2026-05-27 with the `DIAGNOSIS-REPORT-ADMIN-TAB-2026-05-27.md` addendum (see §19); further amended on 2026-05-27 with the `AUTH-UX-IMPROVEMENTS-SPEC-2026-05-27.md` addendum (see §20); further amended on 2026-05-28 with the Mobile & Tablet Responsiveness phase (see §21); further amended on 2026-05-28 with the Local Word Lists addendum (`LOCAL-WORD-LISTS-SPEC-2026-05-28.md`) as Phase 17 (see §22); further amended on 2026-05-28 with the Word List Difficulty Tiers + Word Explorer / Go / Settings improvements addendum (`PHASE-18-WORD-DIFFICULTY-AND-GO-IMPROVEMENTS-SPEC-2026-05-28.md`) as Phase 18 (see §23), whose §23.2 (Phase 18.0) performs an approved model-agnostic governance/repo cleanup and a root `README.md` upgrade in the planning stage; further amended on 2026-05-30 (v1.9) to integrate the user's definitive answers to the five §23.11 open questions (now recorded as resolved decisions) and to record the Phase 18.0 `README.md` upgrade; further amended on 2026-05-30 (v2.0) to record that Phase 18 **Prompt 2** has applied the approved constitution phase-range amendment (`CONSTITUTION.md` §1/§4/§5/§5.2/§17, v3.1 → v3.2) and the associated repo/doc adjustments, ahead of Prompt 3 (full Phase 18 feature execution); further amended on 2026-05-30 (v2.1) to append the Phase 19 addendum (`PHASE-19-ENHANCED-STATS-RESUME-CONFIGURABLE-GO-AND-POLISH-SPEC-2026-05-30.md`) as §24 (Phase 19 — Enhanced Statistics Visualizations, Configurable Go Puzzle Count, Full Resume-Most-Recent-Game Activation, Advanced Polish & Theming Foundations), whose §24.2 (Phase 19.0) performs the approved planning-stage governance/repo cleanup and a root `README.md` polish while deferring all game code changes (sub-phases 19.1–19.6) to explicit user approval ("Start Prompt 2" or equivalent); further amended on 2026-05-30 (v2.2) to record that Phase 19 **Prompt 2** has confirmed the planning-stage progress-step numbering decision (`phase_id = 46` / `progress/PROGRESS-STEP-46.md`, approved by the user) and applied the associated small clarity/governance adjustments (no game code), ahead of Prompt 3 (full Phase 19 feature execution, sub-phases 19.1–19.6); further amended on 2026-05-31 (v2.3) to upgrade `CONSTITUTION.md` to v3.3 for multi-agent workflow governance and append the Phase 20 addendum (`PHASE-20-DRAMATIC-UI-LAYOUT-EXPLORATION-SPEC-2026-05-30.md`) as §25, with governance-only tracking at `phase_id = 54`; further amended on 2026-06-01 (v2.4) to record Phase 20 completion (Variant 03 "Lunar Signal Deck" finalized) and append the Phase 21 addendum (`PHASE-21-UI-POLISH-AND-THEMING-FOUNDATION-SPEC-2026-06-01.md`) as §26 (Phase 21 — UI Polish & Theming Foundation), whose Prompt 1 is a planning + governance-only step (no UI polish, layout, or theming-foundation code) tracked at `phase_id = 59`, ahead of Prompt 2 (full Phase 21 execution); further amended on 2026-06-01 (v2.5) to record Phase 21 **Prompt 2**, a governance-only refined-instruction update incorporating the user's clarifications (keep the Lunar Signal Deck layout/tab structure mostly the same, adopt a very minimalist default background of plain black or a simple grid pattern, and capture the current Lunar Signal Deck visual style as one individual theme to be enabled in Phase 22) into the spec, §26, changelog, and progress at `phase_id = 60` — with no code, UI, layout, or theming-foundation changes — ahead of Prompt 3 (full Phase 21 execution); further amended on 2026-06-02 (v2.6) to record Phase 21 **Prompt 3** (full execution, `phase_id = 61`): added the `src/theme/surface.ts` surface-theme foundation (`minimal` default + `lunar-signal`), adopted a minimalist near-black default backdrop with a faint static grid, captured the original Lunar Signal Deck treatment as the single opt-in `lunar-signal` surface (gated by a `data-surface` attribute, to be enabled in Phase 22), and removed dead Phase-20 exploration CSS (`prism` and `command-shell` shells) plus the unused `Layout` component — with the Lunar Signal Deck layout/tab structure and every gameplay/accent-theme/stats/auth/resume/economy/sharing behavior preserved, and the Phase 22 theming system itself not implemented; further amended on 2026-06-02 (v2.7) to incorporate the **Phase 21 Addendum – Theme Proposal Templates** spec (`PHASE-21-THEME-PROPOSAL-TEMPLATES-SPEC-2026-06-02.md`) as a governance/planning-only step appended at §26.8, recording the new `themes/proposals/template_proposals/` + `full_proposals/` + `theme_proposals.csv` structure that Phase 21 must produce before closing, tracked at `phase_id = 62` — with no theme code, no proposal Markdown files, no CSV population, and no folder creation in this step (the requested "§26.1" addendum is recorded as §26.8 because the §26.1–§26.7 slots were already occupied, and the version advances to v2.7 because v2.6 was already consumed by the Phase 21 Prompt 3 full-execution amendment above); further amended on 2026-06-02 (v2.8) to incorporate the **Phase 22 – Advanced Calendar / Midnight Handling + Timezone-Aware Daily Reset (+ Targeted Bug Fixes)** spec (`PHASE-22-CALENDAR-MIDNIGHT-AND-BUGFIXES-SPEC-2026-06-02.md`) as §27, a planning + governance-only step (Prompt 1) that records the phase goals, scope, deliverables, verification requirements, and two-prompt workflow and makes Phase 22 the active next phase — with **no** daily-rollover, timezone, countdown, reset-alert, sound, dev-tool, or other source code implemented in this step (tracked at `phase_id = 64`), ahead of Prompt 2 (full Phase 22 execution); further amended on 2026-06-03 (v2.9) to record that Phase 22 **Prompt 2** (full execution) is complete (`phase_id = 65`) — timezone-aware local-midnight daily reset, balanced anti-gaming, cross-page countdown indicator, reset alert + brand-new unique sound, global Settings toggle, dev-mode Simulate Time tool, and the modular `src/daily/` service — and to incorporate the **Phase 22 Addendum – Calendar (Central Daily Hub) & Countdown Positioning** spec (`PHASE-22-ADDENDUM-CALENDAR-AND-COUNTDOWN-POSITIONING-2026-06-03.md`) as §27.10, a planning + governance-only step that records the Calendar-as-central-daily-hub feature (first tab, "Play Today's OG/GO" quick-access buttons, coin-gated past dailies with a one-guess-permanently-unlocks rule, past dailies treated as full daily experiences), the countdown repositioning to the top of the UI (context-aware on the landing page vs. game tabs), and the deliverables/scope/verification — with **no** calendar, navigation, routing, state-management, countdown-repositioning, economy, or other source code implemented in this step (tracked at `phase_id = 66`), ahead of a separately approved full-execution prompt.
 **Authority**: Must follow `CONSTITUTION.md`, `BRRRDLE-SPEC.md`, and the approved v2.6 plan in `BRRRDLE-OVERVIEW.md`.
@@ -104,6 +104,14 @@
 
 **Latest amendment (v3.50, 2026-06-08)**: Phase 23 Stage 15 final verification and handoff are complete under `phase_id = 125`. Stage 15 fixed the GO solved-row hold display regression by preserving prior canonical/prefilled GO rows while overlaying shared durable moves, and fixed authenticated Practice seed predictability with account-derived Practice seeds plus persisted per-mode counters while keeping Daily OG/GO globally deterministic. Final verification passed focused changed-area tests, lint, 478 full-suite tests, build, API typecheck, diff check, desktop/tablet/390px smoke, real two-client Supabase-backed Multiplayer GO E2E, authenticated two-account Practice seed verification, remote Supabase probes/cleanup, resource checks, and Vercel preview/share verification. No PR, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, notifications, floating manager, bots/social/export work, scoring/rating change, broad refactor, redesign, or out-of-scope work was performed.
 
+**Latest amendment (v3.51, 2026-06-08)**: Phase 23 Stage 16 planning is documented under §28.54 and tracked under `phase_id = 126` as a governance/documentation-only update from `PHASE-23-STAGE-16-PRACTICE-MULTIPLAYER-GO-BUGFIXES-SPEC-2026-06-08.md`. Stage 16 is an extremely narrow two-bug pass for Practice Multiplayer GO only: ensure all previously completed GO puzzle solutions remain accumulated/visible for every subsequent puzzle, and ensure prior-solution gray/orange board evidence is reflected on the on-screen keyboard for the current puzzle. The prompt suggested `phase_id = 123`, but the current progress ledger already uses `phase_id = 123` through `phase_id = 125` for Stage 15 execution and verification, so the next sequential ID is `126`. No source-code edits, test changes, UI/component work, Supabase migrations, configuration changes, implementation branch, PR, merge, release, or Stage 16 execution is authorized by this amendment.
+
+**Latest amendment (v3.52, 2026-06-08)**: Phase 23 Stage 16 execution is explicitly authorized and opened under §28.55 and `phase_id = 127`. The kickoff checkpoint records the protected local branch `codex/phase-23-stage-15-final`, the existing dirty Stage 16 planning/governance state, a resource baseline before dev-server/browser testing, and the reproduce-first plan for the two Practice Multiplayer GO-only bugs. No source-code fixes have been made at this checkpoint; Stage 16 execution remains bounded to Practice Multiplayer GO previous-solution stack visibility and prior-solution keyboard color projection only.
+
+**Latest amendment (v3.53, 2026-06-08)**: Phase 23 Stage 16 focused reproduction and fixes are tracked under §28.56 and `phase_id = 128`. Focused `MultiplayerGameSurface` regressions reproduced both Practice Multiplayer GO bugs before the fix: a later shared move could drop prior accumulated GO solution rows from the rival display, and a prior-only gray/orange evidence letter could remain an unknown keyboard key. The fix preserves the Practice GO prior-row prefix before overlaying shared durable moves, derives keyboard state from the merged display evidence, and avoids resurrecting a stale Practice GO solved-row hold after a newer move. Focused component verification now passes; real two-client Supabase E2E, full automated gate, responsive smoke, resource check, and preview remain pending.
+
+**Latest amendment (v3.55, 2026-06-08)**: Phase 23 Stage 16 final verification and handoff are complete under §28.58 and `phase_id = 130`. Stage 16 fixed only the Practice Multiplayer GO projection path: accumulated prior GO solution rows remain visible on later puzzles, prior gray/orange board evidence now colors the current keyboard through the existing precedence rules, and stale solved-row holds do not reappear after newer moves. Verification passed focused changed-area tests, full lint/test/build/API typecheck/diff gate, desktop/tablet/390px smoke, real two-client Supabase-backed Practice Multiplayer GO E2E, remote Supabase cleanup probes, final resource checks, and Vercel preview deployment verification. No PR, merge, release, Daily Multiplayer GO change, Multiplayer OG change, solo-mode change, Stage 15 Practice seed change, full dedicated Multiplayer tab implementation, spectator expansion, notification/floating-manager/bot/social/export work, scoring/rating change, broad refactor, redesign, or out-of-scope work was performed.
+
 ---
 
 ## Current Phase Index
@@ -134,9 +142,9 @@
 | Phase 21 | §26 | Implementation complete (Prompt 3): minimalist default surface + Lunar Signal Deck captured as one opt-in surface theme; theming-foundation and CSS-architecture cleanup done |
 | Phase 21 Addendum – Theme Proposal Templates | §26.8 | Governance/planning only (`phase_id = 62`): incorporates `PHASE-21-THEME-PROPOSAL-TEMPLATES-SPEC-2026-06-02.md`; records the `themes/proposals/template_proposals/` + `full_proposals/` + `theme_proposals.csv` structure to produce before Phase 21 closes; templates authored (`phase_id = 63`) |
 | Phase 22 | §27 | Complete through addendum follow-up (`phase_id = 68`): timezone-aware local-midnight daily reset, Calendar central hub, coin-gated past dailies, top countdown positioning, and landing tab-row follow-up are implemented and verified. |
-| **Phase 23 (active phase)** | §28 | **Stage 1 complete (`phase_id = 69`); Stage 2 planning documented (`phase_id = 70`); multi-agent scaffolding complete (`phase_id = 71`); Stage 2 implementation complete and verified (`phase_id = 72`); Stage 3 planning documented (`phase_id = 73`); Stage 3 implementation complete (`phase_id = 74`); Stage 3 stabilization complete (`phase_id = 75`); account-backed multiplayer/UX stabilization follow-up complete (`phase_id = 76`); next stabilization follow-up planning documented (`phase_id = 77`); §28.13 stabilization follow-up implemented (`phase_id = 78`); Stage 4 planning documented (`phase_id = 79`); Stage 4 implemented (`phase_id = 80`); Stage 5 planning documented (`phase_id = 81`); Stage 5 implemented and verified (`phase_id = 82`-`85`); Stage 6 planning documented (`phase_id = 86`); Stage 6 testing addendum + Stage 7 planning documented (`phase_id = 87`); Stage 6 implemented and verified (`phase_id = 88`-`90`); Stage 6 safety backup to GitHub `main` authorized/tracked (`phase_id = 91`); Stage 7 execution opened (`phase_id = 92`); Stage 7 core stabilization fixes implemented (`phase_id = 93`); Stage 7 verification and handoff tracked (`phase_id = 94`); Stage 8 planned (`phase_id = 95`) and implemented/verified (`phase_id = 96`-`97`); Stage 9 planning documented (`phase_id = 98`); Stage 9 implemented and verified (`phase_id = 99`-`100`); Stage 10 planned (`phase_id = 101`) and implemented/verified (`phase_id = 102`-`103`); post-Stage-10 safety backup branch/Draft PR created (`phase_id = 104`); Final Stabilization & Broad Debugging Pass planned (`phase_id = 105`) and completed (`phase_id = 106`-`109`); Stage 12 planned and implemented/verified (`phase_id = 110`-`113`); Stage 13 planned and implemented/verified (`phase_id = 114`-`117`); Stage 14 planned, implemented, and verified (`phase_id = 118`-`121`); Stage 15 planned, implemented, and verified (`phase_id = 122`-`125`)**: Stage 1 delivered bug fixes and async multiplayer. Stage 2 delivered live Practice/Daily multiplayer foundations that were later retired by Stage 8. Stage 3 delivered ELO/rating, scoring, matchmaking, custom-game support, Stats summaries, and additive Supabase competitive tables. Stabilization corrected online transport/ownership defects, account-backed matchmaking, multiplayer play surfaces, forfeit, password reset, mobile UI regressions, Daily Multiplayer refresh/entry behavior, daily participation limits, rival identity, countdown navigation, creator-only cancellation, per-user active limits, spectator foundations, Stage 5 UX/correctness issues, Stage 6 realtime/Daily cancellation stability bugs, and Stage 7 whole-game audit fixes. Stage 8 unified the active multiplayer experience into one durable Multiplayer model with Practice chess clocks and Daily no-clock preservation. Stage 9 fixed timed Practice board/clock synchronization, added Practice Multiplayer Hard Mode, and added fair OG/GO scoring. Stage 10 fixed the reported cross-client board/keyboard projection bug plus nearby timed Practice clock/draft reset bugs. The post-Stage-10 backup branch and Draft PR preserve that state on GitHub without merging. The final stabilization pass is complete under `phase_id = 109`. Stage 12 completed targeted Hard Mode, responsiveness, sound, and realtime-row-churn fixes. Stage 13 fixed the scoped Practice solo UX regressions and Multiplayer GO solved-puzzle propagation. Stage 14 completed hidden/inert Multiplayer foundations, low-risk nonparticipant/spectator-adjacent hardening, full verification, real Supabase-backed multi-context browser E2E, and preview verification. Stage 15 completed GO solved-row hold prior-puzzle visibility and authenticated Practice seed uniqueness with full local, browser, Supabase, resource, and preview verification. Further PRs, merges, releases, full dedicated Multiplayer tab work, and later-phase work remain gated. |
+| **Phase 23 (active phase)** | §28 | **Stage 1 complete (`phase_id = 69`); Stage 2 planning documented (`phase_id = 70`); multi-agent scaffolding complete (`phase_id = 71`); Stage 2 implementation complete and verified (`phase_id = 72`); Stage 3 planning documented (`phase_id = 73`); Stage 3 implementation complete (`phase_id = 74`); Stage 3 stabilization complete (`phase_id = 75`); account-backed multiplayer/UX stabilization follow-up complete (`phase_id = 76`); next stabilization follow-up planning documented (`phase_id = 77`); §28.13 stabilization follow-up implemented (`phase_id = 78`); Stage 4 planning documented (`phase_id = 79`); Stage 4 implemented (`phase_id = 80`); Stage 5 planning documented (`phase_id = 81`); Stage 5 implemented and verified (`phase_id = 82`-`85`); Stage 6 planning documented (`phase_id = 86`); Stage 6 testing addendum + Stage 7 planning documented (`phase_id = 87`); Stage 6 implemented and verified (`phase_id = 88`-`90`); Stage 6 safety backup to GitHub `main` authorized/tracked (`phase_id = 91`); Stage 7 execution opened (`phase_id = 92`); Stage 7 core stabilization fixes implemented (`phase_id = 93`); Stage 7 verification and handoff tracked (`phase_id = 94`); Stage 8 planned (`phase_id = 95`) and implemented/verified (`phase_id = 96`-`97`); Stage 9 planning documented (`phase_id = 98`); Stage 9 implemented and verified (`phase_id = 99`-`100`); Stage 10 planned (`phase_id = 101`) and implemented/verified (`phase_id = 102`-`103`); post-Stage-10 safety backup branch/Draft PR created (`phase_id = 104`); Final Stabilization & Broad Debugging Pass planned (`phase_id = 105`) and completed (`phase_id = 106`-`109`); Stage 12 planned and implemented/verified (`phase_id = 110`-`113`); Stage 13 planned and implemented/verified (`phase_id = 114`-`117`); Stage 14 planned, implemented, and verified (`phase_id = 118`-`121`); Stage 15 planned, implemented, and verified (`phase_id = 122`-`125`); Stage 16 planned, implemented, and verified (`phase_id = 126`-`130`)**: Stage 1 delivered bug fixes and async multiplayer. Stage 2 delivered live Practice/Daily multiplayer foundations that were later retired by Stage 8. Stage 3 delivered ELO/rating, scoring, matchmaking, custom-game support, Stats summaries, and additive Supabase competitive tables. Stabilization corrected online transport/ownership defects, account-backed matchmaking, multiplayer play surfaces, forfeit, password reset, mobile UI regressions, Daily Multiplayer refresh/entry behavior, daily participation limits, rival identity, countdown navigation, creator-only cancellation, per-user active limits, spectator foundations, Stage 5 UX/correctness issues, Stage 6 realtime/Daily cancellation stability bugs, and Stage 7 whole-game audit fixes. Stage 8 unified the active multiplayer experience into one durable Multiplayer model with Practice chess clocks and Daily no-clock preservation. Stage 9 fixed timed Practice board/clock synchronization, added Practice Multiplayer Hard Mode, and added fair OG/GO scoring. Stage 10 fixed the reported cross-client board/keyboard projection bug plus nearby timed Practice clock/draft reset bugs. The post-Stage-10 backup branch and Draft PR preserve that state on GitHub without merging. The final stabilization pass is complete under `phase_id = 109`. Stage 12 completed targeted Hard Mode, responsiveness, sound, and realtime-row-churn fixes. Stage 13 fixed the scoped Practice solo UX regressions and Multiplayer GO solved-puzzle propagation. Stage 14 completed hidden/inert Multiplayer foundations, low-risk nonparticipant/spectator-adjacent hardening, full verification, real Supabase-backed multi-context browser E2E, and preview verification. Stage 15 completed GO solved-row hold prior-puzzle visibility and authenticated Practice seed uniqueness with full local, browser, Supabase, resource, and preview verification. Stage 16 completed the extremely narrow Practice Multiplayer GO previous-solution stack and prior-solution keyboard-state fixes with full local, browser, Supabase, resource, and preview verification. Further PRs, merges, releases, full dedicated Multiplayer tab work, out-of-scope mode changes, and later-phase work remain gated. |
 
-> **Current execution gate:** Phase 23 Stage 15 is complete and verified under `phase_id = 125`; await user review. Do not merge the backup PR, create a new PR, release, implement the full dedicated Multiplayer tab, expand spectators, add notification/history/theme/bot work, change scoring/rating rules, start broader redesign, or begin later phase work until explicitly approved.
+> **Current execution gate:** Phase 23 Stage 16 final verification and handoff are complete under `phase_id = 130`. The Stage 16 changes are ready for user review only. PR creation, merge, release, Daily Multiplayer GO changes, Multiplayer OG changes, solo-mode changes, Stage 15 Practice seed changes, scoring/rating work, full dedicated Multiplayer tab work, spectator expansion, and later-phase work remain gated until the user explicitly authorizes the next step.
 
 ## 1. Operating Rules
 
@@ -5939,6 +5947,174 @@ Passed:
 - Vercel preview deployed successfully. The direct preview is deployment-protected, so a protected share URL is provided only in the final chat and intentionally not committed to repo docs.
 
 No PR, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, notifications, floating manager, bots/social/export work, scoring/rating change, broad refactor, redesign, or out-of-scope work was performed.
+
+### 28.54 Stage 16 Planning — Practice Multiplayer GO Bug Fixes (`phase_id = 126`)
+
+**Authorization status**: planning and governance only. `PHASE-23-STAGE-16-PRACTICE-MULTIPLAYER-GO-BUGFIXES-SPEC-2026-06-08.md` is the binding Stage 16 source of truth.
+
+This planning step does **not** authorize source-code edits, test changes, UI/component work, Supabase migrations, configuration changes, implementation branches, PR creation, merge, release, production deployment, full dedicated Multiplayer tab implementation, spectator expansion, deferred feature work, scoring/rating changes, broad refactoring, redesign, or Stage 16 execution.
+
+The user prompt referenced `phase_id = 123`, but the current repository ledger already contains `progress/PROGRESS-STEP-123.md` through `progress/PROGRESS-STEP-125.md` for Stage 15 execution, focused fixes, and final verification. To preserve the sequential progress invariant and avoid overwriting Stage 15 records, this planning pass uses the next available progress id: `phase_id = 126`.
+
+#### 28.54.1 Stage 16 Goal
+
+Stage 16 is an extremely narrow targeted bug-fix stage for **Practice Multiplayer GO only**. It has exactly two scoped bugs:
+
+1. **Missing previous solutions in the GO chain stack**: every previously completed puzzle in a Practice Multiplayer GO chain must remain accumulated and visible for every subsequent puzzle.
+2. **Keyboard state not reflecting prior solutions**: letters that are gray or orange on the board from prior GO solutions must be reflected correctly on the on-screen keyboard for the current Practice Multiplayer GO puzzle.
+
+#### 28.54.2 Scope Boundaries
+
+Only Practice Multiplayer GO may be investigated or changed during future Stage 16 execution. The following are explicitly out of scope:
+
+- Daily Multiplayer GO, even if a similar symptom is found.
+- Multiplayer OG, which the user confirmed is working correctly.
+- Solo Practice GO, solo Daily GO, Daily Solo, Practice solo, and all other solo modes.
+- The Stage 15 authenticated Practice seed system.
+- Broader GO chain, keyboard, multiplayer architecture, scoring/rating, spectator, notification, floating-manager, bot/social/export, History/Theme, full dedicated Multiplayer tab, PR, merge, release, production deployment, broad refactor, redesign, or later-phase work.
+
+#### 28.54.3 Invariants To Preserve
+
+Future Stage 16 execution must preserve:
+
+- Stage 12 wins: Practice Multiplayer Hard Mode enforcement, keyboard responsiveness, sound playback, row-write reduction, stale-save protections, timed Practice behavior, and scoring/result settlement.
+- Stage 13 wins: Practice solo one-shot resume behavior, submitted-row animation stability, post-game results visibility, Multiplayer GO solved-row hold, and coordinated advancement.
+- Stage 14 wins: hidden/inert Multiplayer foundations, Calendar/Practice as active multiplayer entry points, nonparticipant gameplay guard, and unified `async_multiplayer_games` path.
+- Stage 15 wins: GO solved-row hold prior-puzzle visibility and authenticated Practice per-account seeding.
+- Daily Multiplayer as strictly asynchronous, five letters, UTC-day keyed, no-clock, no-Hard-Mode-control, answer-separated, and claim-safe.
+- `playerSessions` as canonical for per-viewer multiplayer validation/mutation and shared `serializedSession` as compatibility/answer plumbing only.
+
+#### 28.54.4 Required Future Execution Discipline
+
+If Stage 16 execution is later authorized, use the established reproduce-first, small-change-then-verify workflow:
+
+1. Protect the current worktree and capture a lightweight resource baseline before browser work.
+2. Reproduce both Practice Multiplayer GO bugs with clear evidence before source fixes.
+3. Prioritize missing previous solutions in the GO stack, then prior-solution keyboard state.
+4. Make one minimal Practice Multiplayer GO-only fix at a time.
+5. Run focused verification immediately after each logical fix.
+6. Use real two-client Supabase-backed browser E2E with isolated authenticated contexts for any multiplayer behavior claim.
+7. Pair browser evidence with remote Supabase probes/cleanup where relevant.
+8. Finish with focused changed-area tests, full lint/test/build/API typecheck/diff gate, desktop/tablet/390px smoke, resource checks, and a preview only if execution is later authorized.
+
+#### 28.54.5 High-Conflict Surfaces And Suggested Lanes
+
+Likely high-conflict surfaces for later execution:
+
+- `src/multiplayer/MultiplayerGameSurface.tsx`
+- `src/multiplayer/multiplayer.ts`
+- multiplayer GO display/projection helpers
+- focused multiplayer GO tests
+- `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-*.md`, `agents.md`, and `memory.md`
+
+Suggested lanes if execution is later parallelized:
+
+- **Practice Multiplayer GO display lane**: reproduce missing accumulated previous solutions and map the display projection.
+- **Practice Multiplayer GO keyboard lane**: reproduce gray/orange prior-solution keyboard state gaps and design the smallest projection fix.
+- **Verification lane**: real two-client Supabase-backed Practice Multiplayer GO E2E, remote probes/cleanup, Stage 12-15 invariant checks, responsive/resource smoke.
+- **Coordinator lane**: high-conflict integration, governance/progress updates, full gate, preview, and handoff.
+
+#### 28.54.6 Gate
+
+This `phase_id = 126` planning step is complete when governance/tracking surfaces are updated and the user receives a summary. Stage 16 implementation remains gated until the user explicitly authorizes execution in a later prompt.
+
+### 28.55 Stage 16 Execution Kickoff — Protected State, Resource Baseline, And Reproduction Plan (`phase_id = 127`)
+
+**Authorization status**: execution explicitly authorized by the user. This checkpoint records the required starting state before any Stage 16 source-code fixes.
+
+#### 28.55.1 Protected Starting State
+
+- Active branch: `codex/phase-23-stage-15-final`.
+- Starting worktree: dirty with the Stage 16 planning/governance files already present (`AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, `agents.md`, `memory.md`, `progress/PROGRESS.csv`, `PHASE-23-STAGE-16-PRACTICE-MULTIPLAYER-GO-BUGFIXES-SPEC-2026-06-08.md`, and `progress/PROGRESS-STEP-126.md`).
+- The current local repository state remains the source of truth. No reset, rebase, pull-over, branch switch, discard, force-push, branch deletion, PR, merge, or release is authorized.
+
+#### 28.55.2 Resource Baseline
+
+Before dev-server/browser testing, a lightweight resource snapshot found:
+
+- No local Vite listener on `127.0.0.1:5173` or `127.0.0.1:5174`.
+- `top -l 1 -o mem` reported 537 total processes, load average about `3.65, 3.69, 3.07`, CPU about 60% idle, and physical memory at `17G used` with `6286M compressor` and `145M unused`.
+- `vm_stat` reported 5,209 free pages, 1,848,284 pages stored in the compressor, and no new Stage 16-owned long-running process yet.
+- The highest-memory processes were pre-existing user/system apps such as Obsidian, Finder, Eloquent, Chrome, Codex, VS Code, Python, and WindowServer. Stage 16 browser work should use one Vite server, minimal browser contexts, sequential heavy gates, and explicit cleanup.
+
+#### 28.55.3 Reproduction Plan
+
+Stage 16 must reproduce both Practice Multiplayer GO bugs before source fixes:
+
+1. **Previous-solution stack**: create/join a Practice Multiplayer GO lobby with two authenticated contexts, solve multiple GO puzzles, and inspect both clients on later puzzle indexes where multiple prior solution rows should remain visible and accumulated.
+2. **Prior-solution keyboard state**: in the same Practice Multiplayer GO flow where possible, compare gray/orange visible board evidence from prior GO solutions with the current on-screen keyboard state on both host and rival.
+
+#### 28.55.4 Scope Boundary And Verification Plan
+
+Execution remains strictly limited to Practice Multiplayer GO display/projection behavior. Daily Multiplayer GO, Multiplayer OG, solo modes, the Stage 15 authenticated Practice seed system, Daily OG/GO deterministic selection, scoring/rating, spectator features, full Multiplayer tab work, and broad architecture changes remain out of scope.
+
+The intended verification path is focused regression coverage for each bug, targeted browser checks, real two-client Supabase-backed Practice Multiplayer GO E2E, remote Supabase probes/cleanup where relevant, Stage 12-15 non-regression checks, full lint/test/build/API typecheck/diff gate, responsive smoke, resource snapshot, and Vercel preview/share verification before final handoff.
+
+### 28.56 Stage 16 Focused Reproduction And Fixes — Practice Multiplayer GO Projection (`phase_id = 128`)
+
+Focused component regressions reproduced both scoped Stage 16 bugs before source fixes:
+
+1. On Practice Multiplayer GO puzzle 3, after puzzles 1 and 2 were solved and a shared current-puzzle move arrived, the rival display could lose an accumulated prior solution row and render stale/partial stack state.
+2. In the same projected later-puzzle state, a prior-only gray/orange evidence letter remained an unknown keyboard key instead of using the app's existing keyboard color precedence.
+
+The targeted fix stays in `src/multiplayer/MultiplayerGameSurface.tsx`:
+
+- Practice GO display projection now preserves the prior-row prefix before overlaying shared durable moves.
+- Keyboard colors are derived from the merged display evidence rather than only the current shared move list.
+- A stale Practice GO solved-row hold is not re-entered after a newer move has arrived.
+
+This remains display/projection-only and does not mutate another player's canonical `playerSessions`. Daily Multiplayer GO, Multiplayer OG, solo modes, and the Stage 15 Practice seed system were not intentionally modified.
+
+Focused verification:
+
+- `npx vitest run src/multiplayer/MultiplayerGameSurface.test.tsx` failed before the fix on the two new Stage 16 regression tests.
+- `npx vitest run src/multiplayer/MultiplayerGameSurface.test.tsx` passes after the fix (1 file, 6 tests).
+
+At this `phase_id = 128` checkpoint, final verification still remained pending and was completed later under `phase_id = 129` and `phase_id = 130`.
+
+### 28.57 Stage 16 Real Browser E2E And Remote Probe Checkpoint (`phase_id = 129`)
+
+Real two-client Supabase-backed browser E2E verified the scoped Practice Multiplayer GO fixes against the local app server and the configured Supabase project.
+
+Evidence:
+
+- Temporary host/rival authenticated users were created through Supabase admin APIs, signed into two isolated browser contexts through the app UI, and then deleted during cleanup.
+- The host created a Practice Multiplayer GO lobby through the UI; the rival joined through the UI.
+- The run solved the first two GO puzzles, advanced to puzzle 3, submitted a valid distinct wrong guess, and verified both clients showed the accumulated row sequence `erhus` -> `ernes` -> `escar`.
+- The keyboard check used prior-only absent evidence (`H`) from the visible prior GO solution rows and confirmed that key was no longer in the unknown keyboard state on both clients.
+- The run finished the five-puzzle GO chain and remotely probed the durable row as `status = won`, `moves = 6`, `scope = practice`, `mode = go`, with both `player-one` and `player-two` sessions present.
+- Remote cleanup removed the touched `async_multiplayer_games` row (`multiplayer-practice-go-14636837-c422-4ed7-af99-9c4088218e25`) and both temporary auth users. A follow-up probe confirmed the two Stage 16 E2E game ids no longer had rows.
+
+This checkpoint also tightened the Stage 16 keyboard-color fix so merged display-evidence keyboard derivation is gated to Practice GO only; non-Practice-GO multiplayer modes keep the previous keyboard source path. Focused changed-area verification after that tightening passed:
+
+- `npx vitest run src/multiplayer/MultiplayerGameSurface.test.tsx src/multiplayer/multiplayer.test.ts src/game/go/session.test.ts src/account/practiceSeeds.test.ts` passed (4 files, 44 tests).
+
+### 28.58 Stage 16 Final Verification And Handoff (`phase_id = 130`)
+
+Stage 16 is complete for user review.
+
+Final fix summary:
+
+- Practice Multiplayer GO now preserves every accumulated prior GO solution row during later-puzzle display projection before overlaying shared durable moves.
+- Practice Multiplayer GO keyboard colors now derive from the merged visible board evidence, so prior gray/orange rows color the current puzzle keyboard through the existing precedence rules.
+- The stale solved-row hold guard prevents an older Practice GO solved-row transition from reappearing after a newer move arrives.
+- The fix remains display/projection-only and does not mutate rival canonical `playerSessions`.
+
+Final verification:
+
+- Focused changed-area tests passed: `npx vitest run src/multiplayer/MultiplayerGameSurface.test.tsx src/multiplayer/multiplayer.test.ts src/game/go/session.test.ts src/account/practiceSeeds.test.ts` (4 files, 44 tests).
+- Full automated gate passed: `npm run lint`, `npm run test` (73 files, 480 tests), `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, and `git diff --check`.
+- Desktop, tablet-like, and 390px browser smoke passed with no new console errors and no document-level horizontal overflow.
+- Real two-client Supabase-backed Practice Multiplayer GO E2E passed twice; the strongest run verified accumulated rows on both clients (`erhus` -> `ernes` -> `escar`), prior-only absent keyboard evidence (`H`) on both clients, final five-puzzle completion (`status = won`, six moves, both `playerSessions`), and no manual duplicate rival answer entry.
+- Remote Supabase probes confirmed durable row state before cleanup and confirmed the Stage 16 E2E game rows were deleted afterward along with temporary auth users.
+- Resource checks confirmed the Stage 16 Vite/dev-server and browser processes were closed and no Stage 16-owned runaway CPU/RAM/disk pressure remained.
+- Vercel preview deployed successfully and the protected preview responded with HTTP 200 through authenticated Vercel CLI verification: `https://brrrdle-66ikyvyc0-ryanjosephkamps-projects.vercel.app`. A deployment-specific shareable-link protection-bypass record was created with a 30-day TTL, but the Vercel CLI/API response did not return a verified browser share URL; no bypass token was committed to repository docs.
+
+Scope confirmation:
+
+- Only Practice Multiplayer GO behavior was changed.
+- Daily Multiplayer GO, Multiplayer OG, solo modes, Daily determinism, and the Stage 15 authenticated Practice seed system were not modified.
+- No PR, merge, release, full dedicated Multiplayer tab implementation, spectator expansion, notifications, floating manager, bots/social/export work, scoring/rating changes, broad refactor, redesign, or out-of-scope work was performed.
 
 ---
 
