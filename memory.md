@@ -38,12 +38,13 @@
 - Stage 15 planning for GO transition polish plus authenticated Practice seed fixes is documented under `phase_id = 122`; execution and final verification are complete under `phase_id = 123` through `phase_id = 125`.
 - Stage 16 planning for Practice Multiplayer GO-only bug fixes is documented under `phase_id = 126`; execution is opened under `phase_id = 127`; focused fixes are tracked under `phase_id = 128`; real two-client E2E and remote cleanup are tracked under `phase_id = 129`; final verification and handoff are complete under `phase_id = 130`.
 - Stage 17 planning for the Solo Practice GO Customize lock bug is documented under `phase_id = 131`; execution is opened under `phase_id = 132`; final verification and handoff are complete under `phase_id = 133`.
+- Stage 18 planning for Multiplayer GO final puzzle behavior and Solo Practice GO Hard Mode checkbox fixes is documented under `phase_id = 134`; execution is opened under `phase_id = 135`; final verification and handoff are complete under `phase_id = 136`.
 - Do not create further Phase 23 PRs, merges, releases, implement the full dedicated Multiplayer tab, expand spectators beyond low-risk hardening, start deferred feature work, or start later-phase implementation until the user explicitly approves that later step.
 
 ## 2. Current Governance Files
 
 - `CONSTITUTION.md`: binding project constitution. Version 3.4 after this scaffolding pass.
-- `AGENT-IMPLEMENTATION-PLAN.md`: active implementation plan. Version 3.58 after the Stage 17 final verification and handoff.
+- `AGENT-IMPLEMENTATION-PLAN.md`: active implementation plan. Version 3.61 after the Stage 18 final verification and handoff checkpoint.
 - `PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`: approved Phase 23 spec.
 - `agents.md`: multi-agent workflow guide.
 - `memory.md`: this persistent state file.
@@ -369,6 +370,9 @@ Recent IDs:
 - `131`: Phase 23 Stage 17 planning for the Solo Practice GO Customize lock bug.
 - `132`: Phase 23 Stage 17 execution kickoff; protected starting state, baseline resources, Solo Practice GO-only scope boundary, and reproduction plan recorded before source fixes.
 - `133`: Phase 23 Stage 17 final verification and handoff; Solo Practice GO Customize now ignores setup-prefilled GO rows and locks only after an actual submitted guess.
+- `134`: Phase 23 Stage 18 planning for Multiplayer GO final puzzle behavior and Solo Practice GO Hard Mode checkbox fixes; implementation remains gated.
+- `135`: Phase 23 Stage 18 execution kickoff; protected starting state, baseline resources, strict scope boundary, and reproduction plan recorded before source fixes.
+- `136`: Phase 23 Stage 18 final verification and handoff; Multiplayer GO final puzzle now continues until a correct solve, terminal solved-row hold is verified for Practice/Daily Multiplayer GO, and Solo Practice GO Hard Mode checkbox toggling is restored.
 
 Use the next available integer for the next major step. Do not overwrite existing progress files.
 
@@ -376,7 +380,7 @@ Use the next available integer for the next major step. Do not overwrite existin
 
 For the next Phase 23 step:
 
-1. Re-read `CONSTITUTION.md`, `agents.md`, this file, `AGENT-IMPLEMENTATION-PLAN.md` §28, `progress/PROGRESS-STEP-69.md` through `progress/PROGRESS-STEP-133.md`, the Phase 23 spec, and the relevant Stage 4/5/6/7/8/9/10/final-stabilization/Stage 12/Stage 13/Stage 14/Stage 15/Stage 16/Stage 17 planning and progress notes.
+1. Re-read `CONSTITUTION.md`, `agents.md`, this file, `AGENT-IMPLEMENTATION-PLAN.md` §28, `progress/PROGRESS-STEP-69.md` through `progress/PROGRESS-STEP-136.md`, the Phase 23 spec, and the relevant Stage 4/5/6/7/8/9/10/final-stabilization/Stage 12/Stage 13/Stage 14/Stage 15/Stage 16/Stage 17/Stage 18 planning and progress notes.
 2. Confirm the branch and pull latest remote changes.
 3. Confirm the user has explicitly authorized any PR work, merge, release, dedicated Multiplayer tab work, deferred feature work, or later-phase implementation before making source-code or migration changes.
 4. Keep final `src/app/App.tsx`, progress tracking, and changelog integration under coordinator ownership.
@@ -638,6 +642,30 @@ Stage 17 final verification note:
 - The fix is narrow: Solo Practice GO Customize locks only after an actual submitted guess beyond setup-prefilled rows.
 - Verification passed focused changed-area tests, wider focused regressions, lint, full tests, build, API typecheck, diff check, desktop/tablet/390px smoke, Solo Practice OG non-regression, post-first-guess lock behavior, New go chain reset, and final resource checks.
 - No Daily GO, Multiplayer GO, Solo Practice OG behavior, Stage 15 Practice seed, scoring/rating, broad refactor, PR, merge, release, or out-of-scope work was performed.
+
+Stage 18 planning note:
+
+- `phase_id = 134` documents Stage 18 planning from `PHASE-23-STAGE-18-MULTIPLAYER-GO-FINAL-PUZZLE-AND-SOLO-PRACTICE-GO-HARD-MODE-FIXES-SPEC-2026-06-08.md`.
+- Stage 18 is a final targeted three-bug pass inside Phase 23: Solo Practice GO Hard Mode checkbox toggling, Multiplayer GO final solved-row hold behavior, and Multiplayer GO final-puzzle no-premature-termination until a correct solve.
+- Future execution must reproduce first, prioritize the final-puzzle termination bug, use small targeted changes, and use real two-client Supabase-backed browser E2E for any Practice or Daily Multiplayer GO claims.
+- Preserve all Stage 12 through Stage 17 wins, Daily Multiplayer strict async/five-letter/UTC-day/no-clock/no-Hard-Mode-control/answer-separated/claim-safe invariants, `playerSessions` as canonical per-viewer state, shared `serializedSession` as compatibility/answer plumbing only, Solo Practice OG behavior, Daily OG/GO determinism, and no scoring/rating/ELO rule changes.
+- Out of scope: Solo Practice OG changes, Daily Solo GO, any OG mode, non-final GO advancement rules, Multiplayer GO Hard Mode enforcement, Customize behavior, resume/seed behavior, Stage 15 authenticated Practice seeds, UI layout/styling/copy/theming, broad GO/multiplayer/session refactors, PR creation, merge, release, production deployment, full Multiplayer tab work, spectator expansion, Phase 24 work, and later-phase work.
+- This planning pass made governance/progress updates only. Stage 18 implementation remains gated until explicit user authorization.
+
+Stage 18 execution kickoff note:
+
+- `phase_id = 135` opens Stage 18 execution after explicit user authorization.
+- Protected starting state: active branch `main`, with Stage 18 planning/governance dirt preserved as the local source of truth.
+- Baseline resource snapshot found no Vite/dev-server listener on `5173`, `5174`, `3000`, or `4173`; one unrelated Python listener on `127.0.0.1:8765`; and high pre-existing memory pressure (`17G used`, `123M unused`, about `7047M` compressor) before Stage 18 browser work.
+- No source fix has been made at kickoff. The next required step is to reproduce the Stage 18 bugs before editing: prioritize Multiplayer GO final-puzzle premature termination, then final solved-row hold, then Solo Practice GO Hard Mode checkbox toggling.
+
+Stage 18 final verification note:
+
+- `phase_id = 136` completes Stage 18 for user review.
+- Multiplayer GO final-puzzle premature termination was reproduced in focused coverage for Practice and Daily, then fixed in the multiplayer GO submission path so the final puzzle keeps alternating until a correct solve without changing scoring/rating rules or non-final advancement.
+- Practice and Daily Multiplayer GO real two-client Supabase-backed browser E2E verified four wrong final-puzzle guesses stayed `playing`, the final correct solve reached `won`, and the browser showed `Advancing to final results` before terminal definitions/results.
+- Solo Practice GO Hard Mode checkbox toggling was reproduced as disabled on a fresh chain and fixed by using the actual-submitted-guess lock predicate; Solo Practice OG remains unchanged.
+- Verification passed focused changed-area tests, lint, 488 full-suite tests, build, API typecheck, diff check, desktop/tablet/390px smoke, remote Supabase probes/cleanup, and resource checks. No PR, merge, release, production deployment, full Multiplayer tab work, spectator expansion, scoring/rating change, broad refactor, Phase 24 work, or out-of-scope work was performed.
 
 ## 8. Document Organization Decision
 

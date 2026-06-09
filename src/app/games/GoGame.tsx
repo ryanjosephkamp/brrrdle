@@ -230,6 +230,9 @@ function GoGameSession({
   const canReveal = scope === 'practice' && session.status === 'playing' && currentPuzzle.guesses.length > 0
   const solvedPuzzles = endStateRevealed ? session.puzzles.filter((puzzle) => puzzle.status === 'won') : []
   const customizeLocked = hasSubmittedGoGuess(session, setup)
+  const hardModeLocked = scope === 'practice'
+    ? customizeLocked
+    : session.puzzles.some((puzzle) => puzzle.guesses.length > 0)
 
   useEffect(() => {
     if (scope !== 'daily' || !setup.dateKey) {
@@ -434,7 +437,7 @@ function GoGameSession({
           <input
             checked={session.hardMode}
             className="h-4 w-4 accent-cyan-300"
-            disabled={session.puzzles.some((puzzle) => puzzle.guesses.length > 0)}
+            disabled={hardModeLocked}
             onChange={(event) => setSession((currentSession) => setGoHardMode(currentSession, event.target.checked))}
             type="checkbox"
           />

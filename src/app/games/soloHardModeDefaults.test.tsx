@@ -53,6 +53,49 @@ describe('solo game defaults', () => {
     expect(html).toContain('Hard mode')
   })
 
+  it('keeps the Hard Mode toggle enabled on fresh practice go chains', () => {
+    const html = renderToStaticMarkup(
+      <GoGame
+        coins={0}
+        keyboardDisabled
+        onSaveDifficultyDefault={() => undefined}
+        onSaveGoPuzzleCountDefault={() => undefined}
+        onSpendCoins={spendNothing}
+        scope="practice"
+      />,
+    )
+
+    const hardModeInput = html.match(/<input[^>]*type="checkbox"[^>]*>/)?.[0]
+    expect(hardModeInput).toBeDefined()
+    expect(hardModeInput).not.toContain('disabled')
+  })
+
+  it('locks the Hard Mode toggle on practice go chains after the first submitted guess', () => {
+    const html = renderToStaticMarkup(
+      <GoGame
+        coins={0}
+        initialResume={{
+          difficulty: DEFAULT_DIFFICULTY_TIER,
+          goPuzzleCount: DEFAULT_GO_PUZZLE_COUNT,
+          mode: 'go',
+          scope: 'practice',
+          serializedSession: submitGoAnswer(),
+          updatedAt: '2026-06-08T22:00:00.000Z',
+          wordLength: 5,
+        }}
+        keyboardDisabled
+        onSaveDifficultyDefault={() => undefined}
+        onSaveGoPuzzleCountDefault={() => undefined}
+        onSpendCoins={spendNothing}
+        scope="practice"
+      />,
+    )
+
+    const hardModeInput = html.match(/<input[^>]*type="checkbox"[^>]*>/)?.[0]
+    expect(hardModeInput).toBeDefined()
+    expect(hardModeInput).toContain('disabled')
+  })
+
   it('keeps Customize unlocked on fresh practice og puzzles', () => {
     const html = renderToStaticMarkup(
       <OgGame

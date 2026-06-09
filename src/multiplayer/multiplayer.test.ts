@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { DEFAULT_DIFFICULTY_TIER } from '../data/difficulty'
 import { createPracticeGoSetup, createPracticeOgSetup, restoreGoSession, restoreOgSession } from '../game'
 import {
   MAX_MULTIPLAYER_GAMES,
@@ -19,6 +20,7 @@ import {
   joinMultiplayerGame,
   submitMultiplayerGuess,
 } from './multiplayer'
+import { createDailyMultiplayerGoSetup } from './dailyMultiplayer'
 
 describe('multiplayer foundation', () => {
   it('creates a daily multiplayer game with a UTC date key and deadline', () => {
@@ -273,6 +275,79 @@ describe('multiplayer foundation', () => {
     expect(playerTwoRestored.status).toBe('won')
     expect(playerOneRestored.priorAnswers).toEqual(answers)
     expect(playerTwoRestored.priorAnswers).toEqual(answers)
+  })
+
+  it.each(['practice', 'daily'] as const)('keeps the final %s go puzzle playing until a correct solve', (scope) => {
+    const game = createMultiplayerGame({
+      createdAt: '2026-06-04T12:00:00.000Z',
+      dailyDateKey: '2026-06-04',
+      goPuzzleCount: 5,
+      mode: 'go',
+      playerUserIds: { 'player-one': 'host-user' },
+      scope,
+      seed: 1,
+      wordLength: 5,
+    })
+    const setup = scope === 'daily'
+      ? createDailyMultiplayerGoSetup(new Date('2026-06-04T00:00:00.000Z'), DEFAULT_DIFFICULTY_TIER, 5)
+      : createPracticeGoSetup(5, 1)
+    const answers = getMultiplayerAnswerWords(game)
+    const joined = joinMultiplayerGame(addMultiplayerGame(createEmptyMultiplayerState(), game), {
+      gameId: game.id,
+      now: '2026-06-04T12:00:00.000Z',
+      userId: 'rival-user',
+    })
+    let state = joined.state
+    let current = joined.game!
+
+    for (let index = 0; index < answers.length - 1; index += 1) {
+      const submitted = submitMultiplayerGuess(state, {
+        gameId: current.id,
+        guess: answers[index],
+        now: `2026-06-04T12:00:${(index + 1).toString().padStart(2, '0')}.000Z`,
+        playerId: current.currentTurn,
+      })
+      expect(submitted.error).toBeUndefined()
+      state = submitted.state
+      current = submitted.game!
+      expect(current.status).toBe('playing')
+    }
+
+    const finalAnswer = answers[answers.length - 1]
+    const wrongGuesses = [...setup.validGuesses].filter((candidate) => candidate !== finalAnswer).slice(0, 4)
+    expect(wrongGuesses).toHaveLength(4)
+
+    for (const [index, wrongGuess] of wrongGuesses.entries()) {
+      const submitted = submitMultiplayerGuess(state, {
+        gameId: current.id,
+        guess: wrongGuess,
+        now: `2026-06-04T12:01:${(index + 1).toString().padStart(2, '0')}.000Z`,
+        playerId: current.currentTurn,
+      })
+      expect(submitted.error).toBeUndefined()
+      state = submitted.state
+      current = submitted.game!
+      expect(current.status).toBe('playing')
+    }
+
+    const playerOneSession = getMultiplayerSessionForPlayer(current, 'player-one')
+    const playerTwoSession = getMultiplayerSessionForPlayer(current, 'player-two')
+    expect(playerOneSession.mode).toBe('go')
+    expect(playerTwoSession.mode).toBe('go')
+    if (playerOneSession.mode !== 'go' || playerTwoSession.mode !== 'go') {
+      throw new Error('Expected GO player sessions')
+    }
+    expect(restoreGoSession(playerOneSession.session, setup.validGuesses).status).toBe('playing')
+    expect(restoreGoSession(playerTwoSession.session, setup.validGuesses).status).toBe('playing')
+
+    const solved = submitMultiplayerGuess(state, {
+      gameId: current.id,
+      guess: finalAnswer,
+      now: '2026-06-04T12:02:00.000Z',
+      playerId: current.currentTurn,
+    })
+    expect(solved.error).toBeUndefined()
+    expect(solved.game?.status).toBe('won')
   })
 
   it('expires in-progress daily multiplayer games after their UTC day changes', () => {

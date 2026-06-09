@@ -4,6 +4,31 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Phase 23 Stage 18 — Multiplayer GO Final Puzzle Behavior + Solo Practice GO Hard Mode Checkbox Fixes
+
+#### 23 Stage 18 final verification and handoff (`phase_id = 136`)
+- **Stage complete**: completed the final narrow Stage 18 three-bug pass for user review.
+- **Multiplayer GO final puzzle**: reproduced Practice/Daily Multiplayer GO final-puzzle premature termination in focused coverage, then fixed the multiplayer GO submission path so puzzle 5 keeps alternating after wrong guesses until a correct solve.
+- **Final solved-row hold**: strengthened terminal-puzzle coverage and verified both Practice and Daily Multiplayer GO show the all-green solved-row hold before final definitions/results.
+- **Solo Practice GO Hard Mode**: reproduced the fresh-chain disabled checkbox regression, then restored Practice GO Hard Mode toggling by using the actual-submitted-guess lock predicate; Solo Practice OG behavior remains unchanged.
+- **Verification**: focused changed-area tests pass (39); `npm run lint`, `npm run test` (488 passing), `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, and `git diff --check` pass cleanly.
+- **Browser/Supabase/resource**: desktop/tablet/390px smoke passed with no console errors or horizontal overflow; real two-client Supabase-backed Practice and Daily Multiplayer GO E2E passed with remote probes and cleanup; temporary users/rows/claims were deleted; final resource checks found no Stage 18-owned runaway process.
+- **Scope guard**: no PR, merge, release, production deployment, full dedicated Multiplayer tab implementation, spectator expansion, scoring/rating change, broad refactor, redesign, Phase 24 work, or out-of-scope work was performed.
+
+#### 23 Stage 18 execution kickoff (`phase_id = 135`)
+- **Execution opened**: recorded explicit authorization for Stage 18 execution from `PHASE-23-STAGE-18-MULTIPLAYER-GO-FINAL-PUZZLE-AND-SOLO-PRACTICE-GO-HARD-MODE-FIXES-SPEC-2026-06-08.md`.
+- **Protected state**: confirmed the active local branch is `main` with Stage 18 planning/governance dirt preserved as the source of truth.
+- **Baseline resources**: captured process/memory snapshots before source fixes or browser testing; no Vite/dev-server listener was present on the usual app ports, one unrelated Python listener was present on `127.0.0.1:8765`, and high pre-existing memory pressure was already present.
+- **Execution checklist**: documented reproduce-first sequencing for the Multiplayer GO final-puzzle premature-termination bug, Multiplayer GO final solved-row hold bug, and Solo Practice GO Hard Mode checkbox bug.
+- **Scope guard**: no source fixes have been made in this checkpoint. PR creation, merge, release, production deployment, full dedicated Multiplayer tab work, spectator expansion, scoring/rating changes, broad refactors, Phase 24 work, and out-of-scope work remain unauthorized.
+
+#### 23 Stage 18 planning (`phase_id = 134`)
+- **Implementation plan**: bumped `AGENT-IMPLEMENTATION-PLAN.md` to v3.59 and added §28.62 from `PHASE-23-STAGE-18-MULTIPLAYER-GO-FINAL-PUZZLE-AND-SOLO-PRACTICE-GO-HARD-MODE-FIXES-SPEC-2026-06-08.md`.
+- **Planned scope**: documented a final targeted three-bug pass for Solo Practice GO Hard Mode checkbox toggling, Multiplayer GO final solved-row hold behavior, and Multiplayer GO final-puzzle no-premature-termination until a correct solve.
+- **Execution discipline**: future execution must reproduce first, prioritize the final-puzzle termination bug, make small targeted changes, and use real two-client Supabase-backed browser E2E for Practice/Daily Multiplayer GO claims.
+- **Scope guard**: Solo Practice OG, Daily Solo GO, OG modes, scoring/rating/ELO, non-final GO advancement, Multiplayer GO Hard Mode enforcement, Customize behavior, Stage 15 Practice seeds, broad refactors, PR creation, merge, release, production deployment, full Multiplayer tab work, spectator expansion, Phase 24 work, and later-phase work remain out of scope.
+- **Gate**: documentation/planning only. No source code, tests, UI components, Supabase migrations, configuration changes, implementation branch, browser verification, PR, merge, release, or Stage 18 execution was performed.
+
 ### Phase 23 Stage 17 — Solo Practice GO Customize Lock Bug Fix
 
 #### 23 Stage 17 final verification and handoff (`phase_id = 133`)

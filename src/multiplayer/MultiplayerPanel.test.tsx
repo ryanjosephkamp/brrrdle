@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { DEFAULT_DIFFICULTY_TIER } from '../data/difficulty'
+import { createPracticeGoSetup } from '../game'
 import { DEFAULT_GO_PUZZLE_COUNT } from '../game/constants'
 import {
   addMultiplayerGame,
@@ -11,6 +12,7 @@ import {
   joinMultiplayerGame,
   submitMultiplayerGuess,
 } from './multiplayer'
+import { createDailyMultiplayerGoSetup } from './dailyMultiplayer'
 import { MultiplayerPanel } from './MultiplayerPanel'
 
 function noop() {}
@@ -156,15 +158,20 @@ describe('MultiplayerPanel', () => {
     expect(html).not.toContain('Time per side')
   })
 
-  it('keeps a completed go surface visible briefly before terminal definitions', () => {
+  it.each(['practice', 'daily'] as const)('keeps a completed %s go surface visible briefly before terminal definitions', (scope) => {
     const lobby = createMultiplayerGame({
+      createdAt: '2026-06-04T12:00:00.000Z',
+      dailyDateKey: '2026-06-04',
       goPuzzleCount: 5,
       mode: 'go',
       playerUserIds: { 'player-one': 'host-user' },
-      scope: 'practice',
+      scope,
       seed: 1,
       wordLength: 5,
     })
+    const setup = scope === 'daily'
+      ? createDailyMultiplayerGoSetup(new Date('2026-06-04T00:00:00.000Z'), DEFAULT_DIFFICULTY_TIER, 5)
+      : createPracticeGoSetup(5, 1)
     const joined = joinMultiplayerGame(addMultiplayerGame(createEmptyMultiplayerState(), lobby), {
       gameId: lobby.id,
       userId: 'rival-user',
@@ -172,7 +179,7 @@ describe('MultiplayerPanel', () => {
     const answers = getMultiplayerAnswerWords(joined.game!)
     let state = joined.state
     let current = joined.game!
-    for (const answer of answers) {
+    for (const answer of answers.slice(0, -1)) {
       const submitted = submitMultiplayerGuess(state, {
         gameId: current.id,
         guess: answer,
@@ -181,14 +188,36 @@ describe('MultiplayerPanel', () => {
       state = submitted.state
       current = submitted.game!
     }
+    const finalAnswer = answers[answers.length - 1]
+    const wrongGuesses = [...setup.validGuesses].filter((candidate) => candidate !== finalAnswer).slice(0, 4)
+    expect(wrongGuesses).toHaveLength(4)
+    for (const wrongGuess of wrongGuesses) {
+      const submitted = submitMultiplayerGuess(state, {
+        gameId: current.id,
+        guess: wrongGuess,
+        playerId: current.currentTurn,
+      })
+      expect(submitted.error).toBeUndefined()
+      state = submitted.state
+      current = submitted.game!
+      expect(current.status).toBe('playing')
+    }
+    const finalSubmitted = submitMultiplayerGuess(state, {
+      gameId: current.id,
+      guess: finalAnswer,
+      playerId: current.currentTurn,
+    })
+    state = finalSubmitted.state
+    current = finalSubmitted.game!
 
     const html = renderToStaticMarkup(
       <MultiplayerPanel
         authStatus="authenticated"
+        dailyDateKey="2026-06-04"
         defaultDifficulty={DEFAULT_DIFFICULTY_TIER}
         defaultGoPuzzleCount={DEFAULT_GO_PUZZLE_COUNT}
         onChange={noop}
-        scope="practice"
+        scope={scope}
         state={state}
         viewerUserId="host-user"
       />,
