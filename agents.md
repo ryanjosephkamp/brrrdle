@@ -43,6 +43,7 @@ The project now has enough parallelizable work that a clear coordination layer i
 - Stage 14 planning for post-Stage-13 polish, bug fixes, minimal Multiplayer tab foundations, and spectator foundation hardening is documented under `phase_id = 118`; execution and verification are complete under `phase_id = 119` through `phase_id = 121`.
 - Stage 15 planning for GO transition polish and authenticated Practice seed fixes is documented under `phase_id = 122`; execution and final verification are complete under `phase_id = 123` through `phase_id = 125`.
 - Stage 16 planning for Practice Multiplayer GO-only bug fixes is documented under `phase_id = 126`; execution is opened under `phase_id = 127`; focused Practice Multiplayer GO projection fixes are tracked under `phase_id = 128`; real two-client Supabase-backed E2E and remote cleanup are tracked under `phase_id = 129`; final verification and handoff are complete under `phase_id = 130`.
+- Stage 17 planning for the Solo Practice GO Customize lock bug is documented under `phase_id = 131`; execution is opened under `phase_id = 132`; final verification and handoff are complete under `phase_id = 133`.
 - Further PR creation, merges, release, full dedicated Multiplayer tab work, spectator expansion, deferred feature work, and later-phase work remain unauthorized until later explicit approval.
 
 ## 3. Authority Stack
@@ -73,7 +74,7 @@ Before accepting or assigning Phase 23 work, the coordinator should read:
 - `AGENT-IMPLEMENTATION-PLAN.md` §28.
 - `PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`.
 - `progress/PROGRESS.csv`.
-- The latest relevant progress reports, currently `progress/PROGRESS-STEP-106.md` through `progress/PROGRESS-STEP-130.md` for the final stabilization, Stage 12, Stage 13, Stage 14, Stage 15, and Stage 16 trail.
+- The latest relevant progress reports, currently `progress/PROGRESS-STEP-106.md` through `progress/PROGRESS-STEP-133.md` for the final stabilization, Stage 12, Stage 13, Stage 14, Stage 15, Stage 16, and Stage 17 trail.
 - This file and `memory.md`.
 
 Sub-agents should read the subset named in their work packet and must always read this file before parallel work.
@@ -282,6 +283,46 @@ Suggested execution lanes if later authorized:
 - **Coordinator lane**: `src/app/App.tsx` if needed, high-conflict integration, progress/changelog/memory updates, final gate, Vercel preview, and final report.
 
 Keep `src/app/games/`, `src/game/`, `src/game/go/`, shared keyboard/board UI, `src/multiplayer/`, `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-*.md`, `agents.md`, and `memory.md` single-writer or explicitly sequenced. Do not edit Daily Solo behavior except to preserve it, and do not change Daily Multiplayer invariants.
+
+### Phase 23 Stage 17 Coordination Notes
+
+Stage 17 planning is documented under `phase_id = 131`, execution is opened under `phase_id = 132`, and final verification/handoff are complete under `phase_id = 133` from `PHASE-23-STAGE-17-SOLO-PRACTICE-GO-CUSTOMIZE-LOCK-BUGFIX-SPEC-2026-06-08.md`.
+
+Stage 17 is an extremely narrow single-bug pass for **Solo Practice GO only**:
+
+- Bug: the Solo Practice GO Customize box incorrectly locks Difficulty and chain length on a brand-new GO chain before any guess has been submitted.
+- Correct behavior: match Solo Practice OG. Fresh Practice GO chains should keep Difficulty and chain length unlocked until the first submitted guess; after at least one guess, the options should lock.
+- Final behavior: `GoGame` ignores setup-prefilled GO carry-over rows when deciding whether Practice GO Customize should lock, so only an actual submitted guess beyond those prefilled rows locks the options.
+
+Strict scope boundaries:
+
+- Do not touch Daily GO, Daily Multiplayer GO, Practice Multiplayer GO, any Multiplayer GO path, Multiplayer OG, Solo Practice OG, other solo modes, or the Stage 15 authenticated Practice seed system.
+- Do not change Hard Mode, resume behavior, scoring, GO chain advancement, Customize layout/styling/copy, broad Practice GO architecture, broad Customize architecture, PR creation, merge, release, production deployment, or later-phase work.
+- Future follow-up must preserve the Stage 17 fix: fresh Solo Practice GO chains stay unlocked, post-first-guess Practice GO chains lock, and `New go chain` resets Customize to unlocked.
+- If any future work touches this surface, use focused verification for Solo Practice GO fresh/post-guess behavior and Solo Practice OG non-regression.
+- If the root cause appears to require an out-of-scope surface, stop and report rather than broadening the fix.
+
+Likely high-conflict surfaces if execution is later authorized:
+
+- Solo Practice GO game surface / Customize-locking logic.
+- Shared Practice game option helpers, only if the root cause is proven there and the change can stay behaviorally Solo Practice GO-scoped.
+- Focused Solo Practice GO tests.
+- `AGENT-IMPLEMENTATION-PLAN.md`
+- `CHANGELOG.md`
+- `progress/PROGRESS.csv`
+- `progress/PROGRESS-STEP-*.md`
+- `agents.md`
+- `memory.md`
+
+Recommended future follow-up lanes:
+
+- **Reproduction lane**: browser or focused harness proof that a fresh Solo Practice GO chain shows the lock message before a guess.
+- **Comparison lane**: read-only comparison with Solo Practice OG locking behavior.
+- **Fix lane**: one small Solo Practice GO locking-condition change.
+- **Verification lane**: focused tests, Solo Practice OG non-regression, full local gate, responsive smoke.
+- **Coordinator lane**: governance/progress updates and final handoff.
+
+Preserve Stage 12 Hard Mode/keyboard/sound/row-write/timed/scoring wins, Stage 13 Practice/GO wins, Stage 14 hidden foundations/nonparticipant guard/unified repository path, Stage 15 GO transition/Practice seed wins, Stage 16 Practice Multiplayer GO projection wins, and all Daily Multiplayer invariants.
 
 ### Phase 23 Stage 16 Coordination Notes
 

@@ -37,12 +37,13 @@
 - Stage 14 planning for post-Stage-13 polish, bug fixes, minimal Multiplayer tab foundations, and spectator foundation hardening is documented under `phase_id = 118`; execution and verification are complete under `phase_id = 119` through `phase_id = 121`.
 - Stage 15 planning for GO transition polish plus authenticated Practice seed fixes is documented under `phase_id = 122`; execution and final verification are complete under `phase_id = 123` through `phase_id = 125`.
 - Stage 16 planning for Practice Multiplayer GO-only bug fixes is documented under `phase_id = 126`; execution is opened under `phase_id = 127`; focused fixes are tracked under `phase_id = 128`; real two-client E2E and remote cleanup are tracked under `phase_id = 129`; final verification and handoff are complete under `phase_id = 130`.
+- Stage 17 planning for the Solo Practice GO Customize lock bug is documented under `phase_id = 131`; execution is opened under `phase_id = 132`; final verification and handoff are complete under `phase_id = 133`.
 - Do not create further Phase 23 PRs, merges, releases, implement the full dedicated Multiplayer tab, expand spectators beyond low-risk hardening, start deferred feature work, or start later-phase implementation until the user explicitly approves that later step.
 
 ## 2. Current Governance Files
 
 - `CONSTITUTION.md`: binding project constitution. Version 3.4 after this scaffolding pass.
-- `AGENT-IMPLEMENTATION-PLAN.md`: active implementation plan. Version 3.55 after the Stage 16 final verification and handoff.
+- `AGENT-IMPLEMENTATION-PLAN.md`: active implementation plan. Version 3.58 after the Stage 17 final verification and handoff.
 - `PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`: approved Phase 23 spec.
 - `agents.md`: multi-agent workflow guide.
 - `memory.md`: this persistent state file.
@@ -365,6 +366,9 @@ Recent IDs:
 - `128`: Phase 23 Stage 16 focused reproduction and fixes for Practice Multiplayer GO previous-solution stack projection and prior-solution keyboard state.
 - `129`: Phase 23 Stage 16 real two-client Supabase-backed Practice Multiplayer GO E2E, remote row/user cleanup, and Practice-GO-only keyboard derivation tightening.
 - `130`: Phase 23 Stage 16 final verification and handoff; focused/full local gates, responsive smoke, real E2E, remote cleanup, resource check, and Vercel preview verification complete.
+- `131`: Phase 23 Stage 17 planning for the Solo Practice GO Customize lock bug.
+- `132`: Phase 23 Stage 17 execution kickoff; protected starting state, baseline resources, Solo Practice GO-only scope boundary, and reproduction plan recorded before source fixes.
+- `133`: Phase 23 Stage 17 final verification and handoff; Solo Practice GO Customize now ignores setup-prefilled GO rows and locks only after an actual submitted guess.
 
 Use the next available integer for the next major step. Do not overwrite existing progress files.
 
@@ -372,7 +376,7 @@ Use the next available integer for the next major step. Do not overwrite existin
 
 For the next Phase 23 step:
 
-1. Re-read `CONSTITUTION.md`, `agents.md`, this file, `AGENT-IMPLEMENTATION-PLAN.md` §28, `progress/PROGRESS-STEP-69.md` through `progress/PROGRESS-STEP-130.md`, the Phase 23 spec, and the relevant Stage 4/5/6/7/8/9/10/final-stabilization/Stage 12/Stage 13/Stage 14/Stage 15/Stage 16 planning and progress notes.
+1. Re-read `CONSTITUTION.md`, `agents.md`, this file, `AGENT-IMPLEMENTATION-PLAN.md` §28, `progress/PROGRESS-STEP-69.md` through `progress/PROGRESS-STEP-133.md`, the Phase 23 spec, and the relevant Stage 4/5/6/7/8/9/10/final-stabilization/Stage 12/Stage 13/Stage 14/Stage 15/Stage 16/Stage 17 planning and progress notes.
 2. Confirm the branch and pull latest remote changes.
 3. Confirm the user has explicitly authorized any PR work, merge, release, dedicated Multiplayer tab work, deferred feature work, or later-phase implementation before making source-code or migration changes.
 4. Keep final `src/app/App.tsx`, progress tracking, and changelog integration under coordinator ownership.
@@ -611,6 +615,29 @@ Stage 16 planning note:
 - `phase_id = 129` tightens keyboard derivation so merged display-evidence keyboard state is Practice GO-only; non-Practice-GO multiplayer modes retain the old keyboard source path.
 - `phase_id = 129` real two-client Supabase-backed browser E2E passed: host/rival signed in through isolated contexts, created/joined Practice Multiplayer GO through the UI, verified accumulated puzzle-3 rows on both clients (`erhus` -> `ernes` -> `escar`), verified prior-only absent key evidence (`H`) on both keyboards, finished the five-puzzle chain to `status=won` with six moves and both player sessions, then deleted the touched row and temporary auth users. A cleanup probe confirmed no Stage 16 E2E rows remained.
 - `phase_id = 130` completes Stage 16 final verification and handoff. Focused changed-area tests, lint, the 480-test full suite, build, API typecheck, diff check, responsive smoke, real two-client Supabase-backed Practice Multiplayer GO E2E, remote probes/cleanup, resource check, and Vercel preview verification passed. A deployment-specific Vercel shareable-link record was created with a 30-day TTL, but no verified browser share URL was returned by the CLI/API and no bypass token was committed. Stage 16 changed only Practice Multiplayer GO behavior; Daily Multiplayer GO, Multiplayer OG, solo modes, Daily determinism, and the Stage 15 Practice seed system were not modified.
+
+Stage 17 planning note:
+
+- `phase_id = 131` documents Stage 17 planning from `PHASE-23-STAGE-17-SOLO-PRACTICE-GO-CUSTOMIZE-LOCK-BUGFIX-SPEC-2026-06-08.md`.
+- Stage 17 is a single-bug, Solo Practice GO-only pass: the Customize box should not lock Difficulty and chain length on a brand-new GO chain before any guess is submitted.
+- Correct behavior must match Solo Practice OG: options remain unlocked until the first submitted guess in the current chain, then lock.
+- Future execution must reproduce the bug before source edits, make the smallest targeted locking-condition fix, add focused regressions, run the full local gate and responsive browser smoke, and preserve Stage 12-16 wins.
+- Daily GO, Multiplayer GO, Solo Practice OG, other solo modes, Stage 15 Practice seed behavior, Hard Mode, resume, scoring, GO advancement, Customize layout/styling/copy, broad refactors, PR creation, merge, release, and later-phase work remain out of scope unless explicitly authorized later.
+
+Stage 17 execution kickoff note:
+
+- `phase_id = 132` opens Stage 17 execution after explicit user authorization.
+- Protected starting state: active branch `codex/phase-23-stage-16-final`, with Stage 17 planning/governance dirt preserved as the source of truth.
+- Baseline resource snapshot found no Vite/dev-server listener on the usual local app ports and high pre-existing memory pressure from user/system processes before Stage 17 browser work.
+- No source fix has been made at kickoff. The next required step is to reproduce the Solo Practice GO fresh-chain Customize-lock bug before editing the locking condition.
+
+Stage 17 final verification note:
+
+- `phase_id = 133` completes Stage 17 for user review.
+- The bug was reproduced before the fix with a focused regression: fresh Practice GO chains locked Customize because setup-prefilled GO carry-over rows were counted as submitted guesses.
+- The fix is narrow: Solo Practice GO Customize locks only after an actual submitted guess beyond setup-prefilled rows.
+- Verification passed focused changed-area tests, wider focused regressions, lint, full tests, build, API typecheck, diff check, desktop/tablet/390px smoke, Solo Practice OG non-regression, post-first-guess lock behavior, New go chain reset, and final resource checks.
+- No Daily GO, Multiplayer GO, Solo Practice OG behavior, Stage 15 Practice seed, scoring/rating, broad refactor, PR, merge, release, or out-of-scope work was performed.
 
 ## 8. Document Organization Decision
 

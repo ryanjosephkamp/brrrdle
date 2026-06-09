@@ -4,6 +4,31 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Phase 23 Stage 17 — Solo Practice GO Customize Lock Bug Fix
+
+#### 23 Stage 17 final verification and handoff (`phase_id = 133`)
+- **Stage complete**: completed the extremely narrow Solo Practice GO-only Customize-lock fix for user review.
+- **Reproduction evidence**: a focused regression first failed on the current bug, confirming fresh Practice GO chains locked Difficulty and chain length before any user-submitted guess because setup-prefilled GO rows were treated as submitted guesses; fresh Solo Practice OG remained unlocked.
+- **Fix summary**: updated the Solo Practice GO Customize lock predicate to ignore setup-prefilled carry-over rows and lock only after an actual submitted guess beyond those rows.
+- **Verification**: focused changed-area tests pass (5 tests); wider focused regression set passes (5 files, 39 tests); `npm run lint`, `npm run test` (483 passing), `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, and `git diff --check` pass cleanly.
+- **Browser/resource**: desktop/tablet/390px smoke passed with no console errors or horizontal overflow; fresh Practice GO Customize is unlocked, post-first-guess Practice GO Customize locks, `New go chain` resets it to unlocked, and fresh Practice OG remains unlocked; final resource checks found no lingering Stage 17 dev-server/browser process.
+- **Scope guard**: no PR, merge, release, Daily GO change, Multiplayer GO change, Solo Practice OG behavior change, Stage 15 Practice seed change, Hard Mode change, resume change, scoring/rating change, GO advancement change, broad refactor, redesign, or out-of-scope work was performed.
+
+#### 23 Stage 17 execution kickoff (`phase_id = 132`)
+- **Execution opened**: recorded explicit authorization for Stage 17 execution from `PHASE-23-STAGE-17-SOLO-PRACTICE-GO-CUSTOMIZE-LOCK-BUGFIX-SPEC-2026-06-08.md`.
+- **Protected state**: confirmed the active local branch is `codex/phase-23-stage-16-final` with existing Stage 17 planning/governance dirt preserved as the source of truth.
+- **Baseline resources**: captured process/memory snapshots before source fixes or browser testing; no Vite/dev-server listener was present on the usual local app ports, while pre-existing user/system processes already account for high memory pressure.
+- **Execution checklist**: documented the reproduce-first plan for the Solo Practice GO Customize lock bug, the Solo Practice GO-only scope boundary, and the focused verification/full-gate plan.
+- **Scope guard**: no source fix has been made in this checkpoint. Daily GO, Multiplayer GO, Solo Practice OG behavior, other solo modes, the Stage 15 Practice seed system, Hard Mode, resume, scoring, GO advancement, Customize layout/styling/copy, broad refactors, PR creation, merge, release, and later-phase work remain out of scope.
+
+#### 23 Stage 17 planning (`phase_id = 131`)
+- **Implementation plan**: bumped `AGENT-IMPLEMENTATION-PLAN.md` to v3.56 and added §28.59 from `PHASE-23-STAGE-17-SOLO-PRACTICE-GO-CUSTOMIZE-LOCK-BUGFIX-SPEC-2026-06-08.md`.
+- **Planned scope**: documented an extremely narrow single-bug pass for Solo Practice GO only: the Customize box must not lock Difficulty and chain length on a brand-new GO chain before the first submitted guess.
+- **Expected behavior**: Solo Practice GO should match Solo Practice OG, keeping options unlocked until the first guess in the current chain and locking once at least one guess has been submitted.
+- **Verification plan**: future execution must reproduce the bug before source edits, make the smallest targeted locking-condition fix, add focused regressions, run the full automated gate, and perform responsive browser smoke.
+- **Scope guard**: Daily GO, Multiplayer GO, Solo Practice OG, other solo modes, the Stage 15 Practice seed system, Hard Mode, resume, scoring, GO advancement, Customize layout/styling/copy, broad refactors, PR creation, merge, release, and later-phase work remain out of scope.
+- **Gate**: documentation/planning only. No source code, tests, UI components, configuration changes, implementation branch, browser verification, PR, merge, release, or Stage 17 execution was performed.
+
 ### Phase 23 Stage 16 — Practice Multiplayer GO Bug Fixes
 
 #### 23 Stage 16 final verification and handoff (`phase_id = 130`)

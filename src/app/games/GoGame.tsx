@@ -147,6 +147,13 @@ function getCompletionPercentage(session: PuzzleSessionState): number {
   return Math.round((bestCorrectTiles / session.wordLength) * 100)
 }
 
+function hasSubmittedGoGuess(session: GoSessionState, setup: GoSessionSetup): boolean {
+  return session.puzzles.some((puzzle, index) => {
+    const prefilledCount = setup.puzzles[index]?.prefilledGuesses.length ?? 0
+    return puzzle.guesses.length > prefilledCount
+  })
+}
+
 function GoGameSession({
   coins,
   defaultDifficulty,
@@ -222,6 +229,7 @@ function GoGameSession({
   })
   const canReveal = scope === 'practice' && session.status === 'playing' && currentPuzzle.guesses.length > 0
   const solvedPuzzles = endStateRevealed ? session.puzzles.filter((puzzle) => puzzle.status === 'won') : []
+  const customizeLocked = hasSubmittedGoGuess(session, setup)
 
   useEffect(() => {
     if (scope !== 'daily' || !setup.dateKey) {
@@ -414,7 +422,7 @@ function GoGameSession({
             defaultGoPuzzleCount={defaultGoPuzzleCount}
             difficulty={difficulty}
             goPuzzleCount={goPuzzleCount}
-            locked={session.puzzles.some((puzzle) => puzzle.guesses.length > 0)}
+            locked={customizeLocked}
             onDifficultyChange={onDifficultyChange}
             onGoPuzzleCountChange={onGoPuzzleCountChange}
             onSaveDefault={() => onSaveDifficultyDefault(difficulty)}
