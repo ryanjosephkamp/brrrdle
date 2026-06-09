@@ -737,7 +737,7 @@ function applyGuessToSession(game: MultiplayerGame, serializedSession: Multiplay
     }
   }
 
-  const session = restoreGoSession(serializedSession.session, getValidGuesses(game))
+  const session = restoreGoSession(extendFinalGoPuzzleAttempts(serializedSession).session, getValidGuesses(game))
   const currentPuzzle = session.puzzles[session.currentPuzzleIndex]
   const puzzles = [...session.puzzles]
   puzzles[session.currentPuzzleIndex] = {
@@ -755,6 +755,39 @@ function applyGuessToSession(game: MultiplayerGame, serializedSession: Multiplay
     result,
     serializedSession: { mode: 'go', session: serializeGoSession(next) },
     status: next.status,
+  }
+}
+
+function extendFinalGoPuzzleAttempts(serializedSession: MultiplayerSerializedSession): Extract<MultiplayerSerializedSession, { readonly mode: 'go' }> {
+  if (serializedSession.mode !== 'go') {
+    throw new Error('Expected GO multiplayer session.')
+  }
+
+  const session = serializedSession.session
+  const currentPuzzleIndex = session.currentPuzzleIndex
+  if (currentPuzzleIndex !== session.puzzles.length - 1) {
+    return serializedSession
+  }
+
+  const currentPuzzle = session.puzzles[currentPuzzleIndex]
+  if (!currentPuzzle || currentPuzzle.guesses.includes(currentPuzzle.answer)) {
+    return serializedSession
+  }
+
+  const minimumMaxAttempts = currentPuzzle.guesses.length + 2
+  if (currentPuzzle.maxAttempts >= minimumMaxAttempts) {
+    return serializedSession
+  }
+
+  return {
+    mode: 'go',
+    session: {
+      ...session,
+      puzzles: session.puzzles.map((puzzle, index) => index === currentPuzzleIndex ? {
+        ...puzzle,
+        maxAttempts: minimumMaxAttempts,
+      } : puzzle),
+    },
   }
 }
 
