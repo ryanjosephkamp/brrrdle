@@ -72,6 +72,7 @@ export interface MultiplayerGame {
   readonly deadlineAt?: string
   readonly difficulty: DifficultyTier
   readonly endedAt?: string
+  readonly forfeitedPlayerId?: MultiplayerPlayerId
   readonly goPuzzleCount?: GoPuzzleCount
   readonly hardMode?: boolean
   readonly id: string
@@ -429,6 +430,7 @@ function normalizeGame(value: unknown): MultiplayerGame | undefined {
     deadlineAt: typeof record.deadlineAt === 'string' ? record.deadlineAt : undefined,
     difficulty: normalizeDifficultyTier(record.difficulty),
     endedAt: typeof record.endedAt === 'string' ? record.endedAt : undefined,
+    forfeitedPlayerId: record.forfeitedPlayerId === 'player-one' || record.forfeitedPlayerId === 'player-two' ? record.forfeitedPlayerId : undefined,
     goPuzzleCount: typeof record.goPuzzleCount === 'number' ? normalizeGoPuzzleCount(record.goPuzzleCount) : undefined,
     hardMode,
     id: typeof record.id === 'string' ? record.id : createId('multiplayer'),
@@ -1038,10 +1040,26 @@ export function forfeitMultiplayerGame(state: MultiplayerState, input: ForfeitMu
 
   const now = input.now ?? new Date().toISOString()
   const opponentId = nextPlayerId(input.playerId)
+  if (game.moves.length === 0) {
+    const cancelled: MultiplayerGame = {
+      ...game,
+      endedAt: now,
+      status: 'cancelled',
+      updatedAt: now,
+      winnerId: undefined,
+    }
+    return {
+      game: cancelled,
+      state: {
+        games: normalized.games.map((entry) => entry.id === cancelled.id ? cancelled : entry),
+      },
+    }
+  }
   const winnerId = game.playerUserIds?.[opponentId] ? opponentId : undefined
   const updated: MultiplayerGame = {
     ...game,
     endedAt: now,
+    forfeitedPlayerId: input.playerId,
     status: 'lost',
     updatedAt: now,
     winnerId,

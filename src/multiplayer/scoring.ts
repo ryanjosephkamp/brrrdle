@@ -130,6 +130,9 @@ function winnerReason(game: MultiplayerGame, players: readonly MultiplayerPlayer
   if (game.timedOutPlayerId) {
     return 'timeout'
   }
+  if (game.forfeitedPlayerId) {
+    return 'forfeit'
+  }
   const winner = players.find((player) => player.playerId === winnerPlayerId)
   const solvedPlayers = players.filter((player) => player.puzzlesSolved > 0)
   if (game.mode === 'og' && solvedPlayers.length === 1 && winner?.puzzlesSolved) {
@@ -162,6 +165,7 @@ export function projectMultiplayerPerformance(game: MultiplayerGame): Multiplaye
   })
   const solvedPlayers = scoredPlayers.filter((player) => player.puzzlesSolved > 0)
   const winnerPlayerId = game.winnerId
+    ?? (game.status === 'lost' && game.forfeitedPlayerId ? otherPlayer(game.forfeitedPlayerId) : undefined)
     ?? (game.mode === 'og' && solvedPlayers.length === 1 ? solvedPlayers[0].playerId : undefined)
     ?? (game.status === 'lost' && lastMove && game.timedOutPlayerId ? otherPlayer(game.timedOutPlayerId) : undefined)
     ?? pointsWinner(scoredPlayers)
@@ -195,6 +199,8 @@ export function projectMultiplayerPerformance(game: MultiplayerGame): Multiplaye
           ? `${winnerLabel} won the multiplayer match by solving`
           : winnerPlayerId && reason === 'timeout'
             ? `${winnerLabel} won the multiplayer match on time`
+            : winnerPlayerId && reason === 'forfeit'
+              ? `${winnerLabel} won by forfeit`
             : winnerPlayerId
               ? `${winnerLabel} won the multiplayer match`
         : 'Multiplayer match ended in a draw',

@@ -149,6 +149,40 @@ describe('multiplayer foundation', () => {
     const game = createMultiplayerGame({
       mode: 'og',
       playerUserIds: { 'player-one': 'host-user' },
+      seed: 1,
+      scope: 'practice',
+      wordLength: 5,
+    })
+    const setup = createPracticeOgSetup(5, 1)
+    const answer = getMultiplayerAnswerWords(game)[0]
+    const wrongGuess = [...setup.validGuesses].find((candidate) => candidate !== answer)
+    expect(wrongGuess).toBeTruthy()
+    const joined = joinMultiplayerGame(addMultiplayerGame(createEmptyMultiplayerState(), game), {
+      gameId: game.id,
+      userId: 'rival-user',
+    })
+    const submitted = submitMultiplayerGuess(joined.state, {
+      gameId: game.id,
+      guess: wrongGuess!,
+      now: '2026-06-04T12:30:00.000Z',
+      playerId: 'player-one',
+    })
+    const forfeited = forfeitMultiplayerGame(submitted.state, {
+      gameId: game.id,
+      now: '2026-06-04T13:00:00.000Z',
+      playerId: 'player-two',
+    })
+
+    expect(forfeited.error).toBeUndefined()
+    expect(forfeited.game?.status).toBe('lost')
+    expect(forfeited.game?.winnerId).toBe('player-one')
+    expect(forfeited.game?.endedAt).toBe('2026-06-04T13:00:00.000Z')
+  })
+
+  it('treats a pre-guess online multiplayer forfeit as a cancellation without a winner', () => {
+    const game = createMultiplayerGame({
+      mode: 'og',
+      playerUserIds: { 'player-one': 'host-user' },
       scope: 'practice',
       wordLength: 5,
     })
@@ -163,8 +197,8 @@ describe('multiplayer foundation', () => {
     })
 
     expect(forfeited.error).toBeUndefined()
-    expect(forfeited.game?.status).toBe('lost')
-    expect(forfeited.game?.winnerId).toBe('player-one')
+    expect(forfeited.game?.status).toBe('cancelled')
+    expect(forfeited.game?.winnerId).toBeUndefined()
     expect(forfeited.game?.endedAt).toBe('2026-06-04T13:00:00.000Z')
   })
 

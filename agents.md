@@ -46,7 +46,7 @@ The project now has enough parallelizable work that a clear coordination layer i
 - Stage 17 planning for the Solo Practice GO Customize lock bug is documented under `phase_id = 131`; execution is opened under `phase_id = 132`; final verification and handoff are complete under `phase_id = 133`.
 - Stage 18 planning for Multiplayer GO final puzzle behavior and Solo Practice GO Hard Mode checkbox fixes is documented under `phase_id = 134`; execution is opened under `phase_id = 135`; final verification and handoff are complete under `phase_id = 136`.
 - Stage 19 planning for Solo/Daily GO transition screen, Daily GO keyboard coloring, and Multiplayer GO transition propagation bug fixes is documented under `phase_id = 137`; execution is opened under `phase_id = 138`; focused fixes are tracked under `phase_id = 139`; final verification and handoff are complete under `phase_id = 140`.
-- Stage 20 planning for multiplayer status text synchronization and forfeit win/loss precedence is documented under `phase_id = 141`; implementation remains gated until explicit user authorization.
+- Stage 20 planning for multiplayer status text synchronization and forfeit win/loss precedence is documented under `phase_id = 141`; execution is opened under `phase_id = 142`; focused fixes are tracked under `phase_id = 143`; final verification and handoff are complete under `phase_id = 144`.
 - Further PR creation, merges, release, full dedicated Multiplayer tab work, spectator expansion, deferred feature work, and later-phase work remain unauthorized until later explicit approval.
 
 ## 3. Authority Stack
@@ -77,7 +77,7 @@ Before accepting or assigning Phase 23 work, the coordinator should read:
 - `AGENT-IMPLEMENTATION-PLAN.md` §28.
 - `PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`.
 - `progress/PROGRESS.csv`.
-- The latest relevant progress reports, currently `progress/PROGRESS-STEP-106.md` through `progress/PROGRESS-STEP-141.md` for the final stabilization, Stage 12, Stage 13, Stage 14, Stage 15, Stage 16, Stage 17, Stage 18, Stage 19, and Stage 20 planning trail.
+- The latest relevant progress reports, currently `progress/PROGRESS-STEP-106.md` through `progress/PROGRESS-STEP-144.md` for the final stabilization, Stage 12, Stage 13, Stage 14, Stage 15, Stage 16, Stage 17, Stage 18, Stage 19, and Stage 20 trail.
 - This file and `memory.md`.
 
 Sub-agents should read the subset named in their work packet and must always read this file before parallel work.
@@ -289,7 +289,9 @@ Keep `src/app/games/`, `src/game/`, `src/game/go/`, shared keyboard/board UI, `s
 
 ### Phase 23 Stage 20 Coordination Notes
 
-Stage 20 planning is documented under `phase_id = 141` from `PHASE-23-STAGE-20-MULTIPLAYER-STATUS-TEXT-AND-FORFEIT-LOGIC-BUGFIXES-SPEC-2026-06-09.md`. Implementation remains gated until the user explicitly authorizes a future execution prompt.
+Stage 20 planning is documented under `phase_id = 141`, execution is opened under `phase_id = 142`, focused fixes are tracked under `phase_id = 143`, and final verification/handoff is complete under `phase_id = 144` from `PHASE-23-STAGE-20-MULTIPLAYER-STATUS-TEXT-AND-FORFEIT-LOGIC-BUGFIXES-SPEC-2026-06-09.md`.
+
+Stage 20 added failing status/forfeit regressions before source fixes, then made the multiplayer status text derive from shared game state and viewer identity, persisted/normalized `forfeitedPlayerId`, treated pre-guess forfeits as cancellations, and made post-guess forfeits beat points fallback while preserving timeout-loser precedence. Final verification passed focused tests, the full local gate, responsive smoke, real two-client Supabase-backed E2E across Practice/Daily OG/GO affected flows, remote probes/cleanup, and resource cleanup.
 
 Stage 20 is an extremely narrow multiplayer bug-fix-only pass covering exactly:
 
@@ -325,7 +327,11 @@ Suggested lanes if execution is later parallelized:
 - **Verification lane**: real two-client Supabase-backed browser E2E for OG/GO and Practice/Daily affected flows, remote probes/cleanup, responsive smoke, and resource checks.
 - **Coordinator lane**: high-conflict integration, progress/changelog/memory updates, full gate, optional preview, and final handoff.
 
-Future Stage 20 execution must reproduce both bugs before source edits, make one small targeted change at a time, run focused verification after each change, and finish with the full automated/local/browser/Supabase/resource gate. Keep the status text and forfeit-precedence work outside the primary gameplay surface wherever practical.
+Future follow-up must keep the Stage 20 decisions intact unless a later spec explicitly changes them: status text should remain derived from shared game state and viewer identity, post-guess forfeit evidence should beat points fallback, pre-guess forfeits may cancel without a winner, and timeout-loser precedence must remain unchanged.
+
+The `phase_id = 142` baseline starts from clean local `main` after PR #23, with no app/dev-server listener on `5173`, `5174`, `3000`, or `4173`, one unrelated local Python server on `127.0.0.1:8765`, existing user/system Chrome/Codex/VS Code/Obsidian/MCP helper processes, and high pre-existing memory pressure. Use one Vite dev server, minimal browser contexts, sequential heavy gates, explicit remote cleanup, and final process checks.
+
+After `phase_id = 144`, do not weaken the new focused status/forfeit tests. Any future multiplayer terminal-status or result-projection work should preserve the Stage 20 real-E2E evidence path: two authenticated browser contexts, remote row/claim probes, cleanup, full local gate, and responsive smoke.
 
 ### Phase 23 Stage 19 Coordination Notes
 
