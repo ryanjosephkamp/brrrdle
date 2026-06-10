@@ -38,6 +38,12 @@ import { projectMultiplayerPerformance } from './scoring'
 
 type MultiplayerMatchKind = 'unranked' | 'ranked' | 'custom'
 
+interface LocalStatusMessage {
+  readonly gameId: string | undefined
+  readonly text: string
+  readonly updatedAt: string | undefined
+}
+
 interface MultiplayerPanelProps {
   readonly authStatus?: 'anonymous' | 'authenticated' | 'unconfigured'
   readonly competitiveState?: MultiplayerCompetitiveState
@@ -118,6 +124,66 @@ function getLatestSolvedGoMoveId(game: MultiplayerGame | undefined): string | un
   ))?.id
 }
 
+function getMultiplayerStatusMessage(game: MultiplayerGame, viewerPlayerId: 'player-one' | 'player-two' | undefined): string {
+  if (game.status === 'waiting') {
+    if (viewerPlayerId === 'player-one') {
+      if (game.ranked) {
+        return 'Ranked multiplayer match opened. Waiting for another signed-in player to join.'
+      }
+      if (game.customGameCode) {
+        return `Custom multiplayer lobby ${game.customGameCode} opened. Waiting for another signed-in player to join.`
+      }
+      return 'Multiplayer match opened. Waiting for another signed-in player to join.'
+    }
+    return 'Waiting multiplayer match available. Join this match to claim the rival seat.'
+  }
+  if (game.status === 'cancelled') {
+    return 'Multiplayer lobby cancelled before a result was recorded.'
+  }
+  if (game.status === 'expired') {
+    return 'Multiplayer match expired before completion.'
+  }
+  if (game.status === 'playing') {
+    if (!viewerPlayerId) {
+      return 'Multiplayer match in progress.'
+    }
+    if (game.moves.length === 0) {
+      return game.currentTurn === viewerPlayerId
+        ? 'Rival joined. Your turn.'
+        : 'Joined multiplayer match. Waiting for the next player.'
+    }
+    const latestMove = game.moves[game.moves.length - 1]
+    if (latestMove?.playerId === viewerPlayerId) {
+      return 'Turn submitted. Waiting for the next player.'
+    }
+    return game.currentTurn === viewerPlayerId
+      ? 'Rival submitted a turn. Your turn.'
+      : 'Turn submitted. Waiting for the next player.'
+  }
+  if (game.forfeitedPlayerId) {
+    if (viewerPlayerId === game.forfeitedPlayerId) {
+      return 'You forfeited this multiplayer match.'
+    }
+    return viewerPlayerId === game.winnerId
+      ? 'Rival forfeited. You won this multiplayer match.'
+      : 'Multiplayer match ended by forfeit.'
+  }
+  if (game.timedOutPlayerId) {
+    if (viewerPlayerId === game.timedOutPlayerId) {
+      return 'You ran out of time and lost this multiplayer match.'
+    }
+    return viewerPlayerId === game.winnerId
+      ? 'Rival ran out of time. You won this multiplayer match.'
+      : 'Multiplayer match ended on time.'
+  }
+  if (game.winnerId) {
+    return viewerPlayerId === game.winnerId
+      ? 'Match finished. You won this multiplayer match.'
+      : 'Match finished. You lost this multiplayer match.'
+  }
+  return 'Match finished.'
+}
+
 export function MultiplayerPanel({
   authStatus = 'unconfigured',
   competitiveState,
@@ -144,7 +210,7 @@ export function MultiplayerPanel({
   const [hardMode, setHardMode] = useState(false)
   const [timeLimitMs, setTimeLimitMs] = useState<PracticeMultiplayerTimeLimitMs | null>(null)
   const [wordLength, setWordLength] = useState(5)
-  const [message, setMessage] = useState<string | undefined>(undefined)
+  const [localMessage, setLocalMessage] = useState<LocalStatusMessage | undefined>(undefined)
   const [clockNow, setClockNow] = useState(() => new Date())
   const needsClock = useMemo(
     () => visibleGames.some((game) => game.scope === 'practice' && game.timeLimitMs && game.status === 'playing'),
@@ -193,6 +259,12 @@ export function MultiplayerPanel({
   const rivalPlayer = rivalPlayerId && selectedGame ? selectedGame.players.find((player) => player.id === rivalPlayerId) : undefined
   const waitingHostPlayer = !viewerPlayerId && selectedGame ? selectedGame.players.find((player) => player.id === 'player-one') : undefined
   const selectedPerformance = selectedGame ? projectMultiplayerPerformance(selectedGame) : undefined
+  const sharedStatusMessage = selectedGame ? getMultiplayerStatusMessage(selectedGame, viewerPlayerId) : undefined
+  const localStatusMessage = localMessage
+    && (!selectedGame || (localMessage.gameId === selectedGame.id && localMessage.updatedAt === selectedGame.updatedAt))
+    ? localMessage.text
+    : undefined
+  const displayStatusMessage = localStatusMessage ?? sharedStatusMessage
   const canJoinSelectedGame = selectedGame ? canViewerJoinMultiplayerGame(selectedGame, viewerUserId) : false
   const canCancelSelectedGame = selectedGame ? canViewerCancelMultiplayerGame(selectedGame, viewerUserId) && !readOnly : false
   const joiningWouldClaimDuplicateDaily = Boolean(
@@ -213,7 +285,11 @@ export function MultiplayerPanel({
   const createGame = () => {
     if (existingDailyClaim) {
       setSelectedGameId(existingDailyClaim.id)
-      setMessage('You already have today\'s Daily Multiplayer game for this mode. Re-entering it here.')
+      setLocalMessage({
+        gameId: existingDailyClaim.id,
+        text: 'You already have today\'s Daily Multiplayer game for this mode. Re-entering it here.',
+        updatedAt: existingDailyClaim.updatedAt,
+      })
       return
     }
     if (!canCreate) {
@@ -272,17 +348,17 @@ export function MultiplayerPanel({
     })
     const next = addMultiplayerGame(normalized, game)
     if (!next.games.some((entry) => entry.id === game.id)) {
-      setMessage(dailyClaimedForMode
-        ? 'You already claimed today\'s Daily Multiplayer game for this mode.'
-        : 'You already have five active multiplayer games.')
+      setLocalMessage({
+        gameId: selectedGame?.id,
+        text: dailyClaimedForMode
+          ? 'You already claimed today\'s Daily Multiplayer game for this mode.'
+          : 'You already have five active multiplayer games.',
+        updatedAt: selectedGame?.updatedAt,
+      })
       return
     }
     setSelectedGameId(game.id)
-    setMessage(ranked
-      ? 'Ranked multiplayer match opened. Rating changes wait for durable authenticated settlement.'
-      : matchKind === 'custom'
-        ? `Custom multiplayer lobby ${customGameCode} opened. It is unranked by default.`
-        : 'Multiplayer match opened. Waiting for another signed-in player to join.')
+    setLocalMessage(undefined)
     onChange(next)
   }
 
@@ -296,10 +372,14 @@ export function MultiplayerPanel({
       userId: viewerUserId,
     })
     if (result.error) {
-      setMessage(result.error)
+      setLocalMessage({
+        gameId: selectedGame.id,
+        text: result.error,
+        updatedAt: selectedGame.updatedAt,
+      })
       return
     }
-    setMessage('Joined multiplayer match. Turns now persist between both signed-in players.')
+    setLocalMessage(undefined)
     onChange(result.state)
   }
 
@@ -312,10 +392,14 @@ export function MultiplayerPanel({
       userId: viewerUserId,
     })
     if (result.error) {
-      setMessage(result.error)
+      setLocalMessage({
+        gameId: selectedGame.id,
+        text: result.error,
+        updatedAt: selectedGame.updatedAt,
+      })
       return
     }
-    setMessage('Multiplayer lobby cancelled. The active-game slot and Daily Multiplayer claim are released because no rival joined.')
+    setLocalMessage(undefined)
     onChange(result.state)
   }
 
@@ -329,10 +413,14 @@ export function MultiplayerPanel({
       playerId: viewerPlayerId,
     })
     if (result.error) {
-      setMessage(result.error)
+      setLocalMessage({
+        gameId: selectedGame.id,
+        text: result.error,
+        updatedAt: selectedGame.updatedAt,
+      })
       return
     }
-    setMessage(result.game?.status === 'playing' ? 'Turn submitted. Waiting for the next player.' : 'Match finished.')
+    setLocalMessage(undefined)
     onChange(result.state)
   }
 
@@ -345,10 +433,14 @@ export function MultiplayerPanel({
       playerId: viewerPlayerId,
     })
     if (result.error) {
-      setMessage(result.error)
+      setLocalMessage({
+        gameId: selectedGame.id,
+        text: result.error,
+        updatedAt: selectedGame.updatedAt,
+      })
       return
     }
-    setMessage('You forfeited this multiplayer match.')
+    setLocalMessage(undefined)
     onChange(result.state)
   }
 
@@ -462,7 +554,7 @@ export function MultiplayerPanel({
           {visibleGames.map((game) => (
             <Button
               key={game.id}
-              onClick={() => { setSelectedGameId(game.id); setMessage(undefined) }}
+              onClick={() => { setSelectedGameId(game.id); setLocalMessage(undefined) }}
               variant={game.id === selectedGame?.id ? 'primary' : 'secondary'}
             >
               {game.mode.toUpperCase()} · {game.status}
@@ -549,7 +641,11 @@ export function MultiplayerPanel({
             </div>
           ) : null}
 
-          {message ? <p className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 p-3 font-semibold text-cyan-50">{message}</p> : null}
+          {displayStatusMessage ? (
+            <p className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 p-3 font-semibold text-cyan-50">
+              {displayStatusMessage}
+            </p>
+          ) : null}
 
           {selectedPerformance ? (
             <div className="space-y-2 rounded-lg border border-violet-300/30 bg-violet-300/10 p-3">

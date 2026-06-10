@@ -8,6 +8,7 @@ import {
   cancelMultiplayerGame,
   createMultiplayerGame,
   createEmptyMultiplayerState,
+  forfeitMultiplayerGame,
   getMultiplayerAnswerWords,
   joinMultiplayerGame,
   submitMultiplayerGuess,
@@ -64,6 +65,120 @@ describe('MultiplayerPanel', () => {
 
     expect(html).toContain('Join multiplayer match')
     expect(html).not.toContain('Cancel Lobby')
+  })
+
+  it('derives the multiplayer status box from shared game state after a rival joins', () => {
+    const lobby = createMultiplayerGame({
+      mode: 'og',
+      playerUserIds: { 'player-one': 'host-user' },
+      scope: 'practice',
+      wordLength: 5,
+    })
+    const joined = joinMultiplayerGame(addMultiplayerGame(createEmptyMultiplayerState(), lobby), {
+      gameId: lobby.id,
+      userId: 'rival-user',
+    })
+    const hostHtml = renderToStaticMarkup(
+      <MultiplayerPanel
+        authStatus="authenticated"
+        defaultDifficulty={DEFAULT_DIFFICULTY_TIER}
+        defaultGoPuzzleCount={DEFAULT_GO_PUZZLE_COUNT}
+        onChange={noop}
+        scope="practice"
+        state={joined.state}
+        viewerUserId="host-user"
+      />,
+    )
+    const rivalHtml = renderToStaticMarkup(
+      <MultiplayerPanel
+        authStatus="authenticated"
+        defaultDifficulty={DEFAULT_DIFFICULTY_TIER}
+        defaultGoPuzzleCount={DEFAULT_GO_PUZZLE_COUNT}
+        onChange={noop}
+        scope="practice"
+        state={joined.state}
+        viewerUserId="rival-user"
+      />,
+    )
+
+    expect(hostHtml).toContain('Rival joined. Your turn.')
+    expect(rivalHtml).toContain('Joined multiplayer match. Waiting for the next player.')
+  })
+
+  it('updates the multiplayer status box from shared turns and forfeit terminal state', () => {
+    const lobby = createMultiplayerGame({
+      mode: 'og',
+      playerUserIds: { 'player-one': 'host-user' },
+      scope: 'practice',
+      seed: 1,
+      wordLength: 5,
+    })
+    const joined = joinMultiplayerGame(addMultiplayerGame(createEmptyMultiplayerState(), lobby), {
+      gameId: lobby.id,
+      userId: 'rival-user',
+    })
+    const answer = getMultiplayerAnswerWords(lobby)[0]
+    const wrongGuess = 'bough' === answer ? 'cigar' : 'bough'
+    const submitted = submitMultiplayerGuess(joined.state, {
+      gameId: lobby.id,
+      guess: wrongGuess,
+      now: '2026-06-04T12:00:10.000Z',
+      playerId: 'player-one',
+    })
+    const afterTurnHostHtml = renderToStaticMarkup(
+      <MultiplayerPanel
+        authStatus="authenticated"
+        defaultDifficulty={DEFAULT_DIFFICULTY_TIER}
+        defaultGoPuzzleCount={DEFAULT_GO_PUZZLE_COUNT}
+        onChange={noop}
+        scope="practice"
+        state={submitted.state}
+        viewerUserId="host-user"
+      />,
+    )
+    const afterTurnRivalHtml = renderToStaticMarkup(
+      <MultiplayerPanel
+        authStatus="authenticated"
+        defaultDifficulty={DEFAULT_DIFFICULTY_TIER}
+        defaultGoPuzzleCount={DEFAULT_GO_PUZZLE_COUNT}
+        onChange={noop}
+        scope="practice"
+        state={submitted.state}
+        viewerUserId="rival-user"
+      />,
+    )
+    const forfeited = forfeitMultiplayerGame(submitted.state, {
+      gameId: lobby.id,
+      now: '2026-06-04T12:01:00.000Z',
+      playerId: 'player-one',
+    })
+    const forfeitedHostHtml = renderToStaticMarkup(
+      <MultiplayerPanel
+        authStatus="authenticated"
+        defaultDifficulty={DEFAULT_DIFFICULTY_TIER}
+        defaultGoPuzzleCount={DEFAULT_GO_PUZZLE_COUNT}
+        onChange={noop}
+        scope="practice"
+        state={forfeited.state}
+        viewerUserId="host-user"
+      />,
+    )
+    const forfeitedRivalHtml = renderToStaticMarkup(
+      <MultiplayerPanel
+        authStatus="authenticated"
+        defaultDifficulty={DEFAULT_DIFFICULTY_TIER}
+        defaultGoPuzzleCount={DEFAULT_GO_PUZZLE_COUNT}
+        onChange={noop}
+        scope="practice"
+        state={forfeited.state}
+        viewerUserId="rival-user"
+      />,
+    )
+
+    expect(afterTurnHostHtml).toContain('Turn submitted. Waiting for the next player.')
+    expect(afterTurnRivalHtml).toContain('Rival submitted a turn. Your turn.')
+    expect(forfeitedHostHtml).toContain('You forfeited this multiplayer match.')
+    expect(forfeitedRivalHtml).toContain('Rival forfeited. You won this multiplayer match.')
   })
 
   it('does not reveal answers for a cancelled daily multiplayer lobby', () => {

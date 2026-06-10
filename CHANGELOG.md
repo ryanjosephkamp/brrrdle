@@ -6,6 +6,28 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ### Phase 23 Stage 20 — Multiplayer Status Text Synchronization + Forfeit Win/Loss Precedence Bug Fixes
 
+#### 23 Stage 20 final verification and handoff (`phase_id = 144`)
+- **Stage complete**: completed the extremely narrow two-bug multiplayer pass for user review.
+- **Status text synchronization**: multiplayer status messages now derive from shared game state and viewer identity across waiting, join, turn, cancellation, forfeit, timeout, and normal terminal states; snapshot-scoped local validation messages no longer mask newer shared state.
+- **Forfeit precedence**: multiplayer rows now persist/normalize the forfeiting player; post-guess forfeits make the forfeiting player lose before any points fallback; pre-guess forfeits cancel without a winner; timeout-loser precedence and scoring formulas remain unchanged.
+- **Verification**: focused changed-area tests pass (45); wider `src/multiplayer` suite passes (78); `npm run lint`, `npm run test` (499 passing), `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, and `git diff --check` pass cleanly.
+- **Browser/Supabase/resource**: real two-client Supabase-backed E2E passed for Practice OG, Practice GO, Daily OG, Daily GO, pre-guess cancellation, normal completion, forfeit, and timed timeout non-regression; remote rows/claims/users were probed and cleaned up; desktop/tablet/390px smoke passed with no console errors or horizontal overflow; the Stage 20 dev server was stopped and port `5173` was clear.
+- **Scope guard**: no gameplay board/tile/keyboard/coloring, Hard Mode validation, solved-row hold, advancement-rule, scoring formula, rating/ELO, Daily Multiplayer rule, PR, merge, release, production deployment, full Multiplayer tab, spectator expansion, Phase 24, broad refactor, redesign, or out-of-scope work was performed.
+
+#### 23 Stage 20 focused fixes (`phase_id = 143`)
+- **Reproduction evidence**: focused regressions first failed for stale multiplayer status text after shared join/turn events and for forfeit result precedence when the forfeiting player was ahead on points or durable forfeiter evidence was missing.
+- **Status text synchronization**: multiplayer status messages now derive from shared game state and viewer identity, and stale local success messages are cleared after shared state changes so both clients reconcile to current lobby/turn/terminal state.
+- **Forfeit precedence**: multiplayer games now persist/normalize the forfeiting player, post-guess forfeits resolve against the forfeiting player before any points fallback, and pre-guess forfeits are treated as cancellations without a winner.
+- **Timeout preservation**: focused regression coverage keeps timeout-loser precedence unchanged.
+- **Focused verification**: changed-area tests pass (45 tests) and the wider `src/multiplayer` suite passes (78 tests). Full gate, real two-client E2E, remote probes/cleanup, responsive smoke, resource checks, and final handoff remain pending.
+
+#### 23 Stage 20 execution kickoff (`phase_id = 142`)
+- **Execution opened**: recorded explicit authorization for Stage 20 execution from `PHASE-23-STAGE-20-MULTIPLAYER-STATUS-TEXT-AND-FORFEIT-LOGIC-BUGFIXES-SPEC-2026-06-09.md`.
+- **Protected state**: confirmed the active local branch is clean `main` after PR #23 merged Stage 19 final changes and Stage 20 planning.
+- **Baseline resources**: captured process/memory snapshots before source fixes or browser testing; no app/dev-server listener was present on `5173`, `5174`, `3000`, or `4173`; one unrelated local Python server was present on `127.0.0.1:8765`; and pre-existing memory pressure was high.
+- **Execution checklist**: documented reproduce-first sequencing for the multiplayer status text synchronization bug and the forfeit win/loss precedence bug, including real two-client Supabase-backed E2E, remote probes/cleanup, timeout non-regression, and full-gate requirements.
+- **Scope guard**: no source fixes have been made in this checkpoint. Gameplay board/tile/keyboard/coloring, Hard Mode, solved-row holds, advancement rules, scoring formulas, rating/ELO, Daily Multiplayer rule changes, PR creation, merge, release, production deployment, Phase 24 work, and out-of-scope work remain unauthorized.
+
 #### 23 Stage 20 planning (`phase_id = 141`)
 - **Implementation plan**: bumped `AGENT-IMPLEMENTATION-PLAN.md` to v3.66 and added §28.69 from `PHASE-23-STAGE-20-MULTIPLAYER-STATUS-TEXT-AND-FORFEIT-LOGIC-BUGFIXES-SPEC-2026-06-09.md`.
 - **Planned scope**: documented an extremely narrow two-bug multiplayer pass for status text synchronization on both clients and forfeit result precedence so post-guess forfeits make the forfeiting player lose regardless of current points.

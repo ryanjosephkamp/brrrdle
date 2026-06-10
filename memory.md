@@ -40,13 +40,13 @@
 - Stage 17 planning for the Solo Practice GO Customize lock bug is documented under `phase_id = 131`; execution is opened under `phase_id = 132`; final verification and handoff are complete under `phase_id = 133`.
 - Stage 18 planning for Multiplayer GO final puzzle behavior and Solo Practice GO Hard Mode checkbox fixes is documented under `phase_id = 134`; execution is opened under `phase_id = 135`; final verification and handoff are complete under `phase_id = 136`.
 - Stage 19 planning for Solo/Daily GO transition screen, Daily GO keyboard coloring, and Multiplayer GO transition propagation bug fixes is documented under `phase_id = 137`; execution is opened under `phase_id = 138`; focused fixes are tracked under `phase_id = 139`; final verification and handoff are complete under `phase_id = 140`.
-- Stage 20 planning for multiplayer status text synchronization and forfeit win/loss precedence is documented under `phase_id = 141`; implementation remains gated until explicit user authorization.
+- Stage 20 planning for multiplayer status text synchronization and forfeit win/loss precedence is documented under `phase_id = 141`; execution is opened under `phase_id = 142`; focused fixes are tracked under `phase_id = 143`; final verification and handoff are complete under `phase_id = 144`.
 - Do not create further Phase 23 PRs, merges, releases, implement the full dedicated Multiplayer tab, expand spectators beyond low-risk hardening, start deferred feature work, or start later-phase implementation until the user explicitly approves that later step.
 
 ## 2. Current Governance Files
 
 - `CONSTITUTION.md`: binding project constitution. Version 3.4 after this scaffolding pass.
-- `AGENT-IMPLEMENTATION-PLAN.md`: active implementation plan. Version 3.66 after the Stage 20 planning/governance pass.
+- `AGENT-IMPLEMENTATION-PLAN.md`: active implementation plan. Version 3.69 after the Stage 20 final verification checkpoint.
 - `PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`: approved Phase 23 spec.
 - `agents.md`: multi-agent workflow guide.
 - `memory.md`: this persistent state file.
@@ -380,6 +380,9 @@ Recent IDs:
 - `139`: Phase 23 Stage 19 focused reproduction and fixes for Multiplayer GO stuck-player propagation, Daily Multiplayer GO prior-evidence keyboard coloring, and solo Practice/Daily GO solved-row holds.
 - `140`: Phase 23 Stage 19 final verification and handoff; focused/full local gates, real browser-backed two-client Supabase Practice/Daily Multiplayer GO E2E, remote cleanup, responsive smoke, solo GO browser checks, and resource check complete.
 - `141`: Phase 23 Stage 20 planning for multiplayer status text synchronization and forfeit win/loss precedence; implementation remains gated.
+- `142`: Phase 23 Stage 20 execution kickoff; clean main starting state, baseline resources, strict scope boundary, and reproduction plan recorded before source fixes.
+- `143`: Phase 23 Stage 20 focused reproduction and fixes; shared-state-derived status text and forfeit precedence fixes implemented with focused tests passing.
+- `144`: Phase 23 Stage 20 final verification and handoff; full local gate, real two-client Supabase-backed E2E, remote probes/cleanup, responsive smoke, and resource cleanup complete.
 
 Use the next available integer for the next major step. Do not overwrite existing progress files.
 
@@ -387,7 +390,7 @@ Use the next available integer for the next major step. Do not overwrite existin
 
 For the next Phase 23 step:
 
-1. Re-read `CONSTITUTION.md`, `agents.md`, this file, `AGENT-IMPLEMENTATION-PLAN.md` §28, `progress/PROGRESS-STEP-69.md` through `progress/PROGRESS-STEP-141.md`, the Phase 23 spec, and the relevant Stage 4/5/6/7/8/9/10/final-stabilization/Stage 12/Stage 13/Stage 14/Stage 15/Stage 16/Stage 17/Stage 18/Stage 19/Stage 20 planning and progress notes.
+1. Re-read `CONSTITUTION.md`, `agents.md`, this file, `AGENT-IMPLEMENTATION-PLAN.md` §28, `progress/PROGRESS-STEP-69.md` through `progress/PROGRESS-STEP-144.md`, the Phase 23 spec, and the relevant Stage 4/5/6/7/8/9/10/final-stabilization/Stage 12/Stage 13/Stage 14/Stage 15/Stage 16/Stage 17/Stage 18/Stage 19/Stage 20 planning and progress notes.
 2. Confirm the branch and pull latest remote changes.
 3. Confirm the user has explicitly authorized any PR work, merge, release, dedicated Multiplayer tab work, deferred feature work, or later-phase implementation before making source-code or migration changes.
 4. Keep final `src/app/App.tsx`, progress tracking, and changelog integration under coordinator ownership.
@@ -716,6 +719,31 @@ Stage 20 planning note:
 - Preserve all Stage 12 through Stage 19 wins, Daily Multiplayer strict async/five-letter/UTC-day/no-clock/no-Hard-Mode-lobby-control/answer-separated/claim-safe invariants, `playerSessions` canonical state, shared projection/display-only semantics, existing timeout-loser precedence, and scoring formulas.
 - Out of scope: gameplay board/tile/keyboard/coloring changes, Hard Mode validation changes, solved-row hold/transition changes, scoring formula/rating/ELO changes, Daily Multiplayer rule changes, new features, UI redesign, full Multiplayer tab work, spectator expansion, Phase 24 work, broad refactoring, PR creation, merge, release, and production deployment.
 - This planning pass made governance/progress updates only. Stage 20 implementation remains gated until explicit user authorization.
+
+Stage 20 execution kickoff note:
+
+- `phase_id = 142` opens Stage 20 execution after explicit user authorization.
+- Protected starting state: clean local `main` after PR #23 merged Stage 19 final changes and Stage 20 planning.
+- Baseline resource snapshot found no app/dev-server listener on `5173`, `5174`, `3000`, or `4173`; one unrelated local Python server on `127.0.0.1:8765`; existing Chrome/Codex/VS Code/Obsidian/MCP helper processes; and high pre-existing memory pressure (`17G used`, `540M unused`, about `6930M` compressor) before Stage 20 browser work.
+- No source fix has been made at kickoff. The next required step is to reproduce the two Stage 20 bugs before editing: status text synchronization and post-guess forfeit win/loss precedence.
+- Stage 20 remains limited to status text and forfeit-result precedence while preserving timeout behavior, scoring formulas, gameplay board/tile/keyboard/coloring, Hard Mode, solved-row holds, advancement rules, Stage 12-19 wins, Daily Multiplayer invariants, PR/merge/release gates, and Phase 24 boundaries.
+
+Stage 20 focused fixes note:
+
+- `phase_id = 143` records focused reproduction and targeted fixes for the two scoped Stage 20 bugs.
+- Focused tests reproduced stale status text after shared multiplayer join/turn events and forfeit winner precedence failures before source fixes.
+- The status/message box now derives its default text from shared game state plus viewer identity, and stale local success messages are cleared when shared state changes.
+- Multiplayer games now persist and normalize `forfeitedPlayerId`; pre-guess forfeits cancel without a winner, and post-guess forfeits resolve against the forfeiting player before points fallback while timeout-loser precedence remains unchanged.
+- Focused changed-area tests and the wider `src/multiplayer` suite passed.
+
+Stage 20 final verification note:
+
+- `phase_id = 144` completes Stage 20 for user review.
+- Full local verification passed: focused changed-area tests (45), wider `src/multiplayer` tests (78), lint, 499 full-suite tests, build, API typecheck, diff check, and desktop/tablet/390px responsive smoke with no console errors or horizontal overflow.
+- Real two-client Supabase-backed browser E2E passed for Practice OG, Practice GO, Daily OG, Daily GO, pre-guess cancellation, post-guess forfeit precedence, normal completion, and timed timeout non-regression.
+- Remote probes verified durable rows, participants, moves, per-player sessions, `forfeitedPlayerId`, `timedOutPlayerId`, winner/status fields, and Daily claims before cleanup. Touched rows, Daily claims, and temporary auth users were deleted; a follow-up probe confirmed no touched multiplayer rows remained.
+- Preserve Stage 20 decisions in future work: status text derives from shared game state and viewer identity; post-guess forfeits lose for the forfeiting player before points fallback; pre-guess forfeits may cancel without a winner; timeout-loser precedence and scoring formulas remain unchanged.
+- No PR, merge, release, production deployment, full Multiplayer tab, spectator expansion, Phase 24 work, gameplay board/tile/keyboard/coloring change, Hard Mode validation change, solved-row hold change, advancement-rule change, scoring formula/rating/ELO change, broad refactor, redesign, or out-of-scope work was performed.
 
 ## 8. Document Organization Decision
 

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_GO_PUZZLE_COUNT } from '../game/constants'
-import { createPracticeGoSetup } from '../game'
+import { createPracticeGoSetup, createPracticeOgSetup } from '../game'
 import {
   createMultiplayerGame,
+  expireTimedOutPracticeMultiplayerGames,
   forfeitMultiplayerGame,
   getMultiplayerSessionForPlayer,
   submitMultiplayerGuess,
@@ -46,7 +47,17 @@ describe('multiplayer scoring projections', () => {
       seed: 1,
       wordLength: 5,
     })
-    const result = forfeitMultiplayerGame({ games: [game] }, {
+    const answer = game.serializedSession.mode === 'og' ? game.serializedSession.session.answer : ''
+    const setup = createPracticeOgSetup(5, 1)
+    const wrongGuess = [...setup.validGuesses].find((guess) => guess !== answer)
+    expect(wrongGuess).toBeTruthy()
+    const submitted = submitMultiplayerGuess({ games: [game] }, {
+      gameId: game.id,
+      guess: wrongGuess!,
+      now: '2026-06-04T12:00:05.000Z',
+      playerId: 'player-one',
+    })
+    const result = forfeitMultiplayerGame(submitted.state, {
       gameId: game.id,
       now: '2026-06-04T12:00:10.000Z',
       playerId: 'player-two',
@@ -56,6 +67,116 @@ describe('multiplayer scoring projections', () => {
     expect(performance?.winnerPlayerId).toBe('player-one')
     expect(performance?.players.find((player) => player.playerId === 'player-one')?.outcome).toBe('win')
     expect(performance?.players.find((player) => player.playerId === 'player-two')?.outcome).toBe('loss')
+  })
+
+  it('keeps forfeit winner precedence over points when the forfeiter was ahead', () => {
+    const game = createMultiplayerGame({
+      createdAt: '2026-06-04T12:00:00.000Z',
+      mode: 'og',
+      playerUserIds: { 'player-one': 'user-a', 'player-two': 'user-b' },
+      ranked: true,
+      scope: 'practice',
+      seed: 1,
+      wordLength: 5,
+    })
+    const answer = game.serializedSession.mode === 'og' ? game.serializedSession.session.answer : ''
+    const setup = createPracticeOgSetup(5, 1)
+    const leadingGuess = [...setup.validGuesses].find((guess) => guess !== answer)
+    expect(leadingGuess).toBeTruthy()
+    const submitted = submitMultiplayerGuess({ games: [game] }, {
+      gameId: game.id,
+      guess: leadingGuess!,
+      now: '2026-06-04T12:00:10.000Z',
+      playerId: 'player-one',
+    })
+    const forfeited = forfeitMultiplayerGame(submitted.state, {
+      gameId: game.id,
+      now: '2026-06-04T12:01:00.000Z',
+      playerId: 'player-one',
+    })
+    const performance = projectMultiplayerPerformance(forfeited.game!)
+    const playerOne = performance?.players.find((player) => player.playerId === 'player-one')
+    const playerTwo = performance?.players.find((player) => player.playerId === 'player-two')
+
+    expect(playerOne?.points).toBeGreaterThan(playerTwo?.points ?? 0)
+    expect(performance?.winnerPlayerId).toBe('player-two')
+    expect(playerOne?.outcome).toBe('loss')
+    expect(playerTwo?.outcome).toBe('win')
+    expect(performance?.summary).toContain('won by forfeit')
+  })
+
+  it('projects forfeits by forfeited player when durable winner evidence is absent', () => {
+    const game = createMultiplayerGame({
+      createdAt: '2026-06-04T12:00:00.000Z',
+      mode: 'og',
+      playerUserIds: { 'player-one': 'user-a', 'player-two': 'user-b' },
+      ranked: true,
+      scope: 'practice',
+      seed: 1,
+      wordLength: 5,
+    })
+    const terminal = {
+      ...game,
+      endedAt: '2026-06-04T12:01:00.000Z',
+      forfeitedPlayerId: 'player-one' as const,
+      moves: [
+        {
+          createdAt: '2026-06-04T12:00:10.000Z',
+          guess: 'abcde',
+          id: 'move-1',
+          playerId: 'player-one' as const,
+          puzzleIndex: 0,
+          tiles: [
+            { letter: 'a', state: 'correct' as const },
+            { letter: 'b', state: 'present' as const },
+            { letter: 'c', state: 'present' as const },
+            { letter: 'd', state: 'absent' as const },
+            { letter: 'e', state: 'absent' as const },
+          ],
+        },
+      ],
+      status: 'lost' as const,
+      winnerId: undefined,
+    }
+    const performance = projectMultiplayerPerformance(terminal)
+
+    expect(performance?.winnerPlayerId).toBe('player-two')
+    expect(performance?.players.find((player) => player.playerId === 'player-one')?.outcome).toBe('loss')
+    expect(performance?.players.find((player) => player.playerId === 'player-two')?.outcome).toBe('win')
+    expect(performance?.summary).toContain('won by forfeit')
+  })
+
+  it('keeps timeout loser precedence unchanged when the timed-out player was ahead on points', () => {
+    const game = createMultiplayerGame({
+      createdAt: '2026-06-04T12:00:00.000Z',
+      mode: 'og',
+      playerUserIds: { 'player-one': 'user-a', 'player-two': 'user-b' },
+      scope: 'practice',
+      seed: 1,
+      timeLimitMs: 30_000,
+      wordLength: 5,
+    })
+    const answer = game.serializedSession.mode === 'og' ? game.serializedSession.session.answer : ''
+    const setup = createPracticeOgSetup(5, 1)
+    const leadingGuess = [...setup.validGuesses].find((guess) => guess !== answer)
+    expect(leadingGuess).toBeTruthy()
+    const submitted = submitMultiplayerGuess({ games: [game] }, {
+      gameId: game.id,
+      guess: leadingGuess!,
+      now: '2026-06-04T12:00:05.000Z',
+      playerId: 'player-one',
+    })
+    const expired = expireTimedOutPracticeMultiplayerGames(submitted.state, new Date('2026-06-04T12:00:36.000Z'))
+    const performance = projectMultiplayerPerformance(expired.games[0])
+    const playerOne = performance?.players.find((player) => player.playerId === 'player-one')
+    const playerTwo = performance?.players.find((player) => player.playerId === 'player-two')
+
+    expect(expired.games[0].timedOutPlayerId).toBe('player-two')
+    expect(playerOne?.points).toBeGreaterThan(playerTwo?.points ?? 0)
+    expect(performance?.winnerPlayerId).toBe('player-one')
+    expect(playerOne?.outcome).toBe('win')
+    expect(playerTwo?.outcome).toBe('loss')
+    expect(performance?.summary).toContain('won the multiplayer match on time')
   })
 
   it('awards deterministic points and declares a points winner when nobody solves OG', () => {
