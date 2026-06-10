@@ -1,8 +1,10 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
+import { DEFAULT_DIFFICULTY_TIER } from '../data/difficulty'
 import { createPracticeGoSetup, createPracticeOgSetup } from '../game'
 import { getGuessResult } from '../game/tileStates'
 import { createMultiplayerGame, getMultiplayerAnswerWords, joinMultiplayerGame, submitMultiplayerGuess } from './multiplayer'
+import { createDailyMultiplayerGoSetup } from './dailyMultiplayer'
 import { MultiplayerGameSurface } from './MultiplayerGameSurface'
 
 describe('MultiplayerGameSurface', () => {
@@ -256,6 +258,77 @@ describe('MultiplayerGameSurface', () => {
         game={sharedCurrentMove.game!}
         onSubmitGuess={() => undefined}
         playerId="player-two"
+        statusLabel="Your turn"
+      />,
+    )
+
+    const keyMatch = rivalHtml.match(new RegExp(`<button[^>]*aria-label="Enter ${priorOnlyEvidence.letter.toLocaleUpperCase('en-US')}"[^>]*class="([^"]*)"`))
+    expect(keyMatch?.[1]).toBeDefined()
+    expect(keyMatch?.[1]).not.toContain('border-slate-600 bg-slate-800')
+  })
+
+  it('colors the Daily Multiplayer GO final-puzzle keyboard from prior solution evidence', () => {
+    const game = createMultiplayerGame({
+      createdAt: '2026-06-04T12:00:00.000Z',
+      dailyDateKey: '2026-06-04',
+      goPuzzleCount: 5,
+      mode: 'go',
+      playerUserIds: { 'player-one': 'host-user' },
+      scope: 'daily',
+      seed: 1,
+      wordLength: 5,
+    })
+    const setup = createDailyMultiplayerGoSetup(new Date('2026-06-04T00:00:00.000Z'), DEFAULT_DIFFICULTY_TIER, 5)
+    const answers = getMultiplayerAnswerWords(game)
+    const joined = joinMultiplayerGame({ games: [game] }, {
+      gameId: game.id,
+      userId: 'rival-user',
+    })
+    let state = joined.state
+    let current = joined.game!
+    for (const answer of answers.slice(0, -1)) {
+      const submitted = submitMultiplayerGuess(state, {
+        gameId: current.id,
+        guess: answer,
+        playerId: current.currentTurn,
+      })
+      expect(submitted.error).toBeUndefined()
+      state = submitted.state
+      current = submitted.game!
+    }
+
+    const finalAnswer = answers[answers.length - 1]
+    const priorEvidence = answers.slice(0, -1).flatMap((answer) => getGuessResult(answer, finalAnswer).tiles)
+    const finalGuess = [...setup.validGuesses].find((candidate) => (
+      candidate !== finalAnswer
+      && priorEvidence.some((tile) => (
+        (tile.state === 'absent' || tile.state === 'present')
+        && !candidate.includes(tile.letter)
+      ))
+    ))
+    if (!finalGuess) {
+      throw new Error('Expected 2026-06-04 Daily GO setup to provide prior-only gray/orange keyboard evidence.')
+    }
+    const priorOnlyEvidence = priorEvidence.find((tile) => (
+      (tile.state === 'absent' || tile.state === 'present')
+      && !finalGuess.includes(tile.letter)
+    ))
+    if (!priorOnlyEvidence) {
+      throw new Error('Expected final guess to omit at least one prior gray/orange evidence letter.')
+    }
+    const sharedFinalMove = submitMultiplayerGuess(state, {
+      gameId: current.id,
+      guess: finalGuess,
+      playerId: current.currentTurn,
+    })
+    expect(sharedFinalMove.error).toBeUndefined()
+
+    const rivalPlayerId = current.currentTurn === 'player-one' ? 'player-two' : 'player-one'
+    const rivalHtml = renderToStaticMarkup(
+      <MultiplayerGameSurface
+        game={sharedFinalMove.game!}
+        onSubmitGuess={() => undefined}
+        playerId={rivalPlayerId}
         statusLabel="Your turn"
       />,
     )

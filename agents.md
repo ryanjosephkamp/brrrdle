@@ -45,6 +45,8 @@ The project now has enough parallelizable work that a clear coordination layer i
 - Stage 16 planning for Practice Multiplayer GO-only bug fixes is documented under `phase_id = 126`; execution is opened under `phase_id = 127`; focused Practice Multiplayer GO projection fixes are tracked under `phase_id = 128`; real two-client Supabase-backed E2E and remote cleanup are tracked under `phase_id = 129`; final verification and handoff are complete under `phase_id = 130`.
 - Stage 17 planning for the Solo Practice GO Customize lock bug is documented under `phase_id = 131`; execution is opened under `phase_id = 132`; final verification and handoff are complete under `phase_id = 133`.
 - Stage 18 planning for Multiplayer GO final puzzle behavior and Solo Practice GO Hard Mode checkbox fixes is documented under `phase_id = 134`; execution is opened under `phase_id = 135`; final verification and handoff are complete under `phase_id = 136`.
+- Stage 19 planning for Solo/Daily GO transition screen, Daily GO keyboard coloring, and Multiplayer GO transition propagation bug fixes is documented under `phase_id = 137`; execution is opened under `phase_id = 138`; focused fixes are tracked under `phase_id = 139`; final verification and handoff are complete under `phase_id = 140`.
+- Stage 20 planning for multiplayer status text synchronization and forfeit win/loss precedence is documented under `phase_id = 141`; implementation remains gated until explicit user authorization.
 - Further PR creation, merges, release, full dedicated Multiplayer tab work, spectator expansion, deferred feature work, and later-phase work remain unauthorized until later explicit approval.
 
 ## 3. Authority Stack
@@ -75,7 +77,7 @@ Before accepting or assigning Phase 23 work, the coordinator should read:
 - `AGENT-IMPLEMENTATION-PLAN.md` §28.
 - `PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`.
 - `progress/PROGRESS.csv`.
-- The latest relevant progress reports, currently `progress/PROGRESS-STEP-106.md` through `progress/PROGRESS-STEP-136.md` for the final stabilization, Stage 12, Stage 13, Stage 14, Stage 15, Stage 16, Stage 17, and Stage 18 trail.
+- The latest relevant progress reports, currently `progress/PROGRESS-STEP-106.md` through `progress/PROGRESS-STEP-141.md` for the final stabilization, Stage 12, Stage 13, Stage 14, Stage 15, Stage 16, Stage 17, Stage 18, Stage 19, and Stage 20 planning trail.
 - This file and `memory.md`.
 
 Sub-agents should read the subset named in their work packet and must always read this file before parallel work.
@@ -284,6 +286,103 @@ Suggested execution lanes if later authorized:
 - **Coordinator lane**: `src/app/App.tsx` if needed, high-conflict integration, progress/changelog/memory updates, final gate, Vercel preview, and final report.
 
 Keep `src/app/games/`, `src/game/`, `src/game/go/`, shared keyboard/board UI, `src/multiplayer/`, `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, `progress/PROGRESS.csv`, `progress/PROGRESS-STEP-*.md`, `agents.md`, and `memory.md` single-writer or explicitly sequenced. Do not edit Daily Solo behavior except to preserve it, and do not change Daily Multiplayer invariants.
+
+### Phase 23 Stage 20 Coordination Notes
+
+Stage 20 planning is documented under `phase_id = 141` from `PHASE-23-STAGE-20-MULTIPLAYER-STATUS-TEXT-AND-FORFEIT-LOGIC-BUGFIXES-SPEC-2026-06-09.md`. Implementation remains gated until the user explicitly authorizes a future execution prompt.
+
+Stage 20 is an extremely narrow multiplayer bug-fix-only pass covering exactly:
+
+- Status/message text synchronization for both players across lobby creation, join, turn submission, forfeit, timeout, and normal completion events in OG/GO and Practice/Daily Multiplayer.
+- Forfeit win/loss precedence so a player who forfeits after any submitted guess loses regardless of current points; pre-guess forfeits may remain non-results/cancellations. Existing timeout-loser precedence must not be changed.
+
+Strict scope warnings:
+
+- Do not touch gameplay board rendering, letter tiles, keyboard behavior, tile coloring, Hard Mode validation during play, solved-row hold/transition behavior, GO/OG advancement rules, or core gameplay mechanics.
+- Do not change scoring formulas or rating/ELO rules. Only the final win/loss decision for the forfeit path is in scope.
+- Preserve Daily Multiplayer as strictly asynchronous, five-letter, UTC-day keyed, no-clock, no-Hard-Mode-lobby-control, answer-separated, and claim-safe.
+- Preserve `playerSessions` as canonical per-viewer state and shared projections as display/compatibility plumbing only.
+- No new features, UI redesign, full dedicated Multiplayer tab work, spectator expansion, notifications, floating manager, bots, exports, Phase 24 work, broad refactoring, PR creation, merge, release, or production deployment is authorized by Stage 20 planning.
+
+High-conflict surfaces for future Stage 20 execution:
+
+- `src/multiplayer/MultiplayerGameSurface.tsx` or the equivalent status text rendering surface
+- `src/multiplayer/multiplayer.ts`
+- multiplayer result/settlement and forfeit helpers
+- related event emission or projection helpers
+- focused multiplayer status/forfeit tests
+- `AGENT-IMPLEMENTATION-PLAN.md`
+- `CHANGELOG.md`
+- `progress/PROGRESS.csv`
+- `progress/PROGRESS-STEP-*.md`
+- `agents.md`
+- `memory.md`
+
+Suggested lanes if execution is later parallelized:
+
+- **Status text lane**: reproduce stale status text on both clients and implement the smallest shared-state-derived status update fix.
+- **Forfeit precedence lane**: reproduce a post-guess forfeit where the forfeiting player is ahead on points, then make the smallest final-result precedence fix while preserving timeout behavior.
+- **Verification lane**: real two-client Supabase-backed browser E2E for OG/GO and Practice/Daily affected flows, remote probes/cleanup, responsive smoke, and resource checks.
+- **Coordinator lane**: high-conflict integration, progress/changelog/memory updates, full gate, optional preview, and final handoff.
+
+Future Stage 20 execution must reproduce both bugs before source edits, make one small targeted change at a time, run focused verification after each change, and finish with the full automated/local/browser/Supabase/resource gate. Keep the status text and forfeit-precedence work outside the primary gameplay surface wherever practical.
+
+### Phase 23 Stage 19 Coordination Notes
+
+Stage 19 planning is documented under `phase_id = 137`, execution is opened under `phase_id = 138`, focused fixes are tracked under `phase_id = 139`, and final verification/handoff is complete under `phase_id = 140` from `PHASE-23-STAGE-19-SOLO-AND-DAILY-GO-TRANSITION-AND-KEYBOARD-BUGFIXES-SPEC-2026-06-09.md`, with supporting user bug notes in `phase23_stage19_bugs.md`.
+
+Stage 19 is a narrow GO bug-fix-only pass covering exactly:
+
+- Solo Practice GO and solo Daily GO missing the all-green transition screen and confirming sound after a correct GO puzzle solve.
+- Daily GO final-puzzle keyboard coloring failures in solo and multiplayer Daily GO.
+- Asymmetric Multiplayer GO transition propagation after a later-puzzle solve, especially puzzle 4, where one player can advance while the other remains stuck on the transition screen.
+
+Strict scope warnings:
+
+- Do not touch Solo Practice OG, Daily OG, any OG mode, Hard Mode enforcement, Customize behavior, resume behavior, scoring/rating/ELO, Daily determinism, authenticated Practice seed behavior, or broad GO/multiplayer/session architecture.
+- Practice Multiplayer GO and Daily Multiplayer GO are in scope only for the transition propagation and keyboard coloring fixes named in the Stage 19 spec.
+- If a future root-cause investigation requires broader surfaces or rule changes, stop and report rather than expanding scope.
+- Preserve all Stage 12 through Stage 18 wins and Daily Multiplayer's strictly asynchronous, five-letter, UTC-day keyed, no-clock, no-Hard-Mode-lobby-control, answer-separated, claim-safe behavior.
+
+High-conflict surfaces for future Stage 19 execution:
+
+- `src/app/games/GoGame.tsx`
+- `src/game/go/`
+- shared board/keyboard color helpers
+- `src/multiplayer/MultiplayerGameSurface.tsx`
+- `src/multiplayer/multiplayer.ts`
+- `src/multiplayer/multiplayerRepository.ts`
+- focused GO transition/keyboard tests
+- `AGENT-IMPLEMENTATION-PLAN.md`
+- `CHANGELOG.md`
+- `progress/PROGRESS.csv`
+- `progress/PROGRESS-STEP-*.md`
+- `agents.md`
+- `memory.md`
+
+Suggested lanes if execution is later parallelized:
+
+- **Solo GO transition lane**: reproduce and minimally align solo Practice/Daily GO solved-row transition screen and sound with the existing Stage 18 Multiplayer GO pattern.
+- **Daily GO keyboard lane**: reproduce final-puzzle keyboard color failures and apply existing green > orange > gray precedence rules without changing Daily determinism.
+- **Multiplayer GO propagation lane**: reproduce the asymmetric stuck-player transition bug with real two-client Supabase-backed Practice Multiplayer GO E2E and verify Daily Multiplayer GO.
+- **Verification lane**: real two-client Supabase-backed browser E2E, remote probes/cleanup, responsive smoke, and resource checks.
+- **Coordinator lane**: high-conflict integration, governance/progress updates, full gate, and final handoff.
+
+Stage 19 execution must reproduce all three bugs before source edits, make one small targeted change at a time, run focused verification after each change, and use real two-client Supabase-backed browser E2E for all multiplayer GO claims. The `phase_id = 138` baseline found no Vite/app listeners on `5173`, `5174`, `3000`, or `4173`, several unrelated localhost Python listeners, and high pre-existing compressed-memory pressure; use one dev server, minimal browser contexts, sequential heavy gates, and explicit cleanup.
+
+Durable `phase_id = 139` implementation notes:
+
+- Multiplayer GO solved-move synchronization may recover the non-solving player's same-puzzle GO session if that player exhausted canonical attempts before the rival solved; this is limited to shared all-correct GO moves and must not copy ordinary rival guesses into another canonical `playerSession`.
+- Daily Multiplayer GO display and keyboard projection should use the merged visible GO evidence path, just like Practice GO, so prior answer rows contribute to keyboard colors through the existing green > orange > gray helper.
+- Solo Practice/Daily GO now have a `GoGame`-local solved-row hold and correct-guess cue for each solved GO puzzle. Keep this UI hold separate from core GO advancement rules; do not change `submitGoGuess`'s immediate domain advancement without a later spec.
+- Solo Daily GO final-puzzle keyboard coloring was checked in-browser and did not require a code change; avoid broad keyboard/helper changes unless a later reproduction proves a separate solo bug.
+
+Durable `phase_id = 140` final verification notes:
+
+- Stage 19 final verification passed focused changed-area tests (41), wider GO regressions (99), lint, the 493-test full suite, build, API typecheck, diff check, desktop/tablet/390px smoke, real browser-backed two-client Supabase Practice/Daily Multiplayer GO E2E, remote Supabase probes/cleanup, solo Practice/Daily GO transition/sound browser checks, and final resource checks.
+- The real E2E used temporary authenticated users and real `async_multiplayer_games` rows. Practice and Daily GO both verified that a non-solving player exhausted on puzzle 4 is recovered by the rival's solved move, advances to puzzle 5, receives the next turn, and can continue multiplayer play before terminal completion.
+- Cleanup deleted the touched multiplayer rows, Daily claims, temporary auth users, and generated Playwright artifacts. Final process checks found no Stage 19-owned Vite/browser/Playwright runaway process.
+- No PR, merge, release, production deployment, full dedicated Multiplayer tab implementation, spectator expansion, notifications, bots/social/export work, scoring/rating changes, broad refactor, redesign, Phase 24 work, or out-of-scope work was performed.
 
 ### Phase 23 Stage 18 Coordination Notes
 

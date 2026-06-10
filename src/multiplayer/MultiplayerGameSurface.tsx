@@ -292,10 +292,9 @@ export function MultiplayerGameSurface({ disabled = false, game, onSubmitGuess, 
     : 0
   const sharedGuesses = useMemo(() => getSharedMoveGuesses(game, activePuzzleIndex), [activePuzzleIndex, game])
   const isGo = draftSession ? 'puzzles' in draftSession : game.serializedSession.mode === 'go'
-  const isPracticeGo = isGo && game.scope === 'practice'
-  const preservedGoPrefixLength = isPracticeGo ? activePuzzleIndex : 0
+  const preservedGoPrefixLength = isGo ? activePuzzleIndex : 0
   const displayPuzzle = activePuzzle ? getDisplayPuzzle(activePuzzle, sharedGuesses, preservedGoPrefixLength) : undefined
-  const keyboardGuesses = isPracticeGo && displayPuzzle
+  const keyboardGuesses = isGo && displayPuzzle
     ? displayPuzzle.guesses
     : sharedGuesses.length > 0
       ? sharedGuesses

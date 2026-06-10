@@ -33,6 +33,7 @@ import { Button, Keyboard, Panel, ShareButton } from '../../ui'
 import { useSound } from '../../sound'
 import { classNames } from '../../ui/classNames'
 import { CustomizeMenu } from './CustomizeMenu'
+import { getSoloGoSolvedTransition, type SoloGoSolvedTransition } from './goTransitions'
 
 interface GoGameProps {
   readonly coins: number
@@ -61,6 +62,7 @@ interface GoGameProps {
 }
 
 type GridTileState = TileState | 'empty' | 'current'
+const SOLO_GO_TRANSITION_MS = 2000
 
 const tileStateClasses: Record<GridTileState, string> = {
   absent: 'border-slate-700 bg-slate-950 text-slate-400',
@@ -210,8 +212,13 @@ function GoGameSession({
     return scope === 'daily' ? createInitialDailySession(setup, pastDailyDateKey, defaultHardMode) : createGoSession(setup, defaultHardMode)
   })
   const [continuationMessage, setContinuationMessage] = useState<string>()
+  const [solvedTransition, setSolvedTransition] = useState<SoloGoSolvedTransition | undefined>()
   const [showDefinitions, setShowDefinitions] = useState(true)
   const currentPuzzle = session.puzzles[session.currentPuzzleIndex]
+  const transitionPuzzle = solvedTransition ? session.puzzles[solvedTransition.puzzleIndex] : undefined
+  const displayPuzzle = transitionPuzzle ?? currentPuzzle
+  const displayPuzzleIndex = solvedTransition?.puzzleIndex ?? session.currentPuzzleIndex
+  const isSolvedTransitionActive = Boolean(solvedTransition)
   const completionPercentage = getCompletionPercentage(currentPuzzle)
   const continuationCost = calculatePayToContinueCost({
     completionPercentage,
@@ -227,8 +234,9 @@ function GoGameSession({
     continuationCount: currentPuzzle.continuationCount,
     wordLength: currentPuzzle.wordLength,
   })
-  const canReveal = scope === 'practice' && session.status === 'playing' && currentPuzzle.guesses.length > 0
-  const solvedPuzzles = endStateRevealed ? session.puzzles.filter((puzzle) => puzzle.status === 'won') : []
+  const canReveal = scope === 'practice' && session.status === 'playing' && !isSolvedTransitionActive && currentPuzzle.guesses.length > 0
+  const showEndState = endStateRevealed && !isSolvedTransitionActive
+  const solvedPuzzles = showEndState ? session.puzzles.filter((puzzle) => puzzle.status === 'won') : []
   const customizeLocked = hasSubmittedGoGuess(session, setup)
   const hardModeLocked = scope === 'practice'
     ? customizeLocked
@@ -244,6 +252,14 @@ function GoGameSession({
       session: serializeGoSession(session),
     }, undefined, pastDailyDateKey)
   }, [pastDailyDateKey, scope, session, setup.dateKey])
+
+  useEffect(() => {
+    if (!solvedTransition) {
+      return undefined
+    }
+    const timeoutId = window.setTimeout(() => setSolvedTransition(undefined), SOLO_GO_TRANSITION_MS)
+    return () => window.clearTimeout(timeoutId)
+  }, [solvedTransition])
 
   // Phase 22 Addendum (§27.10): the first guess on a past daily permanently
   // unlocks it, so the player never has to pay the coin cost again.
@@ -309,16 +325,18 @@ function GoGameSession({
       if (nextSession === currentSession) {
         sound.play('invalid-guess')
       } else {
+        const transition = getSoloGoSolvedTransition(currentSession, nextSession)
         sound.play('tile-flip')
-        if (nextSession.status === 'won') {
+        if (transition) {
           sound.play('correct-guess')
+          setSolvedTransition(transition)
         }
       }
       return nextSession
     })
   }, [sound])
 
-  useKeyboardInput({ disabled: keyboardDisabled, onInput: handleInput })
+  useKeyboardInput({ disabled: keyboardDisabled || isSolvedTransitionActive, onInput: handleInput })
 
   const handlePayToContinue = useCallback(() => {
     if (session.status !== 'lost') {
@@ -359,14 +377,18 @@ function GoGameSession({
     setContinuationMessage(`Revealed the answer: ${revealedAnswer}. This puzzle counts as a loss.`)
   }, [canPayToContinue, currentPuzzle.answer])
 
-  const letterStates = deriveKeyboardLetterStates(currentPuzzle.guesses)
-  const statusMessage = session.status === 'won'
-    ? `Solved all ${session.puzzles.length} go puzzles. Daily completion is preserved on refresh.`
-    : session.status === 'lost'
-      ? lossAnswerRevealed
-        ? `The chain ended on puzzle ${session.currentPuzzleIndex + 1}. The answer was ${currentPuzzle.answer.toLocaleUpperCase('en-US')}.`
-        : `The chain ended on puzzle ${session.currentPuzzleIndex + 1}. Continue this puzzle or reveal the answer to finish it.`
-      : `Puzzle ${session.currentPuzzleIndex + 1} of ${session.puzzles.length}; ${currentPuzzle.maxAttempts - currentPuzzle.guesses.length} attempts remaining.`
+  const letterStates = deriveKeyboardLetterStates(displayPuzzle.guesses)
+  const statusMessage = isSolvedTransitionActive
+    ? displayPuzzleIndex === session.puzzles.length - 1
+      ? 'Advancing to final results.'
+      : 'Advancing to the next puzzle.'
+    : session.status === 'won'
+      ? `Solved all ${session.puzzles.length} go puzzles. Daily completion is preserved on refresh.`
+      : session.status === 'lost'
+        ? lossAnswerRevealed
+          ? `The chain ended on puzzle ${session.currentPuzzleIndex + 1}. The answer was ${currentPuzzle.answer.toLocaleUpperCase('en-US')}.`
+          : `The chain ended on puzzle ${session.currentPuzzleIndex + 1}. Continue this puzzle or reveal the answer to finish it.`
+        : `Puzzle ${session.currentPuzzleIndex + 1} of ${session.puzzles.length}; ${currentPuzzle.maxAttempts - currentPuzzle.guesses.length} attempts remaining.`
 
   return (
     <section className="space-y-5" aria-labelledby="go-game-title">
@@ -449,18 +471,18 @@ function GoGameSession({
             <div
               className={classNames(
                 'rounded-2xl border p-3 text-sm',
-                index === session.currentPuzzleIndex ? 'border-cyan-200/70 bg-cyan-300/10 text-cyan-50' : 'border-slate-700 bg-slate-950/50 text-slate-300',
+                index === displayPuzzleIndex ? 'border-cyan-200/70 bg-cyan-300/10 text-cyan-50' : 'border-slate-700 bg-slate-950/50 text-slate-300',
               )}
               key={`${puzzle.answer}-${index}`}
             >
               <p className="font-bold">Puzzle {index + 1}</p>
               <p className="capitalize">{puzzle.status}</p>
-              {index < session.currentPuzzleIndex ? <p>{puzzle.answer.toLocaleUpperCase('en-US')}</p> : null}
+              {index < session.currentPuzzleIndex || (isSolvedTransitionActive && index === displayPuzzleIndex && displayPuzzle.status === 'won') ? <p>{puzzle.answer.toLocaleUpperCase('en-US')}</p> : null}
             </div>
           ))}
         </div>
 
-        <GuessGrid session={currentPuzzle} />
+        <GuessGrid session={displayPuzzle} />
 
         <div aria-live="polite" className="rounded-2xl border border-slate-700 bg-slate-950/70 p-3 text-sm leading-6 text-slate-200" role="status">
           <p>{statusMessage}</p>
@@ -493,10 +515,10 @@ function GoGameSession({
           </div>
         ) : null}
 
-        <Keyboard disabled={session.status !== 'playing'} letterStates={letterStates} onInput={handleInput} />
+        <Keyboard disabled={session.status !== 'playing' || isSolvedTransitionActive} letterStates={letterStates} onInput={handleInput} />
 
 
-        {endStateRevealed ? (
+        {showEndState ? (
           <ShareButton
             label="Share go result"
             text={formatGoShare({
@@ -536,7 +558,7 @@ function GoGameSession({
         ) : null}
 
         <DefinitionPanel
-          enabled={endStateRevealed}
+          enabled={showEndState}
           mode="go"
           scope={scope}
           word={currentPuzzle.answer}

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { DEFAULT_DIFFICULTY_TIER } from '../../data'
 import { DEFAULT_GO_PUZZLE_COUNT } from '../../game/constants'
 import {
+  createDailyGoSetup,
   createGoSession,
   createPracticeGoSetup,
   enterGoLetter,
@@ -10,6 +11,7 @@ import {
   submitGoGuess,
 } from '../../game'
 import { GoGame } from './GoGame'
+import { getSoloGoSolvedTransition } from './goTransitions'
 import { OgGame } from './OgGame'
 
 function spendNothing() {
@@ -20,6 +22,12 @@ function submitGoAnswer() {
   const setup = createPracticeGoSetup(5, 0)
   const filled = [...setup.puzzles[0].answer].reduce((session, letter) => enterGoLetter(session, letter), createGoSession(setup))
   return serializeGoSession(submitGoGuess(filled))
+}
+
+function submitFirstGoAnswer(setup: ReturnType<typeof createPracticeGoSetup> | ReturnType<typeof createDailyGoSetup>) {
+  const initial = createGoSession(setup)
+  const filled = [...setup.puzzles[0].answer].reduce((session, letter) => enterGoLetter(session, letter), initial)
+  return { initial, next: submitGoGuess(filled) }
 }
 
 describe('solo game defaults', () => {
@@ -147,5 +155,15 @@ describe('solo game defaults', () => {
     )
 
     expect(html).toContain('Difficulty and chain length are locked because this puzzle has started.')
+  })
+
+  it.each(['practice', 'daily'] as const)('detects solved-row transitions for intermediate solo %s go puzzles', (scope) => {
+    const setup = scope === 'daily'
+      ? createDailyGoSetup(new Date('2026-06-09T00:00:00.000Z'))
+      : createPracticeGoSetup(5, 0)
+    const { initial, next } = submitFirstGoAnswer(setup)
+
+    expect(next.currentPuzzleIndex).toBe(1)
+    expect(getSoloGoSolvedTransition(initial, next)).toEqual({ puzzleIndex: 0 })
   })
 })

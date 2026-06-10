@@ -4,6 +4,45 @@ All notable changes to `brrrdle` will be documented in this file.
 
 ## Unreleased
 
+### Phase 23 Stage 20 — Multiplayer Status Text Synchronization + Forfeit Win/Loss Precedence Bug Fixes
+
+#### 23 Stage 20 planning (`phase_id = 141`)
+- **Implementation plan**: bumped `AGENT-IMPLEMENTATION-PLAN.md` to v3.66 and added §28.69 from `PHASE-23-STAGE-20-MULTIPLAYER-STATUS-TEXT-AND-FORFEIT-LOGIC-BUGFIXES-SPEC-2026-06-09.md`.
+- **Planned scope**: documented an extremely narrow two-bug multiplayer pass for status text synchronization on both clients and forfeit result precedence so post-guess forfeits make the forfeiting player lose regardless of current points.
+- **Execution discipline**: future execution must reproduce both bugs before source edits, make small targeted changes, and use real two-client Supabase-backed E2E plus remote probes/cleanup for multiplayer claims.
+- **Scope guard**: all Stage 12-19 wins and Daily Multiplayer invariants remain protected. No source code, tests, UI components, Supabase migrations, configuration changes, implementation branch, PR, merge, release, production deployment, Phase 24 work, or Stage 20 execution was performed.
+
+### Phase 23 Stage 19 — Solo/Daily GO Transition Screen, Keyboard Coloring, and Multiplayer GO Transition Propagation Bug Fixes
+
+#### 23 Stage 19 final verification and handoff (`phase_id = 140`)
+- **Stage complete**: completed the narrow Stage 19 three-bug GO pass for user review.
+- **Multiplayer GO propagation**: focused regressions reproduced the stuck-player bug before the fix, and real browser-backed two-client Supabase Practice/Daily Multiplayer GO E2E verified both players advance from puzzle 4 to puzzle 5 together after a shared solved move, puzzle 5 remains multiplayer after a wrong guess, and terminal completion stays synchronized.
+- **Daily GO keyboard evidence**: Daily Multiplayer GO now derives keyboard colors from merged visible GO evidence using the existing green > orange > gray precedence rules. Solo Daily GO final-puzzle keyboard coloring was checked in-browser and did not reproduce, so no solo keyboard helper change was made.
+- **Solo GO transition/sound**: solo Practice/Daily GO now show the just-solved all-green row for about two seconds, disable input during the hold, then advance normally while triggering the existing correct-guess cue after a user gesture.
+- **Verification**: focused changed-area tests pass (41); wider GO regressions pass (99); `npm run lint`, `npm run test` (493 passing), `npm run build`, `npx tsc -p tsconfig.api.json --noEmit`, and `git diff --check` pass cleanly.
+- **Browser/Supabase/resource**: desktop/tablet/390px smoke passed with no new console errors or horizontal overflow; remote Supabase rows, Daily claims, and temporary auth users were probed and cleaned up; final resource checks found no Stage 19-owned runaway process.
+- **Scope guard**: no PR, merge, release, production deployment, full dedicated Multiplayer tab implementation, spectator expansion, scoring/rating change, broad refactor, redesign, Phase 24 work, or out-of-scope work was performed.
+
+#### 23 Stage 19 focused fixes (`phase_id = 139`)
+- **Reproduction evidence**: focused regressions first failed for the Multiplayer GO stuck-player propagation bug and Daily Multiplayer GO prior-evidence keyboard coloring; browser checks reproduced missing solo Practice/Daily GO solved-row holds.
+- **Multiplayer GO propagation**: recovered the non-solving player's canonical GO session when a shared solved move arrives after that player's same puzzle exhausted attempts, preserving `playerSessions` ownership and puzzle-5 multiplayer turn flow.
+- **Daily Multiplayer GO keyboard**: Daily GO now derives keyboard colors from merged visible GO evidence, matching Practice GO and the existing green > orange > gray precedence rules.
+- **Solo GO transition/sound**: Solo Practice/Daily GO now hold the just-solved all-green puzzle for two seconds, disable input during the hold, and play the correct-guess cue for any solved GO puzzle.
+- **Focused verification**: changed-area tests pass (41 tests); browser checks confirm Practice GO and Daily GO solved holds and confirm solo Daily GO final-puzzle keyboard evidence was already correct. Full gate, real two-client E2E, remote probes/cleanup, responsive smoke, and final handoff remain pending.
+
+#### 23 Stage 19 execution kickoff (`phase_id = 138`)
+- **Execution opened**: recorded explicit authorization for Stage 19 execution from `PHASE-23-STAGE-19-SOLO-AND-DAILY-GO-TRANSITION-AND-KEYBOARD-BUGFIXES-SPEC-2026-06-09.md`, with supporting context from `phase23_stage19_bugs.md`.
+- **Protected state**: confirmed the active local branch is `main` and preserved the current Stage 19 planning/governance dirt as the source of truth.
+- **Baseline resources**: captured process/memory snapshots before source fixes or browser testing; no Vite/app listener was present on `5173`, `5174`, `3000`, or `4173`; unrelated localhost Python listeners were present; and pre-existing memory pressure was high.
+- **Execution checklist**: documented reproduce-first sequencing for the Multiplayer GO asymmetric transition/stuck-player bug, Daily GO final-puzzle keyboard coloring bug, and solo Practice/Daily GO transition screen/sound bug.
+- **Scope guard**: no source fixes have been made in this checkpoint. PR creation, merge, release, production deployment, full dedicated Multiplayer tab work, spectator expansion, scoring/rating changes, broad refactors, Phase 24 work, and out-of-scope work remain unauthorized.
+
+#### 23 Stage 19 planning (`phase_id = 137`)
+- **Implementation plan**: bumped `AGENT-IMPLEMENTATION-PLAN.md` to v3.62 and added §28.65 from `PHASE-23-STAGE-19-SOLO-AND-DAILY-GO-TRANSITION-AND-KEYBOARD-BUGFIXES-SPEC-2026-06-09.md`, with supporting context from `phase23_stage19_bugs.md`.
+- **Planned scope**: documented a narrow three-bug GO pass for missing solo Practice/Daily GO solved-row transition screen and sound, Daily GO final-puzzle keyboard coloring parity in solo/multiplayer, and asymmetric Multiplayer GO transition propagation that can leave one player stuck while the other advances.
+- **Execution discipline**: future execution must reproduce all three bugs before source edits, make small targeted changes, use real two-client Supabase-backed E2E for Practice/Daily Multiplayer GO claims, and finish with the full verification gate.
+- **Scope guard**: all Stage 12-18 wins and Daily Multiplayer invariants remain protected. No source code, tests, UI components, Supabase migrations, configuration changes, implementation branch, PR, merge, release, production deployment, Phase 24 work, or Stage 19 execution was performed.
+
 ### Phase 23 Stage 18 — Multiplayer GO Final Puzzle Behavior + Solo Practice GO Hard Mode Checkbox Fixes
 
 #### 23 Stage 18 final verification and handoff (`phase_id = 136`)

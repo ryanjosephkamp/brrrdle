@@ -834,6 +834,43 @@ function isSolvedGuess(result: GuessResult): boolean {
   return result.tiles.length > 0 && result.tiles.every((tile) => tile.state === 'correct')
 }
 
+function applySolvedGuessToGoSession(
+  game: MultiplayerGame,
+  serializedSession: Extract<MultiplayerSerializedSession, { readonly mode: 'go' }>,
+  solvedGuess: string,
+): MultiplayerSerializedSession | undefined {
+  const session = restoreGoSession(extendFinalGoPuzzleAttempts(serializedSession).session, getValidGuesses(game))
+  const puzzleIndex = session.currentPuzzleIndex
+  const currentPuzzle = session.puzzles[puzzleIndex]
+  if (!currentPuzzle || currentPuzzle.answer !== solvedGuess) {
+    return undefined
+  }
+
+  const puzzles = [...session.puzzles]
+  puzzles[puzzleIndex] = {
+    ...currentPuzzle,
+    currentGuess: solvedGuess,
+    lastValidation: undefined,
+    maxAttempts: Math.max(currentPuzzle.maxAttempts, currentPuzzle.guesses.length + 1),
+    status: 'playing',
+  }
+  const next = submitGoGuess({
+    ...session,
+    puzzles,
+    revealedAnswer: undefined,
+    status: 'playing',
+  })
+  const submittedPuzzle = next.puzzles[puzzleIndex]
+  if (submittedPuzzle.lastValidation) {
+    return undefined
+  }
+  const result = submittedPuzzle.guesses[submittedPuzzle.guesses.length - 1]
+  if (!result || !isSolvedGuess(result)) {
+    return undefined
+  }
+  return { mode: 'go', session: serializeGoSession(next) }
+}
+
 function synchronizeSolvedGoPuzzleSessions(
   game: MultiplayerGame,
   sessions: Partial<Record<MultiplayerPlayerId, MultiplayerSerializedSession>>,
@@ -852,6 +889,9 @@ function synchronizeSolvedGoPuzzleSessions(
   }
 
   for (const targetPlayerId of ['player-one', 'player-two'] as const) {
+    if (targetPlayerId === playerId) {
+      continue
+    }
     const targetSession = nextSessions[targetPlayerId] ?? getMultiplayerSessionForPlayer(game, targetPlayerId)
     if (!targetSession || targetSession.mode !== 'go') {
       continue
@@ -863,9 +903,12 @@ function synchronizeSolvedGoPuzzleSessions(
     if (!targetPuzzle || targetPuzzle.answer !== solvedGuess) {
       continue
     }
-    const applied = applyGuessToSession(game, targetSession, solvedGuess)
-    if (!applied.error && applied.serializedSession?.mode === 'go') {
-      nextSessions[targetPlayerId] = applied.serializedSession
+    if (targetPuzzle.guesses.includes(solvedGuess)) {
+      continue
+    }
+    const applied = applySolvedGuessToGoSession(game, targetSession, solvedGuess)
+    if (applied) {
+      nextSessions[targetPlayerId] = applied
     }
   }
 
