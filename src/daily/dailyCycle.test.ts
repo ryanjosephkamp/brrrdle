@@ -84,6 +84,30 @@ describe('resolveDaily', () => {
     expect(resolved.nextResetAt).toBe(Date.parse('2026-05-27T00:00:00.000Z'))
   })
 
+  it('grants a new multiplayer daily after a natural UTC midnight rollover', () => {
+    const storage = createMemoryStorage()
+    const before = new Date('2026-05-26T23:59:59.000Z')
+    const first = resolveDaily({
+      storage,
+      sessionId: 's1',
+      now: nowAt(before, 1_000),
+      variant: 'multiplayer',
+    })
+
+    const after = new Date('2026-05-27T00:00:01.000Z')
+    const resolved = resolveDaily({
+      storage,
+      sessionId: 's1',
+      now: nowAt(after, 3_000),
+      previousAnchor: first.anchor,
+      variant: 'multiplayer',
+    })
+
+    expect(first.grantedDateKey).toBe('2026-05-26')
+    expect(resolved.grantedDateKey).toBe('2026-05-27')
+    expect(resolved.clamped).toBe(false)
+  })
+
   it('keeps live anti-gaming anchors isolated per daily variant', () => {
     const solo = resolveDaily({
       now: nowAt(new Date('2026-05-26T12:00:00.000Z'), 1_000),

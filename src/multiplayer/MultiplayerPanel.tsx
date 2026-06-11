@@ -445,7 +445,7 @@ export function MultiplayerPanel({
   }
 
   return (
-    <Panel className="space-y-4 text-sm leading-6 text-slate-300" tone="muted">
+    <Panel className="space-y-4 text-sm leading-6 text-slate-300" data-testid={`multiplayer-panel-${scope}`} tone="muted">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-xl font-bold text-white">{scope === 'daily' ? 'Daily Multiplayer' : 'Practice Multiplayer'}</h3>
@@ -553,6 +553,8 @@ export function MultiplayerPanel({
         <div className="flex flex-wrap gap-2">
           {visibleGames.map((game) => (
             <Button
+              data-game-id={game.id}
+              data-testid={`multiplayer-game-tab-${game.id}`}
               key={game.id}
               onClick={() => { setSelectedGameId(game.id); setLocalMessage(undefined) }}
               variant={game.id === selectedGame?.id ? 'primary' : 'secondary'}
@@ -568,7 +570,15 @@ export function MultiplayerPanel({
       )}
 
       {selectedGame ? (
-        <div className="space-y-4 rounded-lg border border-white/10 bg-black/30 p-4">
+        <div
+          className="space-y-4 rounded-lg border border-white/10 bg-black/30 p-4"
+          data-current-turn={selectedGame.currentTurn}
+          data-game-id={selectedGame.id}
+          data-mode={selectedGame.mode}
+          data-scope={selectedGame.scope}
+          data-status={selectedGame.status}
+          data-testid="multiplayer-selected-game"
+        >
           <div className="grid gap-3 md:grid-cols-4">
             <div>
               <p className="font-semibold text-cyan-100">{getGameTitle(selectedGame)}</p>
@@ -642,7 +652,7 @@ export function MultiplayerPanel({
           ) : null}
 
           {displayStatusMessage ? (
-            <p className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 p-3 font-semibold text-cyan-50">
+            <p className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 p-3 font-semibold text-cyan-50" data-testid="multiplayer-status-message">
               {displayStatusMessage}
             </p>
           ) : null}
