@@ -41,17 +41,19 @@
 - Stage 18 planning for Multiplayer GO final puzzle behavior and Solo Practice GO Hard Mode checkbox fixes is documented under `phase_id = 134`; execution is opened under `phase_id = 135`; final verification and handoff are complete under `phase_id = 136`.
 - Stage 19 planning for Solo/Daily GO transition screen, Daily GO keyboard coloring, and Multiplayer GO transition propagation bug fixes is documented under `phase_id = 137`; execution is opened under `phase_id = 138`; focused fixes are tracked under `phase_id = 139`; final verification and handoff are complete under `phase_id = 140`.
 - Stage 20 planning for multiplayer status text synchronization and forfeit win/loss precedence is documented under `phase_id = 141`; execution is opened under `phase_id = 142`; focused fixes are tracked under `phase_id = 143`; final verification and handoff are complete under `phase_id = 144`.
-- Do not create further Phase 23 PRs, merges, releases, implement the full dedicated Multiplayer tab, expand spectators beyond low-risk hardening, start deferred feature work, or start later-phase implementation until the user explicitly approves that later step.
+- Repository reorganization between Phase 23 and Phase 24 is tracked under `phase_id = 145`; it creates the new `planning/` structure, archives root clutter, updates `BRRRDLE-SPEC.md`, and opens a review PR without changing source/runtime behavior.
+- Do not merge the repository reorganization PR, create further Phase 23 implementation PRs, release, implement the full dedicated Multiplayer tab, expand spectators beyond low-risk hardening, start deferred feature work, or start Phase 24 implementation until the user explicitly approves that later step.
 
 ## 2. Current Governance Files
 
 - `CONSTITUTION.md`: binding project constitution. Version 3.4 after this scaffolding pass.
-- `AGENT-IMPLEMENTATION-PLAN.md`: active implementation plan. Version 3.69 after the Stage 20 final verification checkpoint.
-- `PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`: approved Phase 23 spec.
+- `AGENT-IMPLEMENTATION-PLAN.md`: root compatibility shim; the full historical Phase 0-23 plan lives at `planning/history/AGENT-IMPLEMENTATION-PLAN.md`.
+- `planning/IMPLEMENTATION-PLAN.md`: lightweight current implementation-plan entrypoint.
+- `planning/specs/phase-23/PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`: approved Phase 23 spec.
 - `agents.md`: multi-agent workflow guide.
 - `memory.md`: this persistent state file.
 - `progress/PROGRESS.csv`: sequential phase/progress ledger.
-- `CHANGELOG.md`: user-facing and governance-facing change history.
+- `CHANGELOG.md`: root compatibility shim; the full historical changelog lives at `planning/history/CHANGELOG.md`.
 
 ## 3. Phase 23 State
 
@@ -383,19 +385,21 @@ Recent IDs:
 - `142`: Phase 23 Stage 20 execution kickoff; clean main starting state, baseline resources, strict scope boundary, and reproduction plan recorded before source fixes.
 - `143`: Phase 23 Stage 20 focused reproduction and fixes; shared-state-derived status text and forfeit precedence fixes implemented with focused tests passing.
 - `144`: Phase 23 Stage 20 final verification and handoff; full local gate, real two-client Supabase-backed E2E, remote probes/cleanup, responsive smoke, and resource cleanup complete.
+- `145`: Repository reorganization between Phase 23 and Phase 24; root clutter moved into `planning/`, active governance entrypoints preserved, `BRRRDLE-SPEC.md` audited, and Phase 24 planning placeholders created.
 
 Use the next available integer for the next major step. Do not overwrite existing progress files.
 
 ## 7. Recommended Workflow For Next Authorized Step
 
-For the next Phase 23 step:
+For the next authorized step:
 
-1. Re-read `CONSTITUTION.md`, `agents.md`, this file, `AGENT-IMPLEMENTATION-PLAN.md` §28, `progress/PROGRESS-STEP-69.md` through `progress/PROGRESS-STEP-144.md`, the Phase 23 spec, and the relevant Stage 4/5/6/7/8/9/10/final-stabilization/Stage 12/Stage 13/Stage 14/Stage 15/Stage 16/Stage 17/Stage 18/Stage 19/Stage 20 planning and progress notes.
-2. Confirm the branch and pull latest remote changes.
-3. Confirm the user has explicitly authorized any PR work, merge, release, dedicated Multiplayer tab work, deferred feature work, or later-phase implementation before making source-code or migration changes.
-4. Keep final `src/app/App.tsx`, progress tracking, and changelog integration under coordinator ownership.
-5. Run the full local gate plus desktop/mobile browser smoke before reporting completion for any implementation work.
-6. Halt for user review before any further PR or merge unless explicitly authorized.
+1. Re-read `CONSTITUTION.md`, `BRRRDLE-SPEC.md`, `agents.md`, this file, `AGENT-IMPLEMENTATION-PLAN.md`, `planning/README.md`, `planning/IMPLEMENTATION-PLAN.md`, `progress/PROGRESS.csv`, and the latest relevant progress report.
+2. Use `planning/history/AGENT-IMPLEMENTATION-PLAN.md` and `planning/specs/phase-23/` when Phase 23 historical detail is needed.
+3. Confirm the branch and current remote/local state without discarding local work.
+4. Confirm the user has explicitly authorized any PR work, merge, release, dedicated Multiplayer tab work, deferred feature work, or later-phase implementation before making source-code or migration changes.
+5. Keep high-conflict source surfaces, progress tracking, and changelog integration under coordinator ownership.
+6. Run the appropriate verification gate before reporting completion for any implementation work.
+7. Halt for user review before any further PR or merge unless explicitly authorized.
 
 Stage 7 durable verification note:
 
@@ -747,7 +751,11 @@ Stage 20 final verification note:
 
 ## 8. Document Organization Decision
 
-The root still contains many approved phase specs. They are intentionally left in place for now because the plan, changelog, and progress reports refer to their current root paths. A future reorganization should be its own docs-only pass so references can be updated atomically.
+`phase_id = 145` reorganizes repository documentation between Phase 23 and Phase 24.
+
+Root remains reserved for active entrypoints and runtime/tooling files. Phase/stage specs and historical artifacts now live under `planning/specs/`, long historical plans/changelogs/logs live under `planning/history/`, and testing strategy lives under `planning/testing/`.
+
+Future agents should keep active root shims intact, add new phase specs under `planning/specs/phase-XX/`, keep `progress/` at root, and avoid moving source/runtime/config files during documentation cleanup unless explicitly authorized.
 
 ## 9. Update Policy
 

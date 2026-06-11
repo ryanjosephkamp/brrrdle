@@ -43,4 +43,6 @@ Development follows the root governance and planning documents:
 - `CONSTITUTION.md`
 - `BRRRDLE-SPEC.md`
 - `BRRRDLE-OVERVIEW.md`
-- `AGENT-IMPLEMENTATION-PLAN.md`
+- `AGENT-IMPLEMENTATION-PLAN.md` root shim
+- `planning/README.md`
+- `planning/IMPLEMENTATION-PLAN.md`

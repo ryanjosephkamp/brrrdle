@@ -47,7 +47,8 @@ The project now has enough parallelizable work that a clear coordination layer i
 - Stage 18 planning for Multiplayer GO final puzzle behavior and Solo Practice GO Hard Mode checkbox fixes is documented under `phase_id = 134`; execution is opened under `phase_id = 135`; final verification and handoff are complete under `phase_id = 136`.
 - Stage 19 planning for Solo/Daily GO transition screen, Daily GO keyboard coloring, and Multiplayer GO transition propagation bug fixes is documented under `phase_id = 137`; execution is opened under `phase_id = 138`; focused fixes are tracked under `phase_id = 139`; final verification and handoff are complete under `phase_id = 140`.
 - Stage 20 planning for multiplayer status text synchronization and forfeit win/loss precedence is documented under `phase_id = 141`; execution is opened under `phase_id = 142`; focused fixes are tracked under `phase_id = 143`; final verification and handoff are complete under `phase_id = 144`.
-- Further PR creation, merges, release, full dedicated Multiplayer tab work, spectator expansion, deferred feature work, and later-phase work remain unauthorized until later explicit approval.
+- The repository reorganization between Phase 23 and Phase 24 is tracked under `phase_id = 145` on branch `codex/repository-reorganization-phase23-phase24`.
+- Further merges, release, full dedicated Multiplayer tab work, spectator expansion, deferred feature work, and Phase 24 implementation remain unauthorized until later explicit approval.
 
 ## 3. Authority Stack
 
@@ -74,10 +75,12 @@ Before accepting or assigning Phase 23 work, the coordinator should read:
 
 - The current user prompt.
 - `CONSTITUTION.md`.
-- `AGENT-IMPLEMENTATION-PLAN.md` §28.
-- `PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`.
+- `AGENT-IMPLEMENTATION-PLAN.md`, now a root shim that links to the active and historical planning files.
+- `planning/IMPLEMENTATION-PLAN.md`.
+- `planning/history/AGENT-IMPLEMENTATION-PLAN.md` when Phase 0-23 historical detail is needed.
+- `planning/specs/phase-23/PHASE-23-MULTIPLAYER-FOUNDATIONS-AND-POLISH-SPEC-2026-06-03.md`.
 - `progress/PROGRESS.csv`.
-- The latest relevant progress reports, currently `progress/PROGRESS-STEP-106.md` through `progress/PROGRESS-STEP-144.md` for the final stabilization, Stage 12, Stage 13, Stage 14, Stage 15, Stage 16, Stage 17, Stage 18, Stage 19, and Stage 20 trail.
+- The latest relevant progress reports, currently `progress/PROGRESS-STEP-106.md` through `progress/PROGRESS-STEP-145.md` for the final stabilization, Stage 12, Stage 13, Stage 14, Stage 15, Stage 16, Stage 17, Stage 18, Stage 19, Stage 20, and repository reorganization trail.
 - This file and `memory.md`.
 
 Sub-agents should read the subset named in their work packet and must always read this file before parallel work.
@@ -922,16 +925,29 @@ Progress documents are canonical history. Do not overwrite old progress reports 
 
 ## 12. Root Document Organization
 
-The root currently contains many approved phase specs with direct references from the plan, changelog, and progress reports. Avoid moving those files during an active dirty working state unless the user specifically approves a reorganization pass.
+The Phase 23 to Phase 24 repository reorganization is tracked under `phase_id = 145`.
 
-If a future cleanup is approved, prefer:
+Active root entrypoints remain:
 
-- Move old phase specs into `docs/planning/specs/`.
-- Add a root `docs/planning/README.md` index.
-- Update every reference in `AGENT-IMPLEMENTATION-PLAN.md`, `CHANGELOG.md`, progress reports, and README in the same commit.
-- Run link/reference checks before halting.
+- `CONSTITUTION.md`
+- `BRRRDLE-SPEC.md`
+- `BRRRDLE-OVERVIEW.md`
+- `agents.md`
+- `memory.md`
+- `AGENT-IMPLEMENTATION-PLAN.md` as a compatibility shim
+- `CHANGELOG.md` as a compatibility shim
 
-Until then, keep approved specs at the root and rely on `agents.md` plus `memory.md` for navigation.
+Detailed planning and history now live under `planning/`:
+
+- `planning/IMPLEMENTATION-PLAN.md`
+- `planning/phase-24/IMPLEMENTATION-PLAN.md`
+- `planning/history/AGENT-IMPLEMENTATION-PLAN.md`
+- `planning/history/CHANGELOG.md`
+- `planning/specs/phase-23/`
+- `planning/specs/archive/`
+- `planning/testing/TESTING-SUITE.md`
+
+Keep future phase specs out of the root by default. Add them to `planning/specs/phase-XX/`, keep active phase plans concise, and preserve root compatibility shims for files that future prompts commonly name directly.
 
 ## 13. Stop Conditions
 
