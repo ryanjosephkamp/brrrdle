@@ -1,5 +1,5 @@
 /**
- * Phase 18.2 (AGENT-IMPLEMENTATION-PLAN.md §23.4) — answer-subset derivation.
+ * Answer-subset derivation.
  *
  * Derives the Casual and Standard answer subsets from the Expert pool using the
  * deterministic in-repo heuristic (`./heuristic`). The subsets are **nested by

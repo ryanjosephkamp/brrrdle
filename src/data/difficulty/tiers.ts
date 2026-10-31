@@ -1,7 +1,7 @@
 /**
- * Phase 18.2 (AGENT-IMPLEMENTATION-PLAN.md §23.4) — Difficulty-tier model.
+ * Difficulty-tier model.
  *
- * Central rule for the whole phase: **tiers subset the `answers` pool only.**
+ * Central rule: **tiers subset the `answers` pool only.**
  * `validGuesses` is always the full per-length list across all three tiers.
  *
  * `expert` is the default and reproduces today's behaviour exactly (the full

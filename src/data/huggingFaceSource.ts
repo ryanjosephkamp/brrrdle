@@ -20,7 +20,7 @@ import type { RemoteWordListMetadata } from './types.js'
 /**
  * Configuration for the authoritative upstream Hugging Face word-list source.
  *
- * Per `AGENT-IMPLEMENTATION-PLAN.md` Phase 2 and the v1.2 amendment, the dataset
+ * The dataset
  * `ryanjosephkamp/english-openlist` exposes the `latest/brrrdle/` folder, which
  * contains exactly 34 JSON dictionaries — one for every word length from
  * `MIN_PRACTICE_WORD_LENGTH` through `MAX_PRACTICE_WORD_LENGTH`. The dataset is

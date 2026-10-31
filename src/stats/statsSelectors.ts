@@ -1,7 +1,7 @@
 /**
  * Phase 19.1 — Pure, render-free selectors that turn the persisted statistics,
  * history, and progression state into chart-ready data. No React, no I/O. These
- * are unit-tested directly (CONSTITUTION §7.3 spirit) and consumed by the
+ * are unit-tested directly and consumed by the
  * accessible chart components in `./charts`.
  */
 import type { GameMode, PlayScope } from '../game/types'

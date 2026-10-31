@@ -66,7 +66,6 @@ It ships with guest progress, optional cloud accounts, post-game definitions, em
 - **Faithful, not fragile.** Tile coloring, Hard Mode, and sharing all consume one canonical engine — never re-implemented per surface.
 - **Accessible by default.** Targets WCAG AA: semantic controls, visible focus, keyboard-only navigation, reduced-motion support, and readable contrast.
 - **Offline-friendly data.** Word lists are bundled locally, so daily play stays fast and resilient.
-- **Governed & auditable.** Every change follows a written constitution, a phased plan, and per-phase progress reports.
 
 ---
 
@@ -188,7 +187,6 @@ brrrdle/
 │   ├── word-lists/          # Public word-list manifest endpoint
 │   └── admin-refresh.ts     # Protected admin refresh route
 ├── docs/                    # GitHub Pages / Jekyll documentation site
-├── progress/                # Phase progress CSV, template, and step reports
 ├── public/                  # Static PWA assets, icons, manifest, service worker
 ├── src/                     # React application and shared TypeScript modules
 │   ├── account/             # Supabase auth, guest storage, sync, settings UI
@@ -226,32 +224,14 @@ brrrdle/
 
 ---
 
-## 🧭 Governance & authoritative sources
-
-`brrrdle` is built under a strict, written governance model. When in doubt, these documents win — in this order:
-
-1. **[`CONSTITUTION.md`](CONSTITUTION.md)** — binding rules for scope, review gates, verification, security, and conduct.
-2. **[`BRRRDLE-SPEC.md`](BRRRDLE-SPEC.md)** — the product specification.
-3. **[`BRRRDLE-OVERVIEW.md`](BRRRDLE-OVERVIEW.md)** — the approved project plan.
-4. **[`AGENT-IMPLEMENTATION-PLAN.md`](AGENT-IMPLEMENTATION-PLAN.md)** — root shim for the active lightweight plan and the archived full historical plan.
-5. **[`CHANGELOG.md`](CHANGELOG.md)** — root shim for historical and Phase 24 changelog locations.
-6. **[`planning/`](planning/README.md)** — current planning hub, specs, history, and testing strategy.
-7. **`progress/`** — per-phase progress reports and `PROGRESS.csv`.
-
-> The agent workflow is **model-agnostic** — any sufficiently capable coding model (e.g., Claude Opus 4.8) can drive it.
-
----
-
 ## 🤝 Contributing
 
-This project follows a **phase-gated, verification-first** workflow:
+Contributions follow a **verification-first** workflow:
 
-1. **Read the governance docs first** — `CONSTITUTION.md`, then `BRRRDLE-SPEC.md`, then `AGENT-IMPLEMENTATION-PLAN.md` and the relevant planning files it links to.
-2. **Make small, cohesive, reviewable changes** tied to the current phase. Avoid speculative refactors and out-of-scope features.
-3. **Preserve canonical logic** — never duplicate tile-coloring or Hard Mode rules; consume the shared engine.
-4. **Verify before you finish** — run `npm run lint`, `npm run test`, `npm run build`, and `npx tsc -p tsconfig.api.json --noEmit`.
-5. **Never weaken or remove tests** to make a phase pass, and **never commit secrets**.
-6. **Update the changelog and progress artifacts** when a phase requires it, then halt for review at the relevant gate.
+1. **Make small, cohesive, reviewable changes.** Avoid speculative refactors and out-of-scope features.
+2. **Preserve canonical logic** — never duplicate tile-coloring or Hard Mode rules; consume the shared engine.
+3. **Verify before you finish** — run `npm run lint`, `npm run test`, `npm run build`, and `npx tsc -p tsconfig.api.json --noEmit`.
+4. **Never weaken or remove tests** to make a change pass, and **never commit secrets**.
 
 ---
 

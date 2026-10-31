@@ -35,14 +35,3 @@ npm run test
 npm run lint
 npm run build
 ```
-
-## Governance and source docs
-
-Development follows the root governance and planning documents:
-
-- `CONSTITUTION.md`
-- `BRRRDLE-SPEC.md`
-- `BRRRDLE-OVERVIEW.md`
-- `AGENT-IMPLEMENTATION-PLAN.md` root shim
-- `planning/README.md`
-- `planning/IMPLEMENTATION-PLAN.md`
