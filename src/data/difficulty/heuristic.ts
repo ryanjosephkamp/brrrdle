@@ -1,5 +1,5 @@
 /**
- * Phase 18.2 (AGENT-IMPLEMENTATION-PLAN.md §23.4, user answer #1) — deterministic,
+ * Deterministic,
  * in-repo word-quality heuristic used to derive the Casual and Standard answer
  * subsets from the existing local word lists. No external data, no network, no
  * randomness, no clock: the same inputs always produce the same ordering.

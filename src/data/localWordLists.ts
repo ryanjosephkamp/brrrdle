@@ -12,11 +12,8 @@
  *   - `LOCAL_WORD_LISTS_SOURCE_PATH`  — single loader-path constant for auditability.
  *   - `normalizeLocalWordListFile(raw, length)` — adapter used internally; exported for tests.
  *
- * Spec: `LOCAL-WORD-LISTS-SPEC-2026-05-28.md` and `AGENT-IMPLEMENTATION-PLAN.md` §22.
- *
- * Path reconciliation (per §22.1): the spec text refers to `src/latest/brrrdle/` while
- * the repository as-committed places the files directly at `src/latest/`. The on-disk
- * `src/latest/` layout is treated as authoritative; this single constant is the only
+ * The word lists live directly at `src/latest/`, not `src/latest/brrrdle/`. The on-disk
+ * `src/latest/` layout is authoritative; this single constant is the only
  * point that encodes the loader path so a future `git mv` can be a one-line change.
  *
  * Loader filename convention: `words_length_N.json` only. Transitional length-5

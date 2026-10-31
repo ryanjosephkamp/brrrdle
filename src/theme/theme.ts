@@ -6,7 +6,7 @@
  * `data-theme` attribute on the document root; the actual swaps live in
  * `src/index.css`. They deliberately do NOT change layout or the tile-state
  * colors (correct/present/absent), so gameplay legibility and contrast minima
- * are preserved across every theme (CONSTITUTION §7.1, §12.2).
+ * are preserved across every theme.
  *
  * This module is pure (no React, no I/O beyond the optional `applyTheme`
  * attribute write) so it is fully unit-testable.
